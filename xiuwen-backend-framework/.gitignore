@@ -2,6 +2,8 @@ target/
 .idea/
 *.iml
 *.log
-uploads/
+# 忽略运行期间用户真实上传的文件
+/uploads/
+/xiuwen-web/uploads/
 .DS_Store
 src/main/resources/application.yml
