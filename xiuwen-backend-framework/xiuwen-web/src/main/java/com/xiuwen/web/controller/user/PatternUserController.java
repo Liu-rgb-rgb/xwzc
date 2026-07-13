@@ -2,9 +2,18 @@ package com.xiuwen.web.controller.user;
 
 import com.xiuwen.common.core.domain.Result;
 
+import com.xiuwen.framework.security.LoginUserHolder;
 import com.xiuwen.pattern.dto.GeneratePatternRequest;
 
+import com.xiuwen.pattern.service.PatternGenerateService;
+import com.xiuwen.pattern.service.PatternService;
+import com.xiuwen.pattern.vo.GeneratePatternResponse;
 import org.springframework.web.bind.annotation.*;
+import com.xiuwen.pattern.dto.RegeneratePatternRequest;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.validation.Valid;
 
 /**
  * 用户端AI纹样接口。
@@ -12,16 +21,44 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/patterns")
 public class PatternUserController {
+private final PatternService patternService;
+    private final PatternGenerateService patternGenerateService;
 
+    public PatternUserController(PatternService patternService, PatternGenerateService patternGenerateService) {
+		this.patternService = patternService;
+        this.patternGenerateService = patternGenerateService;
+    }
 
     @GetMapping("/options")
     public Result<Void> options() { return Result.todo("AI生成选项"); }
 
     @PostMapping("/generate")
-    public Result<Void> generate(@RequestBody GeneratePatternRequest request) { return Result.todo("AI生成纹样"); }
+    public Result<GeneratePatternResponse> generate(
+            @Valid
+            @RequestBody GeneratePatternRequest request) {
+   Long userId = LoginUserHolder.getRequiredUserId();
+    return Result.success(patternGenerateService.generate(
+            userId,
+            request));
+}
+
+
 
     @PostMapping("/regenerate")
-    public Result<Void> regenerate() { return Result.todo("重新生成纹样"); }
+    public Result<GeneratePatternResponse> regenerate(
+            @RequestBody RegeneratePatternRequest request) {
+
+        Long userId = LoginUserHolder.getRequiredUserId();
+
+        GeneratePatternResponse response =
+                patternGenerateService.regenerate(
+                        userId,
+                        request.getGenerationId()
+                );
+
+        return Result.success(response);
+    }
+
 
     @GetMapping("/my")
     public Result<Void> myPatterns() { return Result.todo("我的纹样列表"); }
