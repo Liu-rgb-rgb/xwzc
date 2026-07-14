@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @Version 1.0
  */
 @Data
-@RequestMapping("//api/admin/messages")
+@RequestMapping("/api/admin/messages")
 public class MerchantMessageController {
     public Result<Void> message(){return Result.todo("管理员发布信息");}
 }
