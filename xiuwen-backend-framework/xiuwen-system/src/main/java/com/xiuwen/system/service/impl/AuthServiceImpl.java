@@ -12,6 +12,7 @@ import com.xiuwen.system.dto.RegisterRequest;
 import com.xiuwen.system.entity.User;
 import com.xiuwen.system.mapper.UserMapper;
 import com.xiuwen.system.service.AuthService;
+import com.xiuwen.system.vo.UserInfoVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,4 +72,6 @@ public class AuthServiceImpl implements AuthService {
         userMapper.insert(user);
         return user.getId();
     }
+
+
 }

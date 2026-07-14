@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端定制管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/custom-designs")
+@RequestMapping("/api/admin/custom-designs")
 public class MerchantCustomDesignController {
 
 
@@ -21,4 +21,6 @@ public class MerchantCustomDesignController {
     @GetMapping("/{id}/download")
     public Result<Void> download(@PathVariable Long id) { return Result.todo("下载生产图片"); }
 
+    @GetMapping("/{customDesignId}/download")
+    public Result<Void> downloadDesign(@PathVariable Long customDesignId){return Result.todo("下载定制方案图片");}
 }

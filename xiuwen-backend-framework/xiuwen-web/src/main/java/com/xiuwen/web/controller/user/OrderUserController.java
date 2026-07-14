@@ -30,4 +30,6 @@ public class OrderUserController {
     @PutMapping("/{id}/confirm")
     public Result<Void> confirm(@PathVariable Long id) { return Result.todo("确认收货"); }
 
+    @GetMapping("/status-count")
+    public Result<Void> statusCount(){return Result.todo("我的订单状态");}
 }

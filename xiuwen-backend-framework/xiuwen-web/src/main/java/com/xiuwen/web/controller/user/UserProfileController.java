@@ -36,4 +36,9 @@ public class UserProfileController {
     @DeleteMapping("/addresses/{id}")
     public Result<Void> deleteAddress(@PathVariable Long id) { return Result.todo("删除收货地址"); }
 
+    @PutMapping("/addresses/{addressId}/default")
+    public Result<Void> setDefaultAddress(@PathVariable Long addressId) {return Result.todo( "设置默认收货地址");}
+
+
+
 }

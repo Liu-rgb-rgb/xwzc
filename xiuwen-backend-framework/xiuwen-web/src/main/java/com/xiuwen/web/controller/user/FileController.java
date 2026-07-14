@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 文件上传接口。
  */
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api/admin/files")
 public class FileController {
 
 

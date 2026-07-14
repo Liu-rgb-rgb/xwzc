@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端商品管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/products")
+@RequestMapping("/api/admin/products")
 public class MerchantProductController {
 
 

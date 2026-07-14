@@ -21,4 +21,5 @@ public class HomeController {
     @GetMapping("/recommend")
     public Result<Void> recommend() { return Result.todo("首页推荐内容"); }
 
+
 }

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端用户管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/users")
+@RequestMapping("/api/admin/users")
 public class MerchantUserController {
 
 
@@ -20,5 +20,8 @@ public class MerchantUserController {
 
     @PutMapping("/{id}/status")
     public Result<Void> status(@PathVariable Long id) { return Result.todo("启用或禁用用户"); }
+
+    @PutMapping("/{userId}/status")
+    public Result<Void> userIdStatus(@PathVariable Long userId){return Result.todo("禁用或恢复用户");}
 
 }

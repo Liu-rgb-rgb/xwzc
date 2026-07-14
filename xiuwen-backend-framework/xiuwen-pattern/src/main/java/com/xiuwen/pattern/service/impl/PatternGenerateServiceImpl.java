@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static sun.plugin2.util.PojoUtil.toJson;
+
 
 /**
  * AI纹样生成业务实现。
