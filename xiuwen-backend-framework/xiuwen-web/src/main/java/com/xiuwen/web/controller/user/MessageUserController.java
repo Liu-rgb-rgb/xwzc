@@ -21,4 +21,11 @@ public class MessageUserController {
     @PutMapping("/{id}/read")
     public Result<Void> read(@PathVariable Long id) { return Result.todo("标记消息已读"); }
 
+    @PutMapping("/read-all")
+    public Result<Void> readAll(){return Result.todo("阅读全部信息");}
+
+    @DeleteMapping("/{messageId}")
+    public Result<Void> deleteMessage(@PathVariable Long messageId){return Result.todo("删除信息");}
+
+
 }

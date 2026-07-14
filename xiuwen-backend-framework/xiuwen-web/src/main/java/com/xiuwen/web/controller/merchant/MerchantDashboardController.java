@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端工作台接口。
  */
 @RestController
-@RequestMapping("/api/merchant/dashboard")
+@RequestMapping("/api/admin/dashboard")
 public class MerchantDashboardController {
 
 

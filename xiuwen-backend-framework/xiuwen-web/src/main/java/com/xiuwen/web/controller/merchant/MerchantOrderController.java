@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端订单管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/orders")
+@RequestMapping("/api/admin/orders")
 public class MerchantOrderController {
 
 
@@ -20,5 +20,8 @@ public class MerchantOrderController {
 
     @PutMapping("/{id}/status")
     public Result<Void> updateStatus(@PathVariable Long id) { return Result.todo("修改订单状态"); }
+
+    @PutMapping("/{orderId}/remark")
+    public Result<Void> updateOrderRemark(@PathVariable Long orderId){return  Result.todo("修改订单状态");}
 
 }

@@ -24,4 +24,6 @@ public class CustomDesignUserController {
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) { return Result.todo("删除定制方案"); }
 
+    @DeleteMapping("/{customDesignId}")
+    public Result<Void> deleteCustomDesignId(@PathVariable Long customDesignId){return Result.todo("删除我的定制");}
 }

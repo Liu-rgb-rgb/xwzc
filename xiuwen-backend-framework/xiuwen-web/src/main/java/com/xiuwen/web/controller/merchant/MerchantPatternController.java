@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端纹样管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/patterns")
+@RequestMapping("/api/admin/patterns")
 public class MerchantPatternController {
 
 
@@ -26,5 +26,11 @@ public class MerchantPatternController {
 
     @PutMapping("/{id}/status")
     public Result<Void> status(@PathVariable Long id) { return Result.todo("隐藏或恢复纹样"); }
+
+    @PutMapping("/{patternId}/status")
+    public Result<Void> PatternStatus(){return Result.todo("修改纹样状态");}
+
+    @DeleteMapping("/{patternId}")
+    public Result<Void> deletePatternId(@PathVariable Long patternId){return  Result.todo("商家删除`纹样");}
 
 }

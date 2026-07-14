@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端首页管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/home")
+@RequestMapping("/api/admin/home")
 public class MerchantHomeManageController {
 
 

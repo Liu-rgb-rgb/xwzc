@@ -21,4 +21,6 @@ public class ProductUserController {
     @GetMapping("/{id}")
     public Result<Void> detail(@PathVariable Long id) { return Result.todo("商品详情"); }
 
+    @GetMapping("/recommends")
+    public Result<Void> recommends(){return Result.todo("推荐商品");}
 }

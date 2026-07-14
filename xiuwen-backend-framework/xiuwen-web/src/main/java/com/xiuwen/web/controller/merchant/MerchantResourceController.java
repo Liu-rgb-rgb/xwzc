@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
  * 商家端创作资源管理接口。
  */
 @RestController
-@RequestMapping("/api/merchant/resources")
+@RequestMapping("/api/admin/resources")
 public class MerchantResourceController {
 
 
@@ -23,5 +23,11 @@ public class MerchantResourceController {
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) { return Result.todo("删除资源"); }
+
+    @GetMapping("/{resourceId}")
+    public Result<Void> resourceId(@PathVariable Long resourceId){return Result.todo("商家查看资源详情");}
+
+    @PutMapping("/{resourceId}/status")
+    public Result<Void> resourceStatus(@PathVariable Long resourceId){return  Result.todo("修改资源状态");}
 
 }

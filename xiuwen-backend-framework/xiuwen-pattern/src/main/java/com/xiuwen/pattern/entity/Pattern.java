@@ -1,9 +1,7 @@
 package com.xiuwen.pattern.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import lombok.Data;
@@ -33,6 +31,8 @@ public class Pattern implements Serializable {
     private String usageScene;
     private String colorTheme;
     private String description;
+    @TableField("is_saved")
+    private Integer isSaved;
     private Integer isFavorite;
     private Integer isRecommend;
     private Integer viewCount;
