@@ -46,17 +46,11 @@ private final PatternService patternService;
 
     @PostMapping("/regenerate")
     public Result<GeneratePatternResponse> regenerate(
-            @RequestBody RegeneratePatternRequest request) {
-
+            @Valid @RequestBody RegeneratePatternRequest request) {
         Long userId = LoginUserHolder.getRequiredUserId();
-
-        GeneratePatternResponse response =
-                patternGenerateService.regenerate(
-                        userId,
-                        request.getGenerationId()
-                );
-
-        return Result.success(response);
+        return Result.success(
+                patternGenerateService.regenerate(userId, request)
+        );
     }
 
 

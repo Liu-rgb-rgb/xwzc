@@ -33,4 +33,6 @@ public class PatternGeneration implements Serializable {
     private String status;
     private String errorMessage;
     private LocalDateTime createdAt;
+    private String description;
+    private String referenceImageUrl;
 }

@@ -47,7 +47,7 @@ public class GeneratePatternRequest {
     /**
      * 灵感描述。
      */
-    @Size(max = 200, message = "灵感描述不能超过200个字符")
+    @Size(max = 500, message = "灵感描述不能超过500个字符")
     private String description;
 
     /**
@@ -61,5 +61,8 @@ public class GeneratePatternRequest {
     @NotNull(message = "请输入生成数量")
     @Min(value = 1, message = "生成数量不能少于1张")
     @Max(value = 4, message = "生成数量不能超过4张")
-    private Integer count;
+    private Integer generateCount;
+    @NotBlank(message = "请输入纹样主题关键词")
+    @Size(max = 255, message = "纹样主题关键词不能超过 255 个字符")
+    private String keyword;
 }
