@@ -30,4 +30,5 @@ public class PromptTemplate implements Serializable {
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Integer sort;
 }

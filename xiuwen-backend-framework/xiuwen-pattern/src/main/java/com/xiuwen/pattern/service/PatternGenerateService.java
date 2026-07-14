@@ -20,5 +20,8 @@ public interface PatternGenerateService {
     * 用户提交的生成参数
     * 生成结果*/
  GeneratePatternResponse generate(Long userId, GeneratePatternRequest request);
- GeneratePatternResponse regenerate(Long userId,Long generationId);
+    GeneratePatternResponse regenerate(
+            Long userId,
+            RegeneratePatternRequest request
+    );
 }

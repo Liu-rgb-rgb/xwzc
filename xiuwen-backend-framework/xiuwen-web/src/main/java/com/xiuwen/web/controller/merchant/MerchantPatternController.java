@@ -15,8 +15,6 @@ public class MerchantPatternController {
     @GetMapping
     public Result<Void> list() { return Result.todo("纹样管理列表"); }
 
-    @GetMapping("/generations")
-    public Result<Void> generationList() { return Result.todo("AI生成记录列表"); }
 
     @GetMapping("/{id}")
     public Result<Void> detail(@PathVariable Long id) { return Result.todo("纹样详情"); }
@@ -27,8 +25,7 @@ public class MerchantPatternController {
     @PutMapping("/{id}/status")
     public Result<Void> status(@PathVariable Long id) { return Result.todo("隐藏或恢复纹样"); }
 
-    @PutMapping("/{patternId}/status")
-    public Result<Void> PatternStatus(){return Result.todo("修改纹样状态");}
+
 
     @DeleteMapping("/{patternId}")
     public Result<Void> deletePatternId(@PathVariable Long patternId){return  Result.todo("商家删除`纹样");}
