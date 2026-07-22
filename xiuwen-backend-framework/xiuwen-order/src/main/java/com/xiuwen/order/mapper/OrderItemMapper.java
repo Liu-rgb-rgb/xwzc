@@ -1,0 +1,12 @@
+package com.xiuwen.order.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiuwen.order.entity.OrderItem;
+import org.apache.ibatis.annotations.Mapper;
+
+/**
+ * order_item 表 Mapper。
+ */
+@Mapper
+public interface OrderItemMapper extends BaseMapper<OrderItem> {
+}
