@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="xiuwen-course" />
+        <module name="xiuwen-common" />
+        <module name="xiuwen-system" />
+        <module name="xiuwen-framework" />
+        <module name="xiuwen-web" />
+        <module name="xiuwen-product" />
+        <module name="xiuwen-pattern" />
+        <module name="xiuwen-order" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="17" />
+  </component>
+</project>
