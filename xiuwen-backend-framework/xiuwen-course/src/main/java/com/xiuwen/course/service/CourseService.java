@@ -13,4 +13,8 @@ public interface CourseService extends IService<Course> {
                                   String difficulty, Boolean isFree);
 
     Course getByIdWithCategory(Long id);
+
+    /** 商家端课程分页 */
+    Page<Course> adminPage(Page<Course> page, Long categoryId, String keyword,
+                           String difficulty, String status);
 }
