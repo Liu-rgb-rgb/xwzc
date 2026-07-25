@@ -23,4 +23,10 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     public Course getByIdWithCategory(Long id) {
         return baseMapper.selectByIdWithCategory(id);
     }
+
+    @Override
+    public Page<Course> adminPage(Page<Course> page, Long categoryId, String keyword,
+                                   String difficulty, String status) {
+        return baseMapper.selectAdminPage(page, categoryId, keyword, difficulty, status);
+    }
 }
