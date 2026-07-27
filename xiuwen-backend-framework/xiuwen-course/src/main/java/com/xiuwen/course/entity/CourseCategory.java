@@ -22,6 +22,7 @@ public class CourseCategory implements Serializable {
     /** 逻辑删除：0 未删除，1 已删除 */
     @TableLogic
     private Integer deleted;
+    private Long parentId;
     private String name;
     private String description;
     private Integer sort;
