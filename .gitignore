@@ -1,0 +1,19 @@
+# Dependencies and generated builds
+**/node_modules/
+**/dist/
+**/target/
+*.tsbuildinfo
+
+# IDE and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local environment and logs
+.env
+.env.local
+*.log
+
+# Temporary extraction artifact
+api-doc-extract.txt
