@@ -41,4 +41,7 @@ public class Course implements Serializable {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private String categoryName;
 }
