@@ -33,6 +33,9 @@
         <commons.lang3.version>3.12.0</commons.lang3.version>
     </properties>
 
+    <!-- 在 pom.xml 中加入这段 -->
+
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -100,5 +103,20 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+
+
+<!--后面添加的-->
+        <plugins>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
+            <configuration>
+                <source>${java.version}</source>
+                <target>${java.version}</target>
+                <encoding>UTF-8</encoding>
+            </configuration>
+         </plugin>
+        </plugins>
     </build>
 </project>
