@@ -572,3 +572,32 @@ INSERT INTO `course` (`id`, `category_id`, `title`, `subtitle`, `cover_image`, `
 -- ============================================================
 INSERT INTO `user` (`username`, `password_hash`, `nickname`, `phone`, `role`, `status`)
 VALUES ('testmerchant', 'a52f2c0dbf38ade4f715e02c7124046e', '测试商家', '13900000001', 'MERCHANT_ADMIN', 1);
+
+-- ============================================================
+-- 测试数据（创作资源），2026-07-29
+-- 用于用户端-13. 创作资源 + 商家端-10. 资源管理接口调试：
+--   [13.1] GET  /api/resources                      创作资源列表
+--   [13.2] GET  /api/resources/{id}                 创作资源详情
+--   [13.3] GET  /api/resources/{id}/download        下载资源
+--   [11.1] GET  /api/admin/resources                商家资源列表
+--   [11.2] POST /api/admin/resources                新增创作资源
+--   [11.3] GET  /api/admin/resources/{id}           商家资源详情
+--   [11.4] PUT  /api/admin/resources/{id}           编辑创作资源
+--   [11.5] PUT  /api/admin/resources/{id}/status    状态切换
+--   [11.6] DEL  /api/admin/resources/{id}           删除创作资源
+-- 注意：可重复执行，执行前会先清空对应表数据
+-- ============================================================
+
+DELETE FROM `learning_resource` WHERE `id` >= 1;
+
+INSERT INTO `learning_resource` (`id`, `course_id`, `title`, `subtitle`, `cover_image`, `resource_type`, `resource_url`, `content`, `price`, `is_recommend`, `view_count`, `download_count`, `sort`, `status`) VALUES
+(1,  1,    '广绣入门工具清单',     '零基础学员必备工具指南',     '',  'PDF',     'https://cdn.example.com/resource/1201.pdf',  '广绣入门所需工具：绣绷、绣针、绣布、绣线的完整清单及选购建议。',                                                0.00,  1, 520,  189, 1, 'PUBLISHED'),
+(2,  2,    '齐针运针分解演示视频', '高清慢动作分解教学',         '',  'VIDEO',   'https://cdn.example.com/resource/1202.mp4',  '本视频包含齐针十二种运针方向的高清慢动作演示，配合语音讲解，适合反复观看练习。',                                    19.90, 1, 340,  102, 2, 'PUBLISHED'),
+(3,  3,    '广绣经典配色方案',     '传统五色搭配参考',           '',  'IMAGE',   'https://cdn.example.com/resource/1203.png',  '20组广绣经典配色方案高清图集，涵盖红金、蓝绿、黑白等主题，可直接用于纹样创作参考。',                                0.00,  1, 890,  356, 3, 'PUBLISHED'),
+(4,  5,    '双面绣作品赏析图集',   '大师作品高清扫描',           '',  'IMAGE',   'https://cdn.example.com/resource/1204.jpg',  '收录30幅广绣大师双面绣代表作高清扫描图，附创作背景与技法要点批注。',                                                29.90, 0, 156,  43,  4, 'PUBLISHED'),
+(5,  NULL, '岭南纹样素材包',       '50款传统岭南纹样矢量图',     '',  'MATERIAL', 'https://cdn.example.com/resource/1205.zip', '包含50款可商用岭南传统纹样矢量图（AI/EPS/SVG格式），涵盖花鸟、山水、几何、吉祥图案四大类，可直接导入设计软件使用。', 69.00, 1, 1200, 678, 5, 'PUBLISHED'),
+(6,  4,    '刺绣构图设计指南',     '从基础到高阶的构图方法论',   '',  'ARTICLE',  '',                                          '一篇全面的刺绣构图指南，讲解对称构图、散点构图、满花构图等技法在广绣创作中的实际应用。',                            0.00,  0, 230,  56,  6, 'PUBLISHED'),
+(7,  NULL, '广绣非遗保护政策汇编', '国家及地方非遗政策整理',     '',  'PDF',     'https://cdn.example.com/resource/1207.pdf',  '2024年度国家及广东省非遗保护相关政策文件汇编，适用于项目申报与资金申请参考。',                                      0.00,  0, 89,   21,  7, 'PUBLISHED'),
+(8,  6,    '文创产品设计模板',     '帆布袋/丝巾/手机壳源文件',   '',  'MATERIAL', 'https://cdn.example.com/resource/1208.zip', '3套文创产品设计PSD源文件模板（帆布袋、丝巾、手机壳），含刀版线和出血设置，新手可直接替换图案使用。',                39.90, 0, 445,  134, 8, 'PUBLISHED'),
+(9,  NULL, '广绣针法速查表',       '十二种常用针法一览',         '',  'PDF',     'https://cdn.example.com/resource/1209.pdf',  '常用十二种广绣针法的名称、图示、适用场景和难度等级的速查表，可打印随身参考。',                                      0.00,  1, 670,  245, 9, 'DRAFT'),
+(10, 7,    '钉金绣实操教程',       '手把手教你钉金绣技法',       '',  'VIDEO',   'https://cdn.example.com/resource/1210.mp4',  '一小时完整钉金绣实操教程，包含金线固定、盘绕收尾、图案过度等关键技法演示。',                                        59.90, 0, 78,   12,  10, 'HIDDEN');
