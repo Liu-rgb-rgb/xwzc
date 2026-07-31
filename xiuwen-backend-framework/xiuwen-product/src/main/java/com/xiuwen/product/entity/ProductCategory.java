@@ -23,7 +23,7 @@ public class ProductCategory implements Serializable {
     private String name;
     private String icon;
     private Integer sort;
-    private Integer status;
+    private String status;
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
     @TableField(fill = FieldFill.INSERT_UPDATE)

@@ -1,5 +1,43 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiuwen.product.mapper.ProductMapper">
-    <!-- 自定义 SQL 写在这里，基础 CRUD 已由 MyBatis-Plus 提供。 -->
+
+    <!-- 商家端商品分页列表（含分类名称） -->
+    <select id="selectAdminPage" resultType="com.xiuwen.product.entity.ProductDetail">
+        SELECT
+            p.id,
+            p.category_id,
+            p.name,
+            p.subtitle,
+            p.price,
+            p.stock,
+            p.cover_image,
+            p.mockup_image,
+            p.description,
+            p.is_customizable,
+            p.is_recommend,
+            p.sales_count,
+            p.sort,
+            p.status,
+            p.created_at,
+            p.updated_at,
+            pc.name AS category_name
+        FROM product p
+        LEFT JOIN product_category pc ON p.category_id = pc.id AND pc.deleted = 0
+        WHERE p.deleted = 0
+        <if test="keyword != null and keyword != ''">
+            AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.id = #{keyword})
+        </if>
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        <if test="status != null and status != ''">
+            AND p.status = #{status}
+        </if>
+        <if test="isRecommend != null">
+            AND p.is_recommend = #{isRecommend}
+        </if>
+        ORDER BY p.sort ASC, p.created_at DESC
+    </select>
+
 </mapper>

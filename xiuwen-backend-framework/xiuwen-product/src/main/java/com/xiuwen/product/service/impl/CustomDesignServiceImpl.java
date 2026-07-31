@@ -1,7 +1,6 @@
 package com.xiuwen.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,6 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * custom_design 表服务实现。
  */
@@ -22,8 +24,8 @@ import org.springframework.util.StringUtils;
 @Slf4j
 @RequiredArgsConstructor
 public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, CustomDesign> implements CustomDesignService {
-    @Override
 
+    @Override
     public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String remark) {
         CustomDesign design = new CustomDesign();
         design.setUserId(userId);
@@ -38,7 +40,6 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
 
         save(design);
         return baseMapper.selectDesignWithDetails(design.getId());
-
     }
 
     @Override
@@ -68,8 +69,26 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
         wrapper.eq(CustomDesign::getUserId, userId);
         wrapper.eq(CustomDesign::getId, customDesignId);
         boolean remove = this.remove(wrapper);
-        if(!remove) {
+        if (!remove) {
             throw new BusinessException("定制方案不存在或无权操作");
         }
+    }
+
+    @Override
+    public IPage<CustomDesignDetail> pageAdminDesigns(int page, int pageSize, Long userId, Long productId, String status) {
+        return baseMapper.selectAdminDesignList(new Page<>(page, pageSize), userId, productId, status);
+    }
+
+    @Override
+    public Map<String, Object> getDownloadUrls(Long customDesignId) {
+        CustomDesignDetail detail = baseMapper.selectDesignWithDetails(customDesignId);
+        if (detail == null) {
+            throw new BusinessException("定制方案不存在");
+        }
+        Map<String, Object> result = new HashMap<>();
+        result.put("previewDownloadUrl", detail.getPreviewImageUrl());
+        result.put("patternDownloadUrl", detail.getPatternImageUrl());
+        result.put("expiresIn", 600);
+        return result;
     }
 }

@@ -48,6 +48,9 @@ public class Orders {
     /** 用户订单备注 */
     private String remark;
 
+    /** 商家备注 */
+    private String merchantRemark;
+
     /** 支付时间 */
     private LocalDateTime paidAt;
 

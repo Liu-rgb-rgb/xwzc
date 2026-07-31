@@ -1,26 +1,70 @@
 package com.xiuwen.web.controller.merchant;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.xiuwen.common.core.domain.PageResult;
 import com.xiuwen.common.core.domain.Result;
-
+import com.xiuwen.product.entity.CustomDesignDetail;
+import com.xiuwen.product.service.CustomDesignService;
+import com.xiuwen.product.vo.CustomDesignVO;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 商家端定制管理接口。
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/admin/custom-designs")
+@RequiredArgsConstructor
 public class MerchantCustomDesignController {
 
+    private final CustomDesignService customDesignService;
 
+    /**
+     * 5.1 定制方案列表
+     */
     @GetMapping
-    public Result<Void> list() { return Result.todo("定制方案列表"); }
+    public Result<PageResult<CustomDesignVO>> list(
+            @RequestParam(required = false) Long userId,
+            @RequestParam(required = false) Long productId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int pageSize) {
 
-    @GetMapping("/{id}")
-    public Result<Void> detail(@PathVariable Long id) { return Result.todo("定制方案详情"); }
+        IPage<CustomDesignDetail> pageResult = customDesignService.pageAdminDesigns(
+                page, pageSize, userId, productId, status);
 
-    @GetMapping("/{id}/download")
-    public Result<Void> download(@PathVariable Long id) { return Result.todo("下载生产图片"); }
+        List<CustomDesignVO> voList = pageResult.getRecords().stream()
+                .map(CustomDesignVO::fromDetail)
+                .collect(Collectors.toList());
 
+        return Result.success(PageResult.of(
+                pageResult.getTotal(),
+                (int) pageResult.getCurrent(),
+                (int) pageResult.getSize(),
+                voList));
+    }
+
+    /**
+     * 5.2 定制方案详情
+     */
+    @GetMapping("/{customDesignId}")
+    public Result<CustomDesignVO> detail(@PathVariable Long customDesignId) {
+        CustomDesignDetail detail = customDesignService.getDesignDetail(customDesignId);
+        return Result.success(CustomDesignVO.fromDetail(detail));
+    }
+
+    /**
+     * 5.3 下载定制预览图或原纹样
+     */
     @GetMapping("/{customDesignId}/download")
-    public Result<Void> downloadDesign(@PathVariable Long customDesignId){return Result.todo("下载定制方案图片");}
+    public Result<Map<String, Object>> download(@PathVariable Long customDesignId) {
+        Map<String, Object> urls = customDesignService.getDownloadUrls(customDesignId);
+        return Result.success(urls);
+    }
 }

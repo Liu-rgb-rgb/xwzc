@@ -281,6 +281,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         return vo;
     }
 
+
+
     private long countByUser(Long userId) {
         return count(new LambdaQueryWrapper<Orders>().eq(Orders::getUserId, userId));
     }
@@ -312,4 +314,124 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         detail.setProductSummary(summary);
         detail.setPreviewImageUrl(first.getPreviewImageUrl());
     }
+
+
+
+    //===================================================================================================
+    //======================================商家端========================================================
+    //===================================================================================================
+
+    // =============== 商家端：分页查询订单列表 ===============
+    @Override
+    public IPage<OrderDetail> pageAdminOrders(long page, long pageSize, String status,
+                                               String keyword, String startTime, String endTime) {
+        // 通过 XML 自定义 SQL 查询订单列表（含订单项摘要）
+        List<OrderDetail> allRecords = baseMapper.selectAdminOrderList(status, keyword, startTime, endTime);
+
+        // 手动分页
+        int total = allRecords.size();
+        int fromIndex = (int) ((page - 1) * pageSize);
+        int toIndex = Math.min(fromIndex + (int) pageSize, total);
+
+        List<OrderDetail> pageRecords;
+        if (fromIndex >= total) {
+            pageRecords = List.of();
+        } else {
+            pageRecords = allRecords.subList(fromIndex, toIndex);
+        }
+
+        // 填充摘要信息
+        pageRecords.forEach(this::enrichOrderDetail);
+
+        Page<OrderDetail> result = new Page<>(page, pageSize, total);
+        result.setRecords(pageRecords);
+        return result;
+    }
+
+    // =============== 商家端：获取订单详情 ===============
+    @Override
+    public OrderDetail getAdminOrderDetail(Long orderId) {
+        OrderDetail detail = baseMapper.selectAdminOrderDetail(orderId);
+        if (detail == null) {
+            throw new BusinessException("订单不存在");
+        }
+        enrichOrderDetail(detail);
+        return detail;
+    }
+
+    // =============== 商家端：更新订单状态 ===============
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Orders updateOrderStatus(Long orderId, String targetStatus) {
+        Orders order = getById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+
+        String currentStatus = order.getStatus();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 校验状态流转合法性
+        switch (targetStatus) {
+            case "PRODUCING":
+                if (!"WAIT_CONFIRM".equals(currentStatus)) {
+                    throw new BusinessException("只有待接单状态的订单才能转为制作中");
+                }
+                order.setConfirmedAt(now);
+                break;
+            case "WAIT_DELIVERY":
+                if (!"PRODUCING".equals(currentStatus)) {
+                    throw new BusinessException("只有制作中状态的订单才能转为待发货");
+                }
+                order.setProducedAt(now);
+                break;
+            case "DELIVERED":
+                if (!"WAIT_DELIVERY".equals(currentStatus)) {
+                    throw new BusinessException("只有待发货状态的订单才能发货");
+                }
+                order.setShippedAt(now);
+                break;
+            default:
+                throw new BusinessException("不支持的目标状态: " + targetStatus);
+        }
+
+        order.setStatus(targetStatus);
+        updateById(order);
+        return order;
+    }
+
+    // =============== 商家端：更新商家备注 ===============
+    @Override
+    public void updateMerchantRemark(Long orderId, String remark) {
+        Orders order = getById(orderId);
+        if (order == null) {
+            throw new BusinessException("订单不存在");
+        }
+        order.setMerchantRemark(remark);
+        updateById(order);
+    }
+
+    // =============== 商家端：全部订单各状态数量统计 ===============
+    @Override
+    public OrderStatusCountVO getAdminOrderStatusCount() {
+        OrderStatusCountVO vo = new OrderStatusCountVO();
+        vo.setAll(countAll());
+        vo.setWaitPay(countAllByStatus("WAIT_PAY"));
+        vo.setWaitConfirm(countAllByStatus("WAIT_CONFIRM"));
+        vo.setProducing(countAllByStatus("PRODUCING"));
+        vo.setWaitDelivery(countAllByStatus("WAIT_DELIVERY"));
+        vo.setDelivered(countAllByStatus("DELIVERED"));
+        vo.setCompleted(countAllByStatus("COMPLETED"));
+        vo.setCancelled(countAllByStatus("CANCELLED"));
+        return vo;
+    }
+
+    private long countAll() {
+        return count();
+    }
+
+    private long countAllByStatus(String status) {
+        return count(new LambdaQueryWrapper<Orders>().eq(Orders::getStatus, status));
+    }
+
 }
