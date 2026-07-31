@@ -36,4 +36,9 @@ public interface OrderMapper extends BaseMapper<Orders> {
                                             @Param("keyword") String keyword,
                                             @Param("startTime") String startTime,
                                             @Param("endTime") String endTime);
+
+    /**
+     * 商家端：查询单个订单详情（含订单项，不做用户权限校验）
+     */
+    OrderDetail selectAdminOrderDetail(@Param("id") Long orderId);
 }

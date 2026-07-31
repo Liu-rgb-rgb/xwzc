@@ -3,14 +3,17 @@ package com.xiuwen.pattern.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiuwen.common.exception.BusinessException;
 import com.xiuwen.common.utils.StringUtils;
+import com.xiuwen.pattern.dto.PatternAdminQueryDTO;
 import com.xiuwen.pattern.dto.PatternMyQueryDTO;
 import com.xiuwen.pattern.entity.Pattern;
+import com.xiuwen.pattern.entity.PatternAdminDetail;
 import com.xiuwen.pattern.mapper.PatternMapper;
 import com.xiuwen.pattern.service.PatternService;
 import com.xiuwen.pattern.vo.PatternMyVO;
@@ -309,6 +312,41 @@ public class PatternServiceImpl extends ServiceImpl<PatternMapper,Pattern> imple
         // TODO: 替换为实际的 OSS 签名 URL 生成逻辑
         // 示例：return ossClient.generatePresignedUrl(bucketName, objectKey, expiration);
         return imageUrl + (imageUrl.contains("?") ? "&" : "?") + "download=true&expires=" + (System.currentTimeMillis() + 600_000);
+    }
+
+    // ==================== 商家端纹样管理实现 ====================
+
+    @Override
+    public IPage<PatternAdminDetail> adminPatternList(PatternAdminQueryDTO query) {
+        Page<Object> page = new Page<>(query.getPage(), query.getPageSize());
+        return patternMapper.selectAdminPatternPage(page,
+                query.getUserId(),
+                query.getKeyword(),
+                query.getStyle(),
+                query.getStatus(),
+                query.getIsRecommend());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void setRecommend(Long patternId, Integer isRecommend) {
+        Pattern pattern = getPatternByIdOrThrow(patternId);
+        patternMapper.update(null, new LambdaUpdateWrapper<Pattern>()
+                .eq(Pattern::getId, patternId)
+                .set(Pattern::getIsRecommend, isRecommend)
+                .set(Pattern::getUpdatedAt, LocalDateTime.now()));
+        log.info("设置纹样[{}]推荐状态为: {}", patternId, isRecommend);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePatternStatus(Long patternId, String status) {
+        getPatternByIdOrThrow(patternId);
+        patternMapper.update(null, new LambdaUpdateWrapper<Pattern>()
+                .eq(Pattern::getId, patternId)
+                .set(Pattern::getStatus, status)
+                .set(Pattern::getUpdatedAt, LocalDateTime.now()));
+        log.info("设置纹样[{}]状态为: {}", patternId, status);
     }
 
 

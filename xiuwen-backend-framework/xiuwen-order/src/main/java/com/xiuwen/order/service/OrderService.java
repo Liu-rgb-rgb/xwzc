@@ -6,6 +6,8 @@ import com.xiuwen.order.entity.OrderDetail;
 import com.xiuwen.order.entity.Orders;
 import com.xiuwen.order.vo.OrderStatusCountVO;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * orders 表服务接口。
  */
@@ -32,4 +34,32 @@ public interface OrderService extends IService<Orders> {
 
     /** 我的订单各状态数量 */
     OrderStatusCountVO getOrderStatusCount(Long userId);
+
+    // ======================== 商家端方法 ========================
+
+    /**
+     * 商家端：分页查询订单列表
+     */
+    IPage<OrderDetail> pageAdminOrders(long page, long pageSize, String status,
+                                        String keyword, String startTime, String endTime);
+
+    /**
+     * 商家端：获取订单详情（不做用户权限校验）
+     */
+    OrderDetail getAdminOrderDetail(Long orderId);
+
+    /**
+     * 商家端：更新订单状态（含状态流转校验）
+     */
+    Orders updateOrderStatus(Long orderId, String targetStatus);
+
+    /**
+     * 商家端：更新商家备注
+     */
+    void updateMerchantRemark(Long orderId, String remark);
+
+    /**
+     * 商家端：全部订单各状态数量统计
+     */
+    OrderStatusCountVO getAdminOrderStatusCount();
 }

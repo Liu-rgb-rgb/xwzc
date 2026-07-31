@@ -6,6 +6,7 @@ import com.xiuwen.product.entity.CustomDesign;
 import com.xiuwen.product.entity.CustomDesignDetail;
 
 import javax.validation.constraints.NotNull;
+import java.util.Map;
 
 /**
  * custom_design 表服务接口。
@@ -18,4 +19,8 @@ public interface CustomDesignService extends IService<CustomDesign> {
     CustomDesignDetail getDesignDetail(Long id);
 
     void deletedDesign(Long userId, Long customDesignId);
+
+    IPage<CustomDesignDetail> pageAdminDesigns(int page, int pageSize, Long userId, Long productId, String status);
+
+    Map<String, Object> getDownloadUrls(Long customDesignId);
 }

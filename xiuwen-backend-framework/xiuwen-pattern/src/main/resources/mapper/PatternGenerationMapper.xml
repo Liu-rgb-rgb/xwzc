@@ -1,5 +1,53 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiuwen.pattern.mapper.PatternGenerationMapper">
-    <!-- 自定义 SQL 写在这里，基础 CRUD 已由 MyBatis-Plus 提供。 -->
+
+    <!-- 商家端 AI 纹样生成记录分页查询 -->
+    <select id="selectAdminGenerationPage" resultType="com.xiuwen.pattern.mapper.PatternGenerationMapper$PatternGenerationWithUser">
+        SELECT
+            pg.id,
+            pg.user_id AS userId,
+            u.nickname AS userNickname,
+            pg.keyword,
+            pg.style,
+            pg.elements,
+            pg.color_theme AS colorTheme,
+            pg.usage_scene AS usageScene,
+            pg.description,
+            pg.reference_image_url AS referenceImageUrl,
+            pg.prompt_text AS promptText,
+            pg.generate_count AS generateCount,
+            pg.status,
+            pg.error_message AS errorMessage,
+            pg.created_at AS createdAt
+        FROM pattern_generation pg
+        LEFT JOIN user u ON pg.user_id = u.id
+        WHERE pg.deleted = 0
+        <if test="userId != null">
+            AND pg.user_id = #{userId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (pg.keyword LIKE CONCAT('%', #{keyword}, '%') OR pg.description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="style != null and style != ''">
+            AND pg.style = #{style}
+        </if>
+        <if test="status != null and status != ''">
+            AND pg.status = #{status}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND pg.created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND pg.created_at &lt;= #{endTime}
+        </if>
+        ORDER BY pg.created_at DESC
+    </select>
+
+    <!-- 统计生成记录关联的纹样数量 -->
+    <select id="countPatternsByGenerationId" resultType="java.lang.Integer">
+        SELECT COUNT(1) FROM pattern
+        WHERE generation_id = #{generationId} AND deleted = 0
+    </select>
+
 </mapper>

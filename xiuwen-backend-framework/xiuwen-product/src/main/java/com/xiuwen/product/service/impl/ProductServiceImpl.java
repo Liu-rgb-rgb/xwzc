@@ -5,6 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 //import com.xiuwen.common.utils.StringUtils;
+import com.xiuwen.common.core.domain.PageResult;
+import com.xiuwen.product.dto.ProductCreateDTO;
+import com.xiuwen.product.dto.ProductQueryDTO;
 import com.xiuwen.product.entity.Product;
 import com.xiuwen.product.entity.ProductDetail;
 import com.xiuwen.product.mapper.ProductMapper;
@@ -82,5 +85,54 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .eq(Product::getIsRecommend, 1)
                 .orderByAsc(Product::getSort)
                 .last("LIMIT " + limit));
+    }
+
+    // =============== 商家端方法实现 ===============
+
+    @Override
+    public PageResult<ProductVO> pageAdminProducts(ProductQueryDTO query) {
+        Page<Object> page = new Page<>(query.getPage(), query.getPageSize());
+        IPage<ProductDetail> detailPage = baseMapper.selectAdminPage(
+                page,
+                query.getKeyword(),
+                query.getCategoryId(),
+                query.getStatus(),
+                query.getIsRecommend()
+        );
+
+        List<ProductVO> voList = detailPage.getRecords().stream()
+                .map(detail -> {
+                    ProductVO vo = ProductVO.from((Product) detail);
+                    vo.setCategoryName(detail.getCategoryName());
+                    return vo;
+                })
+                .toList();
+
+        return PageResult.of(detailPage.getTotal(),
+                (int) detailPage.getCurrent(),
+                (int) detailPage.getSize(),
+                voList);
+    }
+
+    @Override
+    public ProductVO createProduct(ProductCreateDTO dto) {
+        Product product = new Product();
+        product.setCategoryId(dto.getCategoryId());
+        product.setName(dto.getName());
+        product.setSubtitle(dto.getSubtitle());
+        product.setPrice(dto.getPrice());
+        product.setStock(dto.getStock());
+        product.setCoverImage(dto.getCoverImage());
+        product.setMockupImage(dto.getMockupImage());
+        product.setDescription(dto.getDescription());
+        product.setIsCustomizable(dto.getIsCustomizable() != null ? dto.getIsCustomizable() : 1);
+        product.setIsRecommend(dto.getIsRecommend() != null ? dto.getIsRecommend() : 0);
+        product.setSalesCount(0);
+        product.setSort(dto.getSort() != null ? dto.getSort() : 0);
+        product.setStatus("DRAFT");
+
+        save(product);
+
+        return ProductVO.from(product);
     }
 }

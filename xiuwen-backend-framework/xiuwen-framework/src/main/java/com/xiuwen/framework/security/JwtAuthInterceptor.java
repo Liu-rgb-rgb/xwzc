@@ -118,7 +118,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
                 : uri;
 
         return path.equals("/api/merchant")
-                || path.startsWith("/api/merchant/");
+                || path.startsWith("/api/merchant/")
+                || path.equals("/api/admin")
+                || path.startsWith("/api/admin/");
     }
 
     private boolean isMerchantOrAdmin(LoginUser loginUser) {

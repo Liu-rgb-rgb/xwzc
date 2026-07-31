@@ -1,5 +1,6 @@
 package com.xiuwen.order.vo;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.xiuwen.order.entity.OrderDetail;
 import com.xiuwen.order.entity.OrderItem;
 import com.xiuwen.order.entity.Orders;
@@ -15,6 +16,7 @@ import java.util.List;
 @Data
 public class OrderVO {
 
+    @JsonAlias("orderId")
     private Long id;
     private String orderNo;
     private Long userId;

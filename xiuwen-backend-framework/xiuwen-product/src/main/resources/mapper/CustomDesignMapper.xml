@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiuwen.product.mapper.CustomDesignMapper">
-    <!-- 自定义 SQL 写在这里，基础 CRUD 已由 MyBatis-Plus 提供。 -->
+
+    <select id="selectAdminDesignList" resultType="com.xiuwen.product.entity.CustomDesignDetail">
+        SELECT cd.*,
+               p.name AS productName, p.cover_image AS productCoverImage,
+               pt.title AS patternTitle, pt.image_url AS patternImageUrl,
+               u.nickname AS userNickname
+        FROM custom_design cd
+        LEFT JOIN product p ON cd.product_id = p.id
+        LEFT JOIN pattern pt ON cd.pattern_id = pt.id
+        LEFT JOIN user u ON cd.user_id = u.id
+        WHERE cd.deleted = 0
+        <if test="userId != null">
+            AND cd.user_id = #{userId}
+        </if>
+        <if test="productId != null">
+            AND cd.product_id = #{productId}
+        </if>
+        <if test="status != null and status != ''">
+            AND cd.status = #{status}
+        </if>
+        ORDER BY cd.created_at DESC
+    </select>
+
 </mapper>
