@@ -28,6 +28,8 @@ public class CustomDesign implements Serializable {
     private String previewImageUrl;
     private String designConfig;
     private String remark;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
 }

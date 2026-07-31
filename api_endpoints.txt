@@ -1,0 +1,118 @@
+Total endpoints: 116
+
+  1. [POST  ] (游客    ) /api/auth/register  -- 用户注册
+  2. [POST  ] (游客    ) /api/auth/login  -- 账号密码登录，返回 token 与 userInfo
+  3. [POST  ] (登录    ) /api/auth/logout  -- 退出登录，前端清除 token
+  4. [GET   ] (登录    ) /api/auth/me  -- 获取当前登录用户信息
+  5. [GET   ] (登录    ) /api/user/profile  -- 查看个人资料
+  6. [PUT   ] (登录    ) /api/user/profile  -- 修改昵称、邮箱、性别、生日、简介等资料
+  7. [POST  ] (登录    ) /api/user/avatar  -- 上传或更换头像
+  8. [PUT   ] (登录    ) /api/user/password  -- 修改密码
+  9. [GET   ] (登录    ) /api/user/addresses  -- 收货地址列表
+ 10. [POST  ] (登录    ) /api/user/addresses  -- 新增收货地址
+ 11. [PUT   ] (登录    ) /api/user/addresses/{addressId}  -- 修改收货地址
+ 12. [DELETE] (登录    ) /api/user/addresses/{addressId}  -- 删除收货地址
+ 13. [PUT   ] (登录    ) /api/user/addresses/{addressId}/default  -- 设置默认收货地址
+ 14. [GET   ] (登录    ) /api/messages  -- 消息列表
+ 15. [GET   ] (登录    ) /api/messages/unread-count  -- 未读消息数量
+ 16. [PUT   ] (登录    ) /api/messages/{messageId}/read  -- 标记单条消息已读
+ 17. [PUT   ] (登录    ) /api/messages/read-all  -- 全部标记已读
+ 18. [DELETE] (登录    ) /api/messages/{messageId}  -- 删除消息
+ 19. [GET   ] (游客    ) /api/home  -- 首页聚合数据：Banner、推荐纹样、商品、课程、资源
+ 20. [GET   ] (游客    ) /api/home/banners  -- 首页 Banner 列表
+ 21. [GET   ] (游客    ) /api/home/recommend  -- 首页推荐位内容
+ 22. [GET   ] (游客    ) /api/search  -- 全站搜索，支持 pattern/product/course/resource
+ 23. [GET   ] (游客    ) /api/shop/info  -- 前台店铺基础信息与底部信息
+ 24. [GET   ] (游客    ) /api/patterns/options  -- 获取风格、元素、配色、应用场景选项
+ 25. [POST  ] (体验/登录 ) /api/patterns/generate  -- 生成 AI 纹样；保存、下载、下单时必须登录
+ 26. [POST  ] (登录    ) /api/patterns/regenerate  -- 基于上一次生成参数重新生成
+ 27. [GET   ] (登录    ) /api/pattern-generations/my  -- 我的 AI 生成记录
+ 28. [GET   ] (登录    ) /api/patterns/my  -- 我的纹样列表，支持 tab、风格、关键词筛选
+ 29. [GET   ] (游客/登录 ) /api/patterns/{patternId}  -- 纹样详情
+ 30. [POST  ] (登录    ) /api/patterns/{patternId}/save  -- 保存纹样到我的纹样
+ 31. [POST  ] (登录    ) /api/patterns/{patternId}/favorite  -- 收藏纹样
+ 32. [DELETE] (登录    ) /api/patterns/{patternId}/favorite  -- 取消收藏纹样
+ 33. [DELETE] (登录    ) /api/patterns/{patternId}  -- 删除我的纹样
+ 34. [GET   ] (登录    ) /api/patterns/{patternId}/download  -- 获取纹样下载地址
+ 35. [GET   ] (游客    ) /api/products/categories  -- 商品分类列表
+ 36. [GET   ] (游客    ) /api/products  -- 商品列表，支持分类、关键词、排序、价格筛选
+ 37. [GET   ] (游客    ) /api/products/{productId}  -- 商品详情
+ 38. [GET   ] (游客    ) /api/products/recommends  -- 推荐商品列表
+ 39. [POST  ] (登录    ) /api/custom-designs  -- 创建商品定制预览
+ 40. [GET   ] (登录    ) /api/custom-designs/my  -- 我的定制方案列表
+ 41. [GET   ] (登录    ) /api/custom-designs/{customDesignId}  -- 定制方案详情
+ 42. [DELETE] (登录    ) /api/custom-designs/{customDesignId}  -- 删除定制方案
+ 43. [GET   ] (登录    ) /api/cart  -- 购物车列表
+ 44. [POST  ] (登录    ) /api/cart  -- 加入购物车
+ 45. [PUT   ] (登录    ) /api/cart/{id}  -- 修改购物车数量或选择状态
+ 46. [DELETE] (登录    ) /api/cart/{id}  -- 删除购物车项
+ 47. [DELETE] (登录    ) /api/cart  -- 清空购物车
+ 48. [POST  ] (登录    ) /api/orders  -- 创建订单
+ 49. [POST  ] (登录    ) /api/orders/{orderId}/mock-pay  -- 模拟支付
+ 50. [GET   ] (登录    ) /api/orders/my  -- 我的订单列表
+ 51. [GET   ] (登录    ) /api/orders/status-count  -- 我的订单各状态数量
+ 52. [GET   ] (登录    ) /api/orders/{orderId}  -- 订单详情
+ 53. [PUT   ] (登录    ) /api/orders/{orderId}/cancel  -- 取消订单
+ 54. [PUT   ] (登录    ) /api/orders/{orderId}/confirm  -- 确认收货
+ 55. [GET   ] (游客    ) /api/courses/categories  -- 课程分类
+ 56. [GET   ] (游客    ) /api/courses  -- 课程列表
+ 57. [GET   ] (游客    ) /api/courses/{courseId}  -- 课程详情
+ 58. [POST  ] (登录    ) /api/courses/{courseId}/study  -- 开始学习或记录学习行为
+ 59. [GET   ] (游客    ) /api/resources  -- 创作资源列表
+ 60. [GET   ] (游客    ) /api/resources/{resourceId}  -- 创作资源详情
+ 61. [GET   ] (登录    ) /api/resources/{resourceId}/download  -- 下载资源
+ 62. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/dashboard  -- 商家首页数据概览
+ 63. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/dashboard/trend  -- 近7日趋势数据
+ 64. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/orders  -- 订单列表，支持状态、关键词、时间筛选
+ 65. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/orders/{orderId}  -- 订单详情
+ 66. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/orders/{orderId}/status  -- 修改订单状态
+ 67. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/orders/{orderId}/remark  -- 修改商家备注
+ 68. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/products/categories  -- 商品分类列表
+ 69. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/products/categories  -- 新增商品分类
+ 70. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/products  -- 新增商品
+ 71. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/products/{productId}  -- 商品详情
+ 72. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/products/{productId}  -- 编辑商品
+ 73. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/products/{productId}/status  -- 商品上架、下架、售罄、草稿状态切换
+ 74. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/products/{productId}  -- 删除商品
+ 75. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/custom-designs  -- 定制方案列表
+ 76. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/custom-designs/{customDesignId}  -- 定制方案详情
+ 77. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/custom-designs/{customDesignId}/download  -- 下载定制预览图或原纹样
+ 78. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/patterns  -- 纹样列表
+ 79. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/patterns/{patternId}  -- 纹样详情
+ 80. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/patterns/{patternId}/recommend  -- 设置或取消纹样推荐
+ 81. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/patterns/{patternId}/status  -- 隐藏或恢复纹样
+ 82. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/patterns/{patternId}  -- 删除纹样
+ 83. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/pattern-generations  -- AI 生成记录列表
+ 84. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/prompt-templates  -- 提示词模板列表
+ 85. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/prompt-templates  -- 新增提示词模板
+ 86. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/prompt-templates/{templateId}  -- 编辑提示词模板
+ 87. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/prompt-templates/{templateId}  -- 删除或禁用提示词模板
+ 88. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/course-categories/{categoryId}  -- 编辑课程分类
+ 89. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/course-categories/{categoryId}  -- 删除或禁用课程分类
+ 90. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/courses  -- 课程列表
+ 91. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/courses  -- 新增课程
+ 92. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/courses/{courseId}  -- 课程详情
+ 93. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/courses/{courseId}  -- 编辑课程
+ 94. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/courses/{courseId}/status  -- 发布、隐藏、草稿状态切换
+ 95. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/courses/{courseId}  -- 删除课程
+ 96. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/resources  -- 创作资源列表
+ 97. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/resources  -- 新增创作资源
+ 98. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/resources/{resourceId}  -- 创作资源详情
+ 99. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/resources/{resourceId}  -- 编辑创作资源
+100. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/resources/{resourceId}/status  -- 发布、隐藏、草稿状态切换
+101. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/resources/{resourceId}  -- 删除创作资源
+102. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/users  -- 用户列表
+103. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/users/{userId}  -- 用户详情
+104. [PUT   ] (ADMIN ) /api/admin/users/{userId}/status  -- 禁用或恢复用户
+105. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/banners  -- Banner 列表
+106. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/banners  -- 新增 Banner
+107. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/banners/{id}  -- 编辑 Banner
+108. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/home/banners/{id}  -- 删除 Banner
+109. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/recommend  -- 推荐位列表
+110. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/recommend  -- 新增推荐内容
+111. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/home/recommend/{id}  -- 编辑推荐内容
+112. [DELETE] (MERCHANT_ADMIN/ADMIN) /api/admin/home/recommend/{id}  -- 删除推荐内容
+113. [GET   ] (MERCHANT_ADMIN/ADMIN) /api/admin/shop  -- 获取店铺信息
+114. [PUT   ] (MERCHANT_ADMIN/ADMIN) /api/admin/shop  -- 修改店铺信息
+115. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/messages  -- 发布消息通知
+116. [POST  ] (MERCHANT_ADMIN/ADMIN) /api/admin/files/upload  -- 商家后台文件上传

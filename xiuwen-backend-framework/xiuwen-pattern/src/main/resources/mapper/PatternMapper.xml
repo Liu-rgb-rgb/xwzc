@@ -1,5 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiuwen.pattern.mapper.PatternMapper">
-    <!-- 自定义 SQL 写在这里，基础 CRUD 已由 MyBatis-Plus 提供。 -->
+
+    <select id="selectAdminPatternPage" resultType="com.xiuwen.pattern.entity.PatternAdminDetail">
+        SELECT p.id,
+               p.generation_id AS generationId,
+               p.user_id AS userId,
+               p.title,
+               p.image_url AS imageUrl,
+               p.thumbnail_url AS thumbnailUrl,
+               p.keyword,
+               p.style,
+               p.elements,
+               p.color_theme AS colorTheme,
+               p.usage_scene AS usageScene,
+               p.description,
+               p.is_saved AS isSaved,
+               p.is_favorite AS isFavorite,
+               p.is_recommend AS isRecommend,
+               p.view_count AS viewCount,
+               p.like_count AS likeCount,
+               p.use_count AS useCount,
+               p.status,
+               DATE_FORMAT(p.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+               DATE_FORMAT(p.updated_at, '%Y-%m-%d %H:%i:%s') AS updatedAt,
+               u.nickname AS userNickname
+        FROM pattern p
+        LEFT JOIN user u ON p.user_id = u.id
+        WHERE p.deleted = 0
+        <if test="userId != null">
+            AND p.user_id = #{userId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (p.title LIKE CONCAT('%', #{keyword}, '%') OR p.keyword LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="style != null and style != ''">
+            AND p.style = #{style}
+        </if>
+        <if test="status != null and status != ''">
+            AND p.status = #{status}
+        </if>
+        <if test="isRecommend != null">
+            AND p.is_recommend = #{isRecommend}
+        </if>
+        ORDER BY p.updated_at DESC
+    </select>
+
 </mapper>

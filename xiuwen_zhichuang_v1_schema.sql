@@ -529,7 +529,7 @@ ALTER TABLE `home_banner` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMEN
 ALTER TABLE `home_recommend` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删除 1已删除';
 
 INSERT INTO `user` (`username`, `password_hash`, `nickname`, `phone`, `role`, `status`)
-VALUES ('shopadmin', 'PLEASE_REPLACE_WITH_REAL_PASSWORD_HASH', '绣纹智创管理员', '13800000000', 'MERCHANT_ADMIN', 1);
+VALUES ('shopadmin', 'e10adc3949ba59abbe56e057f20f883e', '绣纹智创管理员', '13800000000', 'MERCHANT_ADMIN', 1);
 
 INSERT INTO `shop_info` (`owner_user_id`, `shop_name`, `slogan`, `contact_name`, `contact_phone`, `email`, `address`, `description`, `status`)
 VALUES (1, '绣纹智创', 'AI赋能广绣纹样创作与文创定制', '管理员', '13800000000', 'contact@example.com', '广东省广州市', '广绣AI纹样设计与文创定制平台', 1);

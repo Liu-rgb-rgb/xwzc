@@ -1,5 +1,148 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiuwen.order.mapper.OrderMapper">
-    <!-- 自定义 SQL 写在这里，基础 CRUD 已由 MyBatis-Plus 提供。 -->
+
+    <!-- 订单详情结果映射（含订单项列表） -->
+    <resultMap id="OrderDetailMap" type="com.xiuwen.order.entity.OrderDetail">
+        <!-- 订单主表字段 -->
+        <id property="id" column="id"/>
+        <result property="orderNo" column="order_no"/>
+        <result property="userId" column="user_id"/>
+        <result property="customDesignId" column="custom_design_id"/>
+        <result property="totalAmount" column="total_amount"/>
+        <result property="payAmount" column="pay_amount"/>
+        <result property="status" column="status"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="receiverName" column="receiver_name"/>
+        <result property="receiverPhone" column="receiver_phone"/>
+        <result property="receiverAddress" column="receiver_address"/>
+        <result property="remark" column="remark"/>
+        <result property="merchantRemark" column="merchant_remark"/>
+        <result property="paidAt" column="paid_at"/>
+        <result property="confirmedAt" column="confirmed_at"/>
+        <result property="producedAt" column="produced_at"/>
+        <result property="shippedAt" column="shipped_at"/>
+        <result property="completedAt" column="completed_at"/>
+        <result property="cancelledAt" column="cancelled_at"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <!-- 订单项集合 -->
+        <collection property="items" ofType="com.xiuwen.order.entity.OrderItem"
+                    resultMap="OrderItemMap"/>
+    </resultMap>
+
+    <!-- 订单项结果映射 -->
+    <resultMap id="OrderItemMap" type="com.xiuwen.order.entity.OrderItem">
+        <id property="id" column="item_id"/>
+        <result property="orderId" column="item_order_id"/>
+        <result property="productId" column="item_product_id"/>
+        <result property="customDesignId" column="item_custom_design_id"/>
+        <result property="productName" column="item_product_name"/>
+        <result property="productImage" column="item_product_image"/>
+        <result property="patternId" column="item_pattern_id"/>
+        <result property="patternImageUrl" column="item_pattern_image_url"/>
+        <result property="previewImageUrl" column="item_preview_image_url"/>
+        <result property="quantity" column="item_quantity"/>
+        <result property="unitPrice" column="item_unit_price"/>
+        <result property="totalPrice" column="item_total_price"/>
+        <result property="createdAt" column="item_created_at"/>
+    </resultMap>
+
+    <!-- 查询单个订单详情（含订单项） -->
+    <select id="selectOrderWithItems" resultMap="OrderDetailMap">
+        SELECT
+            o.id, o.order_no, o.user_id, o.custom_design_id,
+            o.total_amount, o.pay_amount, o.status, o.pay_status,
+            o.receiver_name, o.receiver_phone, o.receiver_address,
+            o.remark, o.merchant_remark,
+            o.paid_at, o.confirmed_at, o.produced_at, o.shipped_at,
+            o.completed_at, o.cancelled_at, o.created_at, o.updated_at,
+            oi.id            AS item_id,
+            oi.order_id      AS item_order_id,
+            oi.product_id    AS item_product_id,
+            oi.custom_design_id AS item_custom_design_id,
+            oi.product_name  AS item_product_name,
+            oi.product_image AS item_product_image,
+            oi.pattern_id    AS item_pattern_id,
+            oi.pattern_image_url AS item_pattern_image_url,
+            oi.preview_image_url AS item_preview_image_url,
+            oi.quantity      AS item_quantity,
+            oi.unit_price    AS item_unit_price,
+            oi.total_price   AS item_total_price,
+            oi.created_at    AS item_created_at
+        FROM orders o
+        LEFT JOIN order_item oi ON o.id = oi.order_id AND oi.deleted = 0
+        WHERE o.id = #{id} AND o.deleted = 0
+    </select>
+
+    <!-- 商家端：查询订单列表（含摘要 + 用户ID，用户昵称由Service层补充） -->
+    <select id="selectAdminOrderList" resultMap="OrderDetailMap">
+        SELECT
+            o.id, o.order_no, o.user_id, o.custom_design_id,
+            o.total_amount, o.pay_amount, o.status, o.pay_status,
+            o.receiver_name, o.receiver_phone, o.receiver_address,
+            o.remark, o.merchant_remark,
+            o.paid_at, o.confirmed_at, o.produced_at, o.shipped_at,
+            o.completed_at, o.cancelled_at, o.created_at, o.updated_at,
+            oi.id            AS item_id,
+            oi.order_id      AS item_order_id,
+            oi.product_id    AS item_product_id,
+            oi.custom_design_id AS item_custom_design_id,
+            oi.product_name  AS item_product_name,
+            oi.product_image AS item_product_image,
+            oi.pattern_id    AS item_pattern_id,
+            oi.pattern_image_url AS item_pattern_image_url,
+            oi.preview_image_url AS item_preview_image_url,
+            oi.quantity      AS item_quantity,
+            oi.unit_price    AS item_unit_price,
+            oi.total_price   AS item_total_price,
+            oi.created_at    AS item_created_at
+        FROM orders o
+        LEFT JOIN order_item oi ON o.id = oi.order_id AND oi.deleted = 0
+        WHERE o.deleted = 0
+        <if test="status != null and status != ''">
+            AND o.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (o.order_no LIKE CONCAT('%', #{keyword}, '%')
+                 OR o.receiver_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR o.receiver_phone LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND o.created_at &gt;= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND o.created_at &lt;= #{endTime}
+        </if>
+        ORDER BY o.created_at DESC
+    </select>
+
+    <!-- 商家端：查询单个订单详情（含订单项，不做用户权限校验） -->
+    <select id="selectAdminOrderDetail" resultMap="OrderDetailMap">
+        SELECT
+            o.id, o.order_no, o.user_id, o.custom_design_id,
+            o.total_amount, o.pay_amount, o.status, o.pay_status,
+            o.receiver_name, o.receiver_phone, o.receiver_address,
+            o.remark, o.merchant_remark,
+            o.paid_at, o.confirmed_at, o.produced_at, o.shipped_at,
+            o.completed_at, o.cancelled_at, o.created_at, o.updated_at,
+            oi.id            AS item_id,
+            oi.order_id      AS item_order_id,
+            oi.product_id    AS item_product_id,
+            oi.custom_design_id AS item_custom_design_id,
+            oi.product_name  AS item_product_name,
+            oi.product_image AS item_product_image,
+            oi.pattern_id    AS item_pattern_id,
+            oi.pattern_image_url AS item_pattern_image_url,
+            oi.preview_image_url AS item_preview_image_url,
+            oi.quantity      AS item_quantity,
+            oi.unit_price    AS item_unit_price,
+            oi.total_price   AS item_total_price,
+            oi.created_at    AS item_created_at
+        FROM orders o
+        LEFT JOIN order_item oi ON o.id = oi.order_id AND oi.deleted = 0
+        WHERE o.id = #{id} AND o.deleted = 0
+    </select>
+
 </mapper>

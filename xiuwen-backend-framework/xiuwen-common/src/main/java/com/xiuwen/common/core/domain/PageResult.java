@@ -21,22 +21,22 @@ public class PageResult<T> implements Serializable {
     private Long total;
 
     /** 当前页 */
-    private Long page;
+    private Integer page;
 
     /** 每页条数 */
-    private Long pageSize;
+    private Integer pageSize;
 
     /** 当前页数据 */
     private List<T> list;
 
     public static <T> PageResult<T> empty() {
-        return new PageResult<>(0L, 1L, 10L, Collections.emptyList());
+        return new PageResult<>(0L, 1, 10, Collections.emptyList());
     }
 
-    public static <T> PageResult<T> of(Long total, Long page, Long pageSize, List<T> list) {
+    public static <T> PageResult<T> of(Long total, Integer page, Integer pageSize, List<T> list) {
         return new PageResult<>(total == null ? 0L : total,
-                page == null ? 1L : page,
-                pageSize == null ? 10L : pageSize,
-                list == null ? Collections.emptyList() : list);
+                page == null ? 1 :page,
+                pageSize == null ? 10 : pageSize,
+                list);
     }
 }

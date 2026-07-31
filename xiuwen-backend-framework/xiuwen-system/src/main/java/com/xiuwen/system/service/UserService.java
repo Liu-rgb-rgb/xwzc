@@ -7,4 +7,5 @@ import com.xiuwen.system.entity.User;
  * user 表服务接口。
  */
 public interface UserService extends IService<User> {
+
 }
