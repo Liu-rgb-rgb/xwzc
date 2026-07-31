@@ -23,6 +23,7 @@ public class LearningResource implements Serializable {
     /** 逻辑删除：0 未删除，1 已删除 */
     @TableLogic
     private Integer deleted;
+    private Long courseId;
     private String title;
     private String subtitle;
     private String coverImage;
