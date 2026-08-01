@@ -601,3 +601,15 @@ INSERT INTO `learning_resource` (`id`, `course_id`, `title`, `subtitle`, `cover_
 (8,  6,    '文创产品设计模板',     '帆布袋/丝巾/手机壳源文件',   '',  'MATERIAL', 'https://cdn.example.com/resource/1208.zip', '3套文创产品设计PSD源文件模板（帆布袋、丝巾、手机壳），含刀版线和出血设置，新手可直接替换图案使用。',                39.90, 0, 445,  134, 8, 'PUBLISHED'),
 (9,  NULL, '广绣针法速查表',       '十二种常用针法一览',         '',  'PDF',     'https://cdn.example.com/resource/1209.pdf',  '常用十二种广绣针法的名称、图示、适用场景和难度等级的速查表，可打印随身参考。',                                      0.00,  1, 670,  245, 9, 'DRAFT'),
 (10, 7,    '钉金绣实操教程',       '手把手教你钉金绣技法',       '',  'VIDEO',   'https://cdn.example.com/resource/1210.mp4',  '一小时完整钉金绣实操教程，包含金线固定、盘绕收尾、图案过度等关键技法演示。',                                        59.90, 0, 78,   12,  10, 'HIDDEN');
+
+-- ============================================================
+-- 测试数据（普通用户），2026-08-02
+-- 用于用户端-2. 个人中心接口调试：
+--   [2.1] GET  /api/user/profile    查看个人资料
+--   [2.2] PUT  /api/user/profile    修改个人资料
+--   [2.3] POST /api/user/avatar     上传或更换头像
+--   [2.4] PUT  /api/user/password   修改密码
+-- 测试登录：username=testuser  password=123456
+-- ============================================================
+INSERT INTO `user` (`username`, `password_hash`, `nickname`, `phone`, `email`, `role`, `status`)
+VALUES ('testuser', 'e10adc3949ba59abbe56e057f20f883e', '测试用户', '13900000002', 'testuser@example.com', 'USER', 1);

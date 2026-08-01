@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -27,6 +28,9 @@ public class User implements Serializable {
     private String nickname;
     private String phone;
     private String email;
+    private String gender;
+    private LocalDate birthday;
+    private String intro;
     private String avatar;
     private String role;
     private Integer status;
