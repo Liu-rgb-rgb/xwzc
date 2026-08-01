@@ -613,3 +613,19 @@ INSERT INTO `learning_resource` (`id`, `course_id`, `title`, `subtitle`, `cover_
 -- ============================================================
 INSERT INTO `user` (`username`, `password_hash`, `nickname`, `phone`, `email`, `role`, `status`)
 VALUES ('testuser', 'e10adc3949ba59abbe56e057f20f883e', '测试用户', '13900000002', 'testuser@example.com', 'USER', 1);
+
+-- ============================================================
+-- 测试数据（收货地址），2026-08-02
+-- 用于用户端-3. 地址接口调试：
+--   [3.1] GET    /api/user/addresses                  收货地址列表
+--   [3.2] POST   /api/user/addresses                  新增收货地址
+--   [3.3] PUT    /api/user/addresses/{id}             修改收货地址
+--   [3.4] DELETE /api/user/addresses/{id}             删除收货地址
+--   [3.5] PUT    /api/user/addresses/{addressId}/default  设置默认地址
+-- 所属用户：testuser（user_id=3），密码 123456
+-- ============================================================
+INSERT INTO `user_address` (`user_id`, `receiver_name`, `receiver_phone`, `province`, `city`, `district`, `detail_address`, `is_default`, `deleted`)
+VALUES
+(3, '张三', '13800138000', '广东省', '广州市', '海珠区', '新港中路 100 号锦绣花园 3 栋 502', 1, 0),
+(3, '张三', '13900139000', '广东省', '深圳市', '南山区', '科技园路 88 号创新大厦 A 座 1201', 0, 0),
+(3, '李四', '13700137000', '广东省', '佛山市', '顺德区', '大良街道清晖路 18 号', 0, 0);

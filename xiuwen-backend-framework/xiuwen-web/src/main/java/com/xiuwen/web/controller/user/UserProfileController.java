@@ -5,11 +5,15 @@ import com.xiuwen.common.exception.BusinessException;
 import com.xiuwen.common.utils.Md5Utils;
 import com.xiuwen.framework.config.FileUploadProperties;
 import com.xiuwen.framework.security.LoginUserHolder;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiuwen.system.dto.AddressSaveRequest;
 import com.xiuwen.system.dto.ChangePasswordRequest;
 import com.xiuwen.system.dto.UpdateProfileRequest;
 import com.xiuwen.system.entity.FileResource;
 import com.xiuwen.system.entity.User;
+import com.xiuwen.system.entity.UserAddress;
 import com.xiuwen.system.service.FileResourceService;
+import com.xiuwen.system.service.UserAddressService;
 import com.xiuwen.system.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -35,13 +39,16 @@ import java.util.UUID;
 public class UserProfileController {
 
     private final UserService userService;
+    private final UserAddressService userAddressService;
     private final FileResourceService fileResourceService;
     private final FileUploadProperties fileUploadProperties;
 
     public UserProfileController(UserService userService,
+                                 UserAddressService userAddressService,
                                  FileResourceService fileResourceService,
                                  FileUploadProperties fileUploadProperties) {
         this.userService = userService;
+        this.userAddressService = userAddressService;
         this.fileResourceService = fileResourceService;
         this.fileUploadProperties = fileUploadProperties;
     }
@@ -157,22 +164,96 @@ public class UserProfileController {
 
     /** [3.1] 收货地址列表 */
     @GetMapping("/addresses")
-    public Result<Void> addressList() { return Result.todo("收货地址列表"); }
+    public Result<java.util.List<UserAddress>> addressList() {
+        Long userId = LoginUserHolder.getRequiredUserId();
+        java.util.List<UserAddress> list = userAddressService.list(
+                new LambdaQueryWrapper<UserAddress>()
+                        .eq(UserAddress::getUserId, userId)
+                        .orderByDesc(UserAddress::getIsDefault)
+                        .orderByDesc(UserAddress::getUpdatedAt));
+        return Result.success(list);
+    }
 
     /** [3.2] 新增收货地址 */
     @PostMapping("/addresses")
-    public Result<Void> addAddress() { return Result.todo("新增收货地址"); }
+    public Result<UserAddress> addAddress(@Valid @RequestBody AddressSaveRequest request) {
+        Long userId = LoginUserHolder.getRequiredUserId();
+        if (request.getIsDefault() != null && request.getIsDefault() == 1) {
+            clearDefaultAddress(userId);
+        }
+        UserAddress address = new UserAddress();
+        BeanUtils.copyProperties(request, address);
+        address.setUserId(userId);
+        userAddressService.save(address);
+        return Result.success(address);
+    }
 
     /** [3.3] 修改收货地址 */
     @PutMapping("/addresses/{id}")
-    public Result<Void> updateAddress(@PathVariable Long id) { return Result.todo("修改收货地址"); }
+    public Result<UserAddress> updateAddress(@PathVariable Long id,
+                                             @Valid @RequestBody AddressSaveRequest request) {
+        UserAddress existing = userAddressService.getById(id);
+        if (existing == null) {
+            throw new BusinessException("地址不存在");
+        }
+        Long userId = LoginUserHolder.getRequiredUserId();
+        if (!existing.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作此地址");
+        }
+        if (request.getIsDefault() != null && request.getIsDefault() == 1
+                && (existing.getIsDefault() == null || existing.getIsDefault() != 1)) {
+            clearDefaultAddress(userId);
+        }
+        UserAddress address = new UserAddress();
+        BeanUtils.copyProperties(request, address);
+        address.setId(id);
+        userAddressService.updateById(address);
+        UserAddress updated = userAddressService.getById(id);
+        return Result.success(updated);
+    }
 
     /** [3.4] 删除收货地址 */
     @DeleteMapping("/addresses/{id}")
-    public Result<Void> deleteAddress(@PathVariable Long id) { return Result.todo("删除收货地址"); }
+    public Result<Void> deleteAddress(@PathVariable Long id) {
+        UserAddress existing = userAddressService.getById(id);
+        if (existing == null) {
+            throw new BusinessException("地址不存在");
+        }
+        Long userId = LoginUserHolder.getRequiredUserId();
+        if (!existing.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作此地址");
+        }
+        userAddressService.removeById(id);
+        return Result.success();
+    }
 
     /** [3.5] 设置默认收货地址 */
     @PutMapping("/addresses/{addressId}/default")
-    public Result<Void> setDefaultAddress(@PathVariable Long addressId) { return Result.todo("设置默认收货地址"); }
+    public Result<UserAddress> setDefaultAddress(@PathVariable Long addressId) {
+        UserAddress existing = userAddressService.getById(addressId);
+        if (existing == null) {
+            throw new BusinessException("地址不存在");
+        }
+        Long userId = LoginUserHolder.getRequiredUserId();
+        if (!existing.getUserId().equals(userId)) {
+            throw new BusinessException("无权操作此地址");
+        }
+        clearDefaultAddress(userId);
+        UserAddress update = new UserAddress();
+        update.setId(addressId);
+        update.setIsDefault(1);
+        userAddressService.updateById(update);
+        UserAddress updated = userAddressService.getById(addressId);
+        return Result.success(updated);
+    }
+
+    private void clearDefaultAddress(Long userId) {
+        UserAddress update = new UserAddress();
+        update.setIsDefault(0);
+        userAddressService.update(update,
+                new LambdaQueryWrapper<UserAddress>()
+                        .eq(UserAddress::getUserId, userId)
+                        .eq(UserAddress::getIsDefault, 1));
+    }
 
 }
