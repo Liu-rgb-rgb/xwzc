@@ -26,7 +26,10 @@ public class HomeRecommend implements Serializable {
     private Long relatedId;
     private String title;
     private String coverImage;
+    private String description;
     private Integer sort;
+    private LocalDateTime startAt;
+    private LocalDateTime endAt;
     private Integer status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

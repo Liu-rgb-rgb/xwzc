@@ -652,3 +652,70 @@ VALUES
 (3,    '限时活动',    '七夕广绣文创节即将开启，全场课程 8 折优惠，速来参与。',   'ACTIVITY', 0, 0),
 (3,    '课程更新',    '您订阅的《广绣色彩美学》课程已更新第 3 课时。',          'COURSE',   0, 0),
 (2,    '订单待审核',  '有一条新订单需要您审核处理，请前往商家后台查看。',        'ORDER',    0, 0);
+
+-- ============================================================
+-- 测试数据（首页Banner + 推荐位 + 商品分类 + 商品 + 纹样），2026-08-03
+-- 用于用户端-5. 首页 + 商家端-12. 首页管理接口调试：
+--   [5.1]  GET  /api/home                        首页聚合数据
+--   [5.2]  GET  /api/home/banners                Banner列表
+--   [5.3]  GET  /api/home/recommend              推荐位内容
+--   [5.4]  GET  /api/search                      全站搜索
+--   [5.5]  GET  /api/shop/info                   前台店铺信息
+--   [12.1] GET  /api/admin/home/banners          商家Banner列表
+--   [12.2] POST /api/admin/home/banners          新增Banner
+--   [12.3] PUT  /api/admin/home/banners/{id}     编辑Banner
+--   [12.4] DEL  /api/admin/home/banners/{id}     删除Banner
+--   [12.5] GET  /api/admin/home/recommend        商家推荐位列表
+--   [12.6] POST /api/admin/home/recommend        新增推荐
+--   [12.7] PUT  /api/admin/home/recommend/{id}   编辑推荐
+--   [12.8] DEL  /api/admin/home/recommend/{id}   删除推荐
+-- 注意：可重复执行，执行前会先清空对应表数据
+-- ============================================================
+
+DELETE FROM `home_banner` WHERE `id` >= 1;
+DELETE FROM `home_recommend` WHERE `id` >= 1;
+DELETE FROM `product` WHERE `id` >= 1;
+DELETE FROM `product_category` WHERE `id` >= 1;
+DELETE FROM `pattern` WHERE `id` >= 1;
+
+-- home_banner 测试数据
+INSERT INTO `home_banner` (`id`, `title`, `subtitle`, `image_url`, `button_text`, `link_type`, `link_id`, `link_url`, `sort`, `status`, `deleted`) VALUES
+(1, '牡丹凤凰广绣纹样', '岭南非遗美学与现代设计融合', 'https://cdn.example.com/banner/banner_01.jpg', '立即定制', 'PRODUCT', 1, '', 1, 1, 0),
+(2, '广绣非遗文化传承', '从零开始学习广绣技艺',           'https://cdn.example.com/banner/banner_02.jpg', '开始学习', 'COURSE',  1, '', 2, 1, 0),
+(3, 'AI智能纹样生成',   '输入关键词，秒出百款纹样',       'https://cdn.example.com/banner/banner_03.jpg', '立即体验', 'PATTERN', 1, '', 3, 1, 0),
+(4, '创作素材免费下载', '海量广绣纹样素材随心用',         'https://cdn.example.com/banner/banner_04.jpg', '查看详情', 'RESOURCE', 5, '', 4, 1, 0),
+(5, '七夕文创节',       '全场课程8折优惠，限时抢购',       'https://cdn.example.com/banner/banner_05.jpg', '了解更多', 'LINK',    NULL, 'https://example.com/activity/qixi', 5, 0, 0);
+
+-- home_recommend 测试数据（每类型2条）
+INSERT INTO `home_recommend` (`id`, `recommend_type`, `related_id`, `title`, `cover_image`, `description`, `sort`, `status`, `start_at`, `end_at`, `deleted`) VALUES
+(1, 'PATTERN',  1, '牡丹凤凰广绣纹样', 'https://cdn.example.com/pattern/01.png', '采用广绣金线质感，构图对称，色彩浓郁典雅。',        1, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(2, 'PATTERN',  2, '岭南荔枝纹样',     'https://cdn.example.com/pattern/02.png', '以岭南荔枝为主题的传统纹样设计，寓意吉祥如意。',    2, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(3, 'PRODUCT',  1, '帆布袋定制款',     'https://cdn.example.com/product/p01.png', '将您的专属纹样印在帆布袋上，打造独一无二的文创产品。', 3, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(4, 'PRODUCT',  2, '真丝丝巾礼盒',     'https://cdn.example.com/product/p02.png', '100%桑蚕丝材质，广绣经典纹样，送礼自用皆宜。',       4, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(5, 'COURSE',   1, '广绣入门基础',     'https://cdn.example.com/course/c01.png', '从零开始学广绣，30分钟快速入门，适合零基础学员。',    5, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(6, 'COURSE',   8, '广绣文化简史',     'https://cdn.example.com/course/c08.png', '从唐代到当代，回顾广绣千年的发展历程与文化价值。',    6, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(7, 'RESOURCE', 3, '广绣经典配色方案', 'https://cdn.example.com/resource/r03.png', '20组广绣经典配色方案高清图集，可直接用于纹样创作。',  7, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0),
+(8, 'RESOURCE', 5, '岭南纹样素材包',   'https://cdn.example.com/resource/r05.png', '50款可商用岭南传统纹样矢量图，涵盖花鸟山水吉祥图案。', 8, 1, '2026-07-01 00:00:00', '2026-12-31 23:59:59', 0);
+
+-- product_category 测试数据
+INSERT INTO `product_category` (`id`, `parent_id`, `name`, `icon`, `sort`, `status`) VALUES
+(1, NULL, '帆布袋',   '', 1, 1),
+(2, NULL, '丝巾',     '', 2, 1),
+(3, NULL, '明信片',   '', 3, 1),
+(4, NULL, '手机壳',   '', 4, 1);
+
+-- product 测试数据
+INSERT INTO `product` (`id`, `category_id`, `name`, `subtitle`, `price`, `stock`, `cover_image`, `mockup_image`, `description`, `is_customizable`, `is_recommend`, `sales_count`, `sort`, `status`) VALUES
+(1, 1, '牡丹凤凰帆布袋',   '传统纹样与现代帆布袋的完美结合', 59.90,  200, 'https://cdn.example.com/product/501-cover.png',  'https://cdn.example.com/product/501-mockup.png',  '<p>采用100%纯棉帆布材质，搭配广绣经典牡丹凤凰纹样印花，时尚又富有文化底蕴。</p>',      1, 1, 1280, 1, 'ON_SALE'),
+(2, 2, '真丝广绣丝巾礼盒', '100%桑蚕丝，广绣经典纹样印花',   199.00, 80,  'https://cdn.example.com/product/502-cover.png',  'https://cdn.example.com/product/502-mockup.png',  '<p>高档真丝材质，采用广绣代表性纹样设计，手感柔软顺滑，送礼自用皆宜。</p>',              1, 1, 560,  2, 'ON_SALE'),
+(3, 3, '岭南风情明信片套装', '6张套装，记录岭南传统纹样之美',  29.90,  500, 'https://cdn.example.com/product/503-cover.png',  '',                                                '<p>精选6款岭南传统广绣纹样，采用高级铜版纸印刷，可作为收藏或赠送亲友。</p>',              0, 0, 320,  3, 'ON_SALE'),
+(4, 4, '定制纹样手机壳',   '你的专属纹样，随时随身',          49.90,  150, 'https://cdn.example.com/product/504-cover.png',  'https://cdn.example.com/product/504-mockup.png',  '<p>支持iPhone/华为/小米等主流机型，上传纹样即可定制独一无二的手机壳。</p>',             1, 0, 890,  4, 'OFF_SALE');
+
+-- pattern 测试数据（user_id=3 对应 testuser）
+INSERT INTO `pattern` (`id`, `generation_id`, `user_id`, `title`, `image_url`, `thumbnail_url`, `keyword`, `style`, `elements`, `color_theme`, `usage_scene`, `description`, `is_saved`, `is_favorite`, `is_recommend`, `view_count`, `like_count`, `use_count`, `status`) VALUES
+(1, NULL, 3, '牡丹凤凰广绣纹样', 'https://cdn.example.com/pattern/301.png', 'https://cdn.example.com/pattern/301_thumb.png', '牡丹,凤凰,广绣,传统', '传统广绣', '["牡丹","凤凰","如意纹"]', '红金配色', '服饰', '以牡丹和凤凰为主题的传统广绣纹样，构图饱满对称，采用红金配色，展现岭南非遗美学魅力。', 1, 1, 1, 2560, 520, 180, 'NORMAL'),
+(2, NULL, 3, '岭南荔枝纹样',     'https://cdn.example.com/pattern/302.png', 'https://cdn.example.com/pattern/302_thumb.png', '荔枝,岭南,清新', '清新自然', '["荔枝","枝叶","几何边框"]', '绿金配色', '家居', '以岭南佳果荔枝为创作灵感，融合现代几何元素，风格清新雅致，适合家居用品图案设计。', 1, 0, 1, 890,  156, 42,  'NORMAL'),
+(3, NULL, 3, '金线祥云暗纹',     'https://cdn.example.com/pattern/303.png', 'https://cdn.example.com/pattern/303_thumb.png', '祥云,金线,暗纹,传统', '传统广绣', '["祥云","金线","暗纹"]', '金色系', '服饰', '以金线勾勒祥云轮廓的暗纹设计，低调奢华，适合高端服饰与配饰定制。', 1, 1, 0, 640,  89,  15,  'NORMAL'),
+(4, NULL, 3, '几何菱形拼接纹',   'https://cdn.example.com/pattern/304.png', 'https://cdn.example.com/pattern/304_thumb.png', '几何,菱形,拼接,现代', '现代几何', '["菱形","拼接","渐变"]', '蓝白色系', '数码产品', '现代几何风格菱形拼接纹样，采用蓝白渐变配色，简约时尚，适合数码产品外观定制。', 1, 0, 0, 420,  67,  28,  'NORMAL'),
+(5, NULL, 3, '水墨荷花意境纹',   'https://cdn.example.com/pattern/305.png', 'https://cdn.example.com/pattern/305_thumb.png', '水墨,荷花,意境,国风', '水墨国风', '["荷花","水墨","涟漪"]', '黑白灰', '家居', '以中国传统水墨画技法演绎荷花题材，意境悠远，适合家居布艺与装饰画。', 1, 1, 0, 1020, 210, 56,  'NORMAL'),
+(6, NULL, 3, '如意福字吉祥纹',   'https://cdn.example.com/pattern/306.png', 'https://cdn.example.com/pattern/306_thumb.png', '如意,福字,吉祥,年节', '传统广绣', '["如意","福字","祥云"]', '红金色', '节日礼品', '融合如意、福字等传统吉祥元素的年节主题纹样，喜庆祥和，适合节日礼品定制。', 1, 0, 0, 350,  45,  10,  'HIDDEN');

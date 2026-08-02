@@ -25,6 +25,7 @@ public class HomeBanner implements Serializable {
     private String title;
     private String subtitle;
     private String imageUrl;
+    private String buttonText;
     private String linkType;
     private Long linkId;
     private String linkUrl;
