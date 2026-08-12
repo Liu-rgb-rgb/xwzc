@@ -33,8 +33,8 @@ public class MerchantCourseController {
                                            @RequestParam(required = false) String keyword,
                                            @RequestParam(required = false) String difficulty,
                                            @RequestParam(required = false) String status,
-                                           @RequestParam(defaultValue = "1") Long page,
-                                           @RequestParam(defaultValue = "10") Long pageSize) {
+                                           @RequestParam(defaultValue = "1") Integer page,
+                                           @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Course> pageParam = new Page<>(page, pageSize);
         Page<Course> result = courseService.adminPage(pageParam, categoryId, keyword, difficulty, status);
         PageResult<Course> pageResult = PageResult.of(

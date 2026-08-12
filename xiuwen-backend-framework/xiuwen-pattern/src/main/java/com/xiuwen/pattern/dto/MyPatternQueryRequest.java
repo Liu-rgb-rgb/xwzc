@@ -10,8 +10,8 @@ package com.xiuwen.pattern.dto;
  * @Version 1.0
  */
 public class MyPatternQueryRequest {
-    Long pageNum;
-    Long pageSize;
-    Long status;
-    Long isSaved;
+    Integer pageNum;
+    Integer pageSize;
+    Integer status;
+    Integer isSaved;
 }

@@ -22,8 +22,8 @@ public class ResourceUserController {
     public Result<PageResult<LearningResource>> list(@RequestParam(required = false) String type,
                                                       @RequestParam(required = false) String keyword,
                                                       @RequestParam(required = false) Long id,
-                                                      @RequestParam(defaultValue = "1") Long page,
-                                                      @RequestParam(defaultValue = "12") Long pageSize) {
+                                                      @RequestParam(defaultValue = "1") Integer page,
+                                                      @RequestParam(defaultValue = "12") Integer pageSize) {
         LambdaQueryWrapper<LearningResource> query = new LambdaQueryWrapper<>();
         query.eq(LearningResource::getStatus, "PUBLISHED");
         if (type != null && !type.isEmpty()) {

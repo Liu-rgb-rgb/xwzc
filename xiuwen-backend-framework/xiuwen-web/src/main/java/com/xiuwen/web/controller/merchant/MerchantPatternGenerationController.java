@@ -58,8 +58,8 @@ public class MerchantPatternGenerationController {
 
         return Result.success(PageResult.of(
                 page.getTotal(),
-                (int) page.getCurrent(),
-                (int) page.getSize(),
+                page.getCurrent(),
+                page.getSize(),
                 voList
         ));
     }

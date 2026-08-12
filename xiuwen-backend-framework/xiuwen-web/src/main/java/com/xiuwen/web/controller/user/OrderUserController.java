@@ -68,9 +68,9 @@ public class OrderUserController {
         IPage<OrderDetail> pageResult = orderService.pageMyOrders(userId, page, pageSize, status, keyword);
         List<OrderVO> voList = pageResult.getRecords().stream().map(OrderVO::fromDetail).toList();
         return Result.success(PageResult.of(
-                (long) pageResult.getCurrent(),
-                (int) pageResult.getSize(),
-                (int) pageResult.getTotal(),
+                pageResult.getCurrent(),
+                pageResult.getSize(),
+                pageResult.getTotal(),
                 voList
         ));
     }

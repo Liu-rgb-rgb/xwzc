@@ -22,8 +22,8 @@ public class MerchantCourseCategoryController {
 
     /** [9.1] 课程分类列表 */
     @GetMapping
-    public Result<PageResult<CourseCategory>> list(@RequestParam(defaultValue = "1") Long page,
-                                                    @RequestParam(defaultValue = "10") Long pageSize) {
+    public Result<PageResult<CourseCategory>> list(@RequestParam(defaultValue = "1") Integer page,
+                                                    @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<CourseCategory> pageParam = new Page<>(page, pageSize);
         Page<CourseCategory> result = courseCategoryService.page(pageParam);
         return Result.success(PageResult.of(

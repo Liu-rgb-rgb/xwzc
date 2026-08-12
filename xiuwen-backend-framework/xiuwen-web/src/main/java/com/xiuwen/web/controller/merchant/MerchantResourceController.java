@@ -30,8 +30,8 @@ public class MerchantResourceController {
                                                       @RequestParam(required = false) String keyword,
                                                       @RequestParam(required = false) Long id,
                                                       @RequestParam(required = false) String status,
-                                                      @RequestParam(defaultValue = "1") Long page,
-                                                      @RequestParam(defaultValue = "10") Long pageSize) {
+                                                      @RequestParam(defaultValue = "1") Integer page,
+                                                      @RequestParam(defaultValue = "10") Integer pageSize) {
         LambdaQueryWrapper<LearningResource> query = new LambdaQueryWrapper<>();
         if (type != null && !type.isEmpty()) {
             query.eq(LearningResource::getResourceType, type);

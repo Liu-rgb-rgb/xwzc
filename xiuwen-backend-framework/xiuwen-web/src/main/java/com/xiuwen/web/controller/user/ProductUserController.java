@@ -56,9 +56,9 @@ private final ProductService productService;
 
         return Result.success(
                 PageResult.of(
-                        pageResult.<ProductVO>getTotal(),
-                        (int)pageResult.getCurrent(),
-                        (int)pageResult.getSize(),
+                        pageResult.getTotal(),
+                        pageResult.getCurrent(),
+                        pageResult.getSize(),
                         voList));
 
     }

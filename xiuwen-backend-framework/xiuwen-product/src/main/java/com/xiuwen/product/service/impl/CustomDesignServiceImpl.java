@@ -9,6 +9,7 @@ import com.xiuwen.product.entity.CustomDesign;
 import com.xiuwen.product.entity.CustomDesignDetail;
 import com.xiuwen.product.mapper.CustomDesignMapper;
 import com.xiuwen.product.service.CustomDesignService;
+import com.xiuwen.framework.service.OssFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, CustomDesign> implements CustomDesignService {
 
+    private final OssFileService ossFileService;
+
     @Override
     public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String remark) {
         CustomDesign design = new CustomDesign();
@@ -35,8 +38,10 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
         design.setRemark(remark);
         design.setStatus("NORMAL");
 
-        // 生成预览图URL（实际项目中应调用图片合成服务）
-        design.setPreviewImageUrl("https://cdn.example.com/custom/preview-" + System.currentTimeMillis() + ".png");
+        // 生成预览图URL（实际项目中应调用图片合成服务，此处暂用占位 OSS 地址）
+        design.setPreviewImageUrl(
+                ossFileService.getOssDomain() + "custom/preview-" + System.currentTimeMillis() + ".png"
+        );
 
         save(design);
         return baseMapper.selectDesignWithDetails(design.getId());

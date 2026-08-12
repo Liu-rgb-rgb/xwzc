@@ -13,6 +13,7 @@ import com.xiuwen.pattern.service.PatternGenerationService;
 import com.xiuwen.pattern.service.PatternService;
 import com.xiuwen.pattern.vo.GeneratePatternResponse;
 import com.xiuwen.pattern.vo.PatternItemVO;
+import com.xiuwen.framework.service.OssFileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,12 +36,12 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     /**
      * 当前已经放入项目中的 Mock 纹样图片。
      */
-    private static final List<String> MOCK_IMAGE_URLS = Arrays.asList(
-            "/api/uploads/demo/pattern/peony-phoenix-pattern-01.jpg",
-            "/api/uploads/demo/pattern/peony-phoenix-pattern-02.jpg",
-            "/api/uploads/demo/pattern/lingnan-window-pattern-01.jpg",
-            "/api/uploads/demo/pattern/round-flower-pattern-01.jpg",
-            "/api/uploads/demo/pattern/lion-dance-pattern-01.jpg"
+    private static final List<String> MOCK_IMAGE_PATHS = Arrays.asList(
+            "demo/pattern/peony-phoenix-pattern-01.jpg",
+            "demo/pattern/peony-phoenix-pattern-02.jpg",
+            "demo/pattern/lingnan-window-pattern-01.jpg",
+            "demo/pattern/round-flower-pattern-01.jpg",
+            "demo/pattern/lion-dance-pattern-01.jpg"
     );
 
     /**
@@ -99,13 +100,16 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     private final PatternGenerationService patternGenerationService;
     private final PatternService patternService;
     private final ObjectMapper objectMapper;
+    private final OssFileService ossFileService;
 
     public PatternGenerateServiceImpl(PatternGenerationService patternGenerationService,
                                       PatternService patternService,
-                                      ObjectMapper objectMapper) {
+                                      ObjectMapper objectMapper,
+                                      OssFileService ossFileService) {
         this.patternGenerationService = patternGenerationService;
         this.patternService = patternService;
         this.objectMapper = objectMapper;
+        this.ossFileService = ossFileService;
     }
 
     /**
@@ -396,26 +400,23 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
      * 根据用户选项调整 Mock 图片顺序。
      */
     private List<String> selectMockImages(GeneratePatternRequest request) {
+        String ossDomain = ossFileService.getOssDomain();
         Set<String> orderedImages = new LinkedHashSet<>();
 
         if (containsElement(request.getElements(), "醒狮")) {
-            orderedImages.add(
-                    "/api/uploads/demo/pattern/lion-dance-pattern-01.jpg"
-            );
+            orderedImages.add(ossDomain + "demo/pattern/lion-dance-pattern-01.jpg");
         }
         if ("new_chinese".equals(request.getStyle())) {
-            orderedImages.add(
-                    "/api/uploads/demo/pattern/lingnan-window-pattern-01.jpg"
-            );
+            orderedImages.add(ossDomain + "demo/pattern/lingnan-window-pattern-01.jpg");
         }
         if (containsElement(request.getElements(), "团花")
                 || containsElement(request.getElements(), "莲花")) {
-            orderedImages.add(
-                    "/api/uploads/demo/pattern/round-flower-pattern-01.jpg"
-            );
+            orderedImages.add(ossDomain + "demo/pattern/round-flower-pattern-01.jpg");
         }
 
-        orderedImages.addAll(MOCK_IMAGE_URLS);
+        for (String path : MOCK_IMAGE_PATHS) {
+            orderedImages.add(ossDomain + path);
+        }
         List<String> result = new ArrayList<>(orderedImages);
         return new ArrayList<>(
                 result.subList(0, request.getGenerateCount())

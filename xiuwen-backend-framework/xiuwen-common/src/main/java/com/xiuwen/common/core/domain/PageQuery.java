@@ -12,23 +12,23 @@ public class PageQuery implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /** 当前页，从 1 开始 */
-    private Long page = 1L;
+    private Integer page = 1;
 
     /** 每页条数 */
-    private Long pageSize = 10L;
+    private Integer pageSize = 10;
 
-    public Long getSafePage() {
-        return page == null || page < 1 ? 1L : page;
+    public Integer getSafePage() {
+        return page == null || page < 1 ? 1 : page;
     }
 
-    public Long getSafePageSize() {
+    public Integer getSafePageSize() {
         if (pageSize == null || pageSize < 1) {
-            return 10L;
+            return 10;
         }
-        return Math.min(pageSize, 100L);
+        return Math.min(pageSize, 100);
     }
 
-    public Long offset() {
-        return (getSafePage() - 1L) * getSafePageSize();
+    public Integer offset() {
+        return (getSafePage() - 1) * getSafePageSize();
     }
 }

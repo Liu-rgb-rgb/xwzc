@@ -109,8 +109,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .toList();
 
         return PageResult.of(detailPage.getTotal(),
-                (int) detailPage.getCurrent(),
-                (int) detailPage.getSize(),
+                detailPage.getCurrent(),
+                detailPage.getSize(),
                 voList);
     }
 

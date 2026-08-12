@@ -65,8 +65,8 @@ public class MerchantOrderController {
 
         return Result.success(PageResult.of(
                 pageResult.getTotal(),
-                (int) pageResult.getCurrent(),
-                (int) pageResult.getSize(),
+                pageResult.getCurrent(),
+                pageResult.getSize(),
                 voList
         ));
     }

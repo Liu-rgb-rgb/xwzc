@@ -33,10 +33,10 @@ public class PageResult<T> implements Serializable {
         return new PageResult<>(0L, 1, 10, Collections.emptyList());
     }
 
-    public static <T> PageResult<T> of(Long total, Integer page, Integer pageSize, List<T> list) {
+    public static <T> PageResult<T> of(Long total, Long page, Long pageSize, List<T> list) {
         return new PageResult<>(total == null ? 0L : total,
-                page == null ? 1 :page,
-                pageSize == null ? 10 : pageSize,
+                page == null ? 1 : page.intValue(),
+                pageSize == null ? 10 : pageSize.intValue(),
                 list);
     }
 }

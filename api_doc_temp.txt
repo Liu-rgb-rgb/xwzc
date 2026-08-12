@@ -1,8 +1,0 @@
-Traceback (most recent call last):
-  File "<string>", line 1, in <module>
-    import zipfile, json, re; z = zipfile.ZipFile('绣纹智创_完整 API 接口文档_V1.0(3)(1).docx'); content = z.read('word/document.xml').decode('utf-8'); print(re.sub(r'<[^>]+>', ' ', content))
-                                  ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\python\Lib\zipfile\__init__.py", line 1454, in __init__
-    self.fp = io.open(file, filemode)
-              ~~~~~~~^^^^^^^^^^^^^^^^
-FileNotFoundError: [Errno 2] No such file or directory: '绣纹智创_完整 API 接口文档_V1.0(3)(1).docx'

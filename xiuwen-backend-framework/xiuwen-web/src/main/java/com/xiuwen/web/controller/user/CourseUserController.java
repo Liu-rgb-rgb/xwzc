@@ -52,8 +52,8 @@ public class CourseUserController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String difficulty,
             @RequestParam(required = false) Boolean isFree,
-            @RequestParam(defaultValue = "1") Long page,
-            @RequestParam(defaultValue = "12") Long pageSize) {
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "12") Integer pageSize) {
         Long queryCategoryId = categoryId != null ? categoryId : id;
         Page<Course> pageQuery = new Page<>(page, pageSize);
         courseService.pageWithCategory(pageQuery, queryCategoryId, keyword, difficulty, isFree);
