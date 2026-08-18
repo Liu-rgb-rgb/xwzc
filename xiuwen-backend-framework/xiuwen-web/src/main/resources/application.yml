@@ -1,0 +1,63 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: xiuwen-backend
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/xwzc?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 1234
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  type-aliases-package: com.xiuwen.**.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+xiuwen:
+  jwt:
+    secret: xiuwen-v1-secret-change-in-prod
+    expire-seconds: 86400
+  file:
+    upload-path: ./uploads
+    access-prefix: /api/uploads
+  oss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id: xxxxxx
+    access-key-secret: xxxxxx
+    bucket-name: xwzc
+    domain: https://xwzc.oss-cn-beijing.aliyuncs.com
+  # AI 图像生成配置
+  ai:
+    # 生图服务商：qwen（阿里云百炼 Qwen-Image，默认）/ openai（切回 DALL-E 时改这里）
+    provider: qwen
+    # ===== 阿里云百炼 Qwen-Image =====
+    # 百炼 API Key（在 bailian.console.aliyun.com 创建后填这里）
+    qwen-api-key:
+    # 模型名，默认 qwen-image-3.0（可不填）
+    qwen-model: qwen-image-3.0
+    # 是否让 Qwen 自动扩写提示词提升画质，默认 true（可不填）
+    qwen-prompt-extend: true
+    # ===== OpenAI / 中转（provider 切到 openai 时才用）=====
+    base-url:
+    api-key:
+    model:
+    image-size: 1024x1024
+    # 调用超时（秒），生图较慢，建议 120 以上
+    timeout-seconds: 180
