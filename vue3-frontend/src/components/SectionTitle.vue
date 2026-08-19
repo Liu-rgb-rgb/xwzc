@@ -1,5 +1,5 @@
 <script setup lang="ts">
-defineProps<{ eyebrow: string; title: string; action?: string }>();
+defineProps<{ eyebrow: string; title: string; action?: string; to?: string }>();
 </script>
 
 <template>
@@ -8,6 +8,7 @@ defineProps<{ eyebrow: string; title: string; action?: string }>();
       <span>{{ eyebrow }}</span>
       <h2>{{ title }}</h2>
     </div>
-    <a v-if="action">{{ action }} →</a>
+    <RouterLink v-if="action && to" :to="to">{{ action }} →</RouterLink>
+    <span v-else-if="action">{{ action }} →</span>
   </div>
 </template>

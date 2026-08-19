@@ -16,7 +16,7 @@ function signOut() {
 }
 </script>
 <template>
-  <RouterView v-if="route.meta.layout === 'auth' || route.meta.layout === 'admin'" />
+  <RouterView v-if="route.meta.layout === 'auth' || route.meta.layout === 'merchant'" />
   <div
     v-else
     class="shell"
@@ -43,12 +43,12 @@ function signOut() {
           v-if="!authState.token"
           class="login-pill"
           to="/login"
-          >♙ 登录 / 注册</RouterLink
+          >♙ 游客 · 登录 / 注册</RouterLink
         ><template v-else
           ><RouterLink
             class="login-pill"
-            to="/profile"
-            >{{ authState.user?.nickname || '个人中心' }}</RouterLink
+            to="/login"
+            >登入</RouterLink
           ><button @click="signOut">退出</button></template
         >
       </div>
@@ -64,8 +64,8 @@ function signOut() {
         >
         <p>以 AI 赋能广绣设计，连接传统与商业，创造美，传承美。</p>
       </div>
-      <div><b>平台服务</b><span>AI纹样生成</span><span>文创商品</span><span>纹样定制</span></div>
-      <div><b>学习支持</b><span>非遗课堂</span><span>创作资源</span><span>帮助中心</span></div>
+      <div><b>平台服务</b><RouterLink to="/generate">AI纹样生成</RouterLink><RouterLink to="/products">文创商品</RouterLink><RouterLink to="/customize">纹样定制</RouterLink></div>
+      <div><b>学习支持</b><RouterLink to="/courses">非遗课堂</RouterLink><RouterLink to="/resources">创作资源</RouterLink><RouterLink to="/resources">帮助中心</RouterLink></div>
       <div>
         <b>联系我们</b><span>020-8888 6888</span><span>service@xiuwen.com</span
         ><span>广州市越秀区中山五路</span>
