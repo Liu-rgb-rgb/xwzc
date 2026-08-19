@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import ProductCard from '../components/ProductCard.vue';
-import { products as demoProducts } from '../data';
-import { api, listFrom } from '../api';
+import ProductCard from '../../components/ProductCard.vue';
+import { products as demoProducts } from '../../data';
+import { api, listFrom } from '../../api';
 const cat = ref('全部商品');
 const products = ref(demoProducts);
 onMounted(async () => {
@@ -54,7 +54,7 @@ onMounted(async () => {
         <div>
           <span>纹样定制 · 专属好物</span>
           <h2>把喜欢的纹样，变成看得见的作品</h2>
-          <button class="primary">立即定制</button>
+          <RouterLink class="primary" to="/customize">立即定制</RouterLink>
         </div>
         <img
           src="/demo/product/peony-canvas-bag-mockup.png"

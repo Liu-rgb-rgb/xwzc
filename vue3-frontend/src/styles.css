@@ -656,7 +656,8 @@ main {
   margin: 5px 0 0;
   font-size: 31px;
 }
-.section-title a {
+.section-title a,
+.section-title > span {
   color: var(--jade);
   font-size: 14px;
 }
@@ -778,9 +779,14 @@ footer > div > b {
   margin-bottom: 8px;
 }
 footer span,
+footer a:not(.brand),
 footer p {
   font-size: 13px;
   opacity: 0.84;
+}
+footer a:not(.brand):hover {
+  color: #e9b864;
+  opacity: 1;
 }
 .page-head {
   text-align: center;
@@ -1162,6 +1168,31 @@ footer p {
   font-size: 11px;
   letter-spacing: 3px;
   color: var(--red);
+}
+.portal-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  padding: 5px;
+  border-radius: 12px;
+  background: #f4ede4;
+}
+.login-card .portal-switch button {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 9px;
+  box-shadow: none;
+}
+.login-card .portal-switch button.on {
+  color: var(--red);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(80, 50, 24, 0.1);
+}
+.login-card .guest-entry {
+  color: var(--jade);
+  border-color: var(--jade);
+  background: transparent;
 }
 .login-card h2 {
   font-size: 38px;

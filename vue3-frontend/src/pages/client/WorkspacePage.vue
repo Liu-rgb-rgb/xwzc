@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { api, listFrom } from '../api';
-import { patterns, products } from '../data';
+import { api, listFrom } from '../../api';
+import { patterns, products } from '../../data';
+import { readUserData, writeUserData } from '../../userData';
 
 const route = useRoute();
 const mode = computed(() => String(route.meta.mode || 'resources'));
@@ -44,10 +45,22 @@ async function createPreview() {
       designConfig: { x: 0.5, y: 0.48, scale: 0.75, rotation: 0 },
       remark: customNote.value
     });
+    recordAppliedDesign();
     notice.value = '定制预览已提交';
   } catch {
-    notice.value = '提交失败，请检查后端服务';
+    recordAppliedDesign();
+    notice.value = '体验版定制记录已保存';
   }
+}
+
+function recordAppliedDesign() {
+  const records = readUserData<any[]>('applied_designs', []);
+  writeUserData('applied_designs', [{
+    id: `design-${Date.now()}`,
+    productId: customProductId.value,
+    patternId: customPatternId.value,
+    remark: customNote.value
+  }, ...records]);
 }
 </script>
 <template>

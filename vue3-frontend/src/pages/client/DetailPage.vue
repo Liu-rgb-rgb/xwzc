@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import { api } from '../api';
-import { courses, products } from '../data';
+import { useRoute, useRouter } from 'vue-router';
+import { api } from '../../api';
+import { courses, products } from '../../data';
 
 const route = useRoute();
+const router = useRouter();
 const kind = computed(() => String(route.meta.kind || 'product'));
 const id = computed(() =>
   String(route.params.productId || route.params.courseId || route.params.orderId || 1)
@@ -30,6 +31,14 @@ async function loadDetail() {
   } finally {
     loading.value = false;
   }
+}
+function primaryAction() {
+  if (kind.value === 'product') {
+    router.push({ path: '/customize', query: { productId: id.value } });
+    return;
+  }
+  document.querySelector('.detail-page')?.scrollIntoView({ behavior: 'smooth' });
+  window.alert('课程已开始，正式课件将在课程服务接通后显示。');
 }
 watch([kind, id], loadDetail, { immediate: true });
 </script>
@@ -63,7 +72,7 @@ watch([kind, id], loadDetail, { immediate: true });
         <p>{{ item.desc || item.description || item.summary }}</p>
         <strong v-if="kind === 'product'">¥ {{ item.price }}</strong>
         <p v-else>{{ item.lessons || item.lessonCount || 0 }} · 精品课程</p>
-        <button class="primary">{{ kind === 'course' ? '立即学习' : '立即定制' }}</button>
+        <button class="primary" @click="primaryAction">{{ kind === 'course' ? '立即学习' : '立即定制' }}</button>
       </div>
     </template>
   </section>

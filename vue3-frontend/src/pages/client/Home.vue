@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import SectionTitle from '../components/SectionTitle.vue';
-import PatternCard from '../components/PatternCard.vue';
-import ProductCard from '../components/ProductCard.vue';
-import { api, listFrom } from '../api';
-import { courses, patterns, products } from '../data';
+import SectionTitle from '../../components/SectionTitle.vue';
+import PatternCard from '../../components/PatternCard.vue';
+import ProductCard from '../../components/ProductCard.vue';
+import { api, listFrom } from '../../api';
+import { courses, patterns, products } from '../../data';
 
 const courseItems = ref<any[]>(courses);
 const patternItems = ref<any[]>(patterns);
@@ -66,6 +66,7 @@ onMounted(async () => {
       eyebrow="HERITAGE ACADEMY"
       title="热门非遗课程"
       action="查看全部"
+      to="/courses"
     />
     <div class="course-grid">
       <article
@@ -84,6 +85,7 @@ onMounted(async () => {
       eyebrow="INSPIRED BY TRADITION"
       title="灵感纹样精选"
       action="发现更多"
+      to="/patterns"
     />
     <div class="pattern-grid">
       <PatternCard
@@ -96,6 +98,7 @@ onMounted(async () => {
       eyebrow="CULTURAL CREATIONS"
       title="把广绣带进日常"
       action="全部商品"
+      to="/products"
     />
     <div class="product-grid">
       <ProductCard

@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import SectionTitle from '../components/SectionTitle.vue';
-import PatternCard from '../components/PatternCard.vue';
-import { patterns as demoPatterns } from '../data';
-import { api, listFrom } from '../api';
+import SectionTitle from '../../components/SectionTitle.vue';
+import PatternCard from '../../components/PatternCard.vue';
+import { patterns as demoPatterns } from '../../data';
+import { api, listFrom } from '../../api';
+import { readUserData, writeUserData } from '../../userData';
 const style = ref('广绣经典'),
   element = ref('牡丹'),
   count = ref(4),
   description = ref(''),
   loading = ref(false),
-  patterns = ref(demoPatterns);
+  patterns = ref(demoPatterns),
+  notice = ref('');
 async function run() {
   loading.value = true;
+  notice.value = '';
   try {
     const result: any = await api.patterns.generate({
       keyword: element.value,
@@ -30,9 +33,33 @@ async function run() {
         image: p.imageUrl || p.thumbnailUrl || demoPatterns[i % demoPatterns.length].image
       }));
   } catch {
+    patterns.value = demoPatterns.slice(0, Number(count.value)).map((p, i) => ({
+      ...p,
+      id: Date.now() + i,
+      title: `${element.value} · ${style.value} ${i + 1}`
+    }));
   } finally {
+    const history = readUserData<any[]>('recent_generations', []);
+    writeUserData('recent_generations', [...patterns.value.map((p) => ({ ...p, createdAt: Date.now() })), ...history].slice(0, 50));
+    notice.value = `已生成 ${patterns.value.length} 张纹样`;
     loading.value = false;
   }
+}
+
+function savePatterns() {
+  const saved = readUserData<any[]>('saved_patterns', []);
+  const merged = [...patterns.value, ...saved];
+  writeUserData('saved_patterns', merged.filter((item, index) =>
+    merged.findIndex((other) => String(other.id) === String(item.id)) === index
+  ));
+  notice.value = '纹样已保存到“我的纹样”';
+}
+
+function favoritePatterns() {
+  const ids = new Set(readUserData<string[]>('pattern_favorites', []));
+  patterns.value.forEach((pattern) => ids.add(String(pattern.id)));
+  writeUserData('pattern_favorites', [...ids]);
+  notice.value = '本次生成的纹样已收藏';
 }
 </script>
 <template>
@@ -111,8 +138,9 @@ async function run() {
       </div>
       <div class="result-actions">
         <button>↻ 重新生成</button><button>✦ 细节增强</button
-        ><button class="jade">⇩ 保存纹样</button><button>♡ 收藏纹样</button>
+        ><button class="jade" @click="savePatterns">⇩ 保存纹样</button><button @click="favoritePatterns">♡ 收藏纹样</button>
       </div>
+      <p v-if="notice" class="form-notice">{{ notice }}</p>
     </section>
   </div>
   <div class="content inspiration">

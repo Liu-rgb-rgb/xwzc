@@ -3,7 +3,7 @@ export const patternImages = [
   '/demo/pattern/peony-phoenix-pattern-02.jpg',
   '/demo/pattern/round-flower-pattern-01.jpg',
   '/demo/pattern/lingnan-window-pattern-01.jpg',
-  '/demo/pattern/lion-dance-pattern-01%20.jpg'
+  '/demo/pattern/lion-dance-pattern-01.jpg'
 ];
 export const patterns = [
   '牡丹呈祥',

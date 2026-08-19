@@ -1,24 +1,24 @@
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
-import Home from './pages/Home.vue';
-import Generate from './pages/Generate.vue';
-import Products from './pages/Products.vue';
-import Patterns from './pages/Patterns.vue';
-import Courses from './pages/Courses.vue';
-import Login from './pages/Login.vue';
-import Register from './pages/Register.vue';
-import DetailPage from './pages/DetailPage.vue';
-import WorkspacePage from './pages/WorkspacePage.vue';
-import AdminLayout from './pages/admin/AdminLayout.vue';
-import AdminModule from './pages/admin/AdminModule.vue';
-import { isAdmin, isLoggedIn } from './auth';
+import Home from './pages/client/Home.vue';
+import Generate from './pages/client/Generate.vue';
+import Products from './pages/client/Products.vue';
+import Patterns from './pages/client/Patterns.vue';
+import Courses from './pages/client/Courses.vue';
+import Login from './pages/client/Login.vue';
+import Register from './pages/client/Register.vue';
+import DetailPage from './pages/client/DetailPage.vue';
+import WorkspacePage from './pages/client/WorkspacePage.vue';
+import AdminLayout from './pages/merchant/AdminLayout.vue';
+import AdminModule from './pages/merchant/AdminModule.vue';
+import { isClient, isLoggedIn, isMerchant } from './auth';
 import './styles.css';
 
 const protectedRoute = (path: string, title: string, mode: string) => ({
   path,
   component: WorkspacePage,
-  meta: { requiresAuth: true, title, mode }
+  meta: { requiresAuth: true, requiresClient: true, title, mode }
 });
 const adminModules = [
   ['dashboard', '数据总览'],
@@ -51,6 +51,11 @@ const router = createRouter({
     { path: '/courses', component: Courses },
     { path: '/courses/:courseId', component: DetailPage, meta: { kind: 'course' } },
     { path: '/login', component: Login, meta: { layout: 'auth' } },
+    {
+      path: '/merchant/login',
+      component: Login,
+      meta: { layout: 'auth', portal: 'merchant' }
+    },
     { path: '/register', component: Register, meta: { layout: 'auth' } },
     protectedRoute('/customize', '文创商品定制', 'customize'),
     protectedRoute('/cart', '购物车', 'cart'),
@@ -58,7 +63,7 @@ const router = createRouter({
     {
       path: '/orders/:orderId',
       component: DetailPage,
-      meta: { requiresAuth: true, kind: 'order' }
+      meta: { requiresAuth: true, requiresClient: true, kind: 'order' }
     },
     {
       path: '/resources',
@@ -67,28 +72,31 @@ const router = createRouter({
     },
     protectedRoute('/profile', '个人中心', 'profile'),
     {
-      path: '/admin',
+      path: '/merchant',
       component: AdminLayout,
-      meta: { layout: 'admin', requiresAdmin: true },
+      meta: { layout: 'merchant', requiresMerchant: true },
       children: [
-        { path: '', redirect: '/admin/dashboard' },
+        { path: '', redirect: '/merchant/dashboard' },
         ...adminModules.map(([path, title]) => ({
           path,
           component: AdminModule,
-          meta: { layout: 'admin', requiresAdmin: true, title }
+          meta: { layout: 'merchant', requiresMerchant: true, title }
         }))
       ]
     },
+    { path: '/admin/:pathMatch(.*)*', redirect: (to) => `/merchant/${String(to.params.pathMatch || '')}` },
     { path: '/:pathMatch(.*)*', redirect: '/' }
   ],
   scrollBehavior: () => ({ top: 0 })
 });
 
 router.beforeEach((to) => {
-  if (to.meta.requiresAdmin && !isAdmin.value)
-    return { path: '/login', query: { redirect: to.fullPath } };
+  if (to.meta.requiresMerchant && !isMerchant.value)
+    return { path: '/merchant/login', query: { redirect: to.fullPath } };
   if (to.meta.requiresAuth && !isLoggedIn.value)
     return { path: '/login', query: { redirect: to.fullPath } };
+  if (to.meta.requiresClient && !isClient.value)
+    return { path: '/merchant', replace: true };
 });
 
 createApp(App).use(router).mount('#app');
