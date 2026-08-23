@@ -21,18 +21,19 @@ export const patterns = [
   image: patternImages[i % 5]
 }));
 export const products = [
-  ['广绣牡丹帆布袋', 68, 'peony-canvas-bag-cover.jpg'],
-  ['凤凰瑞彩帆布袋', 88, 'phoenix-tote-cover.jpg'],
-  ['岭南真丝长巾', 198, 'lingnan-silk-scarf-cover.jpg'],
-  ['木棉花影笔记本', 39, 'lingnan-notebook-cover.jpg'],
-  ['醒狮如意抱枕', 168, 'lion-pillow-cover.jpg'],
-  ['牡丹团花杯垫', 49, 'round-coaster-set-cover.jpg'],
-  ['广绣明信片礼盒', 28, 'postcard-gift-cover.jpg'],
-  ['木棉流光丝巾', 158, 'kapok-long-scarf-cover.jpg']
-].map(([title, price, file], i) => ({
+  ['广绣牡丹帆布袋', 68, 'peony-canvas-bag-cover.jpg', '帆布袋'],
+  ['凤凰瑞彩帆布袋', 88, 'phoenix-tote-cover.jpg', '帆布袋'],
+  ['岭南真丝长巾', 198, 'lingnan-silk-scarf-cover.jpg', '丝巾'],
+  ['木棉花影笔记本', 39, 'lingnan-notebook-cover.jpg', '笔记本'],
+  ['醒狮如意抱枕', 168, 'lion-pillow-cover.jpg', '摆件'],
+  ['牡丹团花杯垫', 49, 'round-coaster-set-cover.jpg', '杯垫'],
+  ['广绣明信片礼盒', 28, 'postcard-gift-cover.jpg', '明信片'],
+  ['木棉流光丝巾', 158, 'kapok-long-scarf-cover.jpg', '丝巾']
+].map(([title, price, file, category], i) => ({
   id: i + 1,
   title,
   price,
+  category,
   image: '/demo/product/' + file,
   desc: '传统广绣纹样的现代生活表达'
 }));
