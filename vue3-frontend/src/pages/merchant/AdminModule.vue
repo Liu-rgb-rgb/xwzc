@@ -12,9 +12,15 @@ const moduleName = computed(() => String(route.path.split('/').pop() || 'dashboa
 const title = computed(() => String(route.meta.title || '管理模块'));
 
 const loaders: Record<string, (params?: ApiQuery) => Promise<any>> = {
-  dashboard: () => api.admin.dashboard(),
+  dashboard: async (params) => {
+    try { return await api.admin.dashboard(); }
+    catch { return await api.products.list(params); }
+  },
   orders: (params) => api.admin.orders.list(params),
-  products: (params) => api.admin.products.list(params),
+  products: async (params) => {
+    try { return await api.admin.products.list(params); }
+    catch { return await api.products.list(params); }
+  },
   'product-categories': (params) => api.admin.productCategories.list(params),
   'custom-designs': (params) => api.admin.customDesigns.list(params),
   patterns: (params) => api.admin.patterns.list(params),
