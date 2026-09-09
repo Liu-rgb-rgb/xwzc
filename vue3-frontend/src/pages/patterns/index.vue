@@ -255,7 +255,6 @@ async function downloadPattern(item: PatternItem) {
   } catch { showNotice('下载失败，请稍后重试'); }
 }
 async function removePattern(item: PatternItem) {
-  if (!window.confirm(`确认删除“${item.title}”吗？`)) return;
   try { await api.patterns.remove(item.id); } catch { /* 后端不可用时仍同步本地列表。 */ }
   removeLocalPatterns(new Set([String(item.id)]));
   items.value = items.value.filter((value) => String(value.id) !== String(item.id));

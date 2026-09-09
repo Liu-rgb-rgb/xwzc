@@ -23,6 +23,10 @@ const filteredCourses = computed(() => {
 function openCourse(course: any) {
   router.push(`/courses/${course.id}`);
 }
+function showAllCourses() {
+  category.value = '全部课程';
+  keyword.value = '';
+}
 onMounted(async () => {
   const [courseResult, resourceResult] = await Promise.allSettled([
     api.courses.list({ page: 1, pageSize: 12 }),
@@ -61,12 +65,13 @@ onMounted(async () => {
         >{{ x }}</button>
       </div>
     </div>
-    <SectionTitle
-      eyebrow="CURATED COURSES"
-      title="精选推荐"
-      action="查看全部"
-      to="/courses"
-    />
+    <div class="section-title">
+      <div>
+        <span>CURATED COURSES</span>
+        <h2>精选推荐</h2>
+      </div>
+      <button type="button" @click="showAllCourses">查看全部 →</button>
+    </div>
     <div class="course-grid large">
       <article
         v-for="(c, i) in filteredCourses"

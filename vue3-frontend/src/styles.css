@@ -713,9 +713,16 @@ main {
   font-size: 31px;
 }
 .section-title a,
-.section-title > span {
+.section-title > span,
+.section-title > button {
   color: var(--jade);
   font-size: 14px;
+}
+.section-title > button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
 }
 .course-grid {
   display: grid;
