@@ -31,6 +31,7 @@ const resultToneClass = computed(() => ({
   国风雅韵: 'tone-elegant', 富贵华彩: 'tone-rich', 清润素韵: 'tone-soft'
 }[palette.value] || 'tone-elegant'));
 const inspirationPatterns = computed(() => patterns.value.length ? patterns.value : demoPatterns);
+function useKeyword(value: string) { description.value = description.value ? `${description.value} ${value}` : value; }
 
 function createDemoResults() {
   const condition = `${style.value}${element.value}${palette.value}${scene.value}${description.value}${Date.now()}`;
@@ -110,19 +111,35 @@ function enhanceDetails() {
   notice.value = enhanced.value ? '已增强纹样色彩与细节显示' : '已恢复原始显示效果';
 }
 
-function savePatterns() {
+function syncGeneratedPatterns() {
+  const stamped = patterns.value.map((pattern) => ({
+    ...pattern,
+    createdAt: pattern.createdAt || new Date().toISOString()
+  }));
   const saved = readUserData<any[]>('saved_patterns', []);
-  const merged = [...patterns.value, ...saved];
+  const merged = [...stamped, ...saved];
   writeUserData('saved_patterns', merged.filter((item, index) =>
     merged.findIndex((other) => String(other.id) === String(item.id)) === index
   ));
+  const recent = readUserData<any[]>('recent_generations', []);
+  const recentMerged = [...stamped, ...recent];
+  writeUserData('recent_generations', recentMerged.filter((item, index) =>
+    recentMerged.findIndex((other) => String(other.id) === String(item.id)) === index
+  ).slice(0, 50));
+}
+
+async function savePatterns() {
+  syncGeneratedPatterns();
+  await Promise.allSettled(patterns.value.map((pattern) => api.patterns.save(pattern.id)));
   notice.value = '纹样已保存到“我的纹样”';
 }
 
-function favoritePatterns() {
+async function favoritePatterns() {
+  syncGeneratedPatterns();
   const ids = new Set(readUserData<string[]>('pattern_favorites', []));
   patterns.value.forEach((pattern) => ids.add(String(pattern.id)));
   writeUserData('pattern_favorites', [...ids]);
+  await Promise.allSettled(patterns.value.map((pattern) => api.patterns.favorite(pattern.id)));
   notice.value = '本次生成的纹样已收藏';
 }
 </script>
@@ -139,7 +156,7 @@ function favoritePatterns() {
         <button
           v-for="x in ['广绣经典', '新中式', '岭南花窗', '刺绣纹样']"
           :class="{ on: style === x }"
-          @click="style = x"
+          @click="style = x; useKeyword(x)"
         >
           {{ x }}
         </button>
@@ -149,7 +166,7 @@ function favoritePatterns() {
         <button
           v-for="x in ['牡丹', '凤凰', '花鸟', '祥云', '莲花', '醒狮']"
           :class="{ on: element === x }"
-          @click="element = x"
+          @click="element = x; useKeyword(x)"
         >
           {{ x }}
         </button>

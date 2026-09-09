@@ -4,12 +4,13 @@ import App from './App.vue';
 import Home from './pages/client/Home.vue';
 import Generate from './pages/client/Generate.vue';
 import Products from './pages/client/Products.vue';
-import Patterns from './pages/client/Patterns.vue';
+import Patterns from './pages/patterns/index.vue';
 import Courses from './pages/client/Courses.vue';
 import Login from './pages/client/Login.vue';
 import Register from './pages/client/Register.vue';
 import DetailPage from './pages/client/DetailPage.vue';
 import WorkspacePage from './pages/client/WorkspacePage.vue';
+import ProfilePage from './pages/profile/index.vue';
 import AdminLayout from './pages/merchant/AdminLayout.vue';
 import AdminModule from './pages/merchant/AdminModule.vue';
 import { isClient, isLoggedIn, isMerchant } from './auth';
@@ -57,8 +58,10 @@ const router = createRouter({
       meta: { layout: 'auth', portal: 'merchant' }
     },
     { path: '/register', component: Register, meta: { layout: 'auth' } },
-    protectedRoute('/customize', '文创商品定制', 'customize'),
-    protectedRoute('/cart', '购物车', 'cart'),
+    // 商品列表中的“立即定制”需要直接打开客户端定制页。
+    // 该页面支持未登录浏览，避免商家会话被客户端角色守卫错误重定向到后台。
+    { path: '/customize', component: WorkspacePage, meta: { title: '文创商品定制', mode: 'customize' } },
+    { path: '/cart', component: WorkspacePage, meta: { title: '购物车', mode: 'cart' } },
     protectedRoute('/orders', '我的订单', 'orders'),
     {
       path: '/orders/:orderId',
@@ -70,7 +73,7 @@ const router = createRouter({
       component: WorkspacePage,
       meta: { title: '创作资源', mode: 'resources' }
     },
-    protectedRoute('/profile', '个人中心', 'profile'),
+    { path: '/profile', component: ProfilePage, meta: { title: '个人中心' } },
     {
       path: '/merchant',
       component: AdminLayout,

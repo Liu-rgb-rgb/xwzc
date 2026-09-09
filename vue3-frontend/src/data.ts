@@ -5,6 +5,14 @@ export const patternImages = [
   '/demo/pattern/lingnan-window-pattern-01.jpg',
   '/demo/pattern/lion-dance-pattern-01.jpg'
 ];
+// 标签按实际图片维护，复用同一图片的记录共享分类。
+const patternLabels = [
+  { style: '广绣经典', elements: ['牡丹', '凤凰', '祥云'] },
+  { style: '广绣经典', elements: ['牡丹', '凤凰', '祥云'] },
+  { style: '传统团纹', elements: ['牡丹', '莲花', '团花'] },
+  { style: '建筑纹样', elements: ['花窗', '几何纹', '花枝'] },
+  { style: '广绣经典', elements: ['醒狮', '牡丹', '祥云'] }
+];
 export const patterns = [
   '牡丹呈祥',
   '凤舞花朝',
@@ -17,7 +25,8 @@ export const patterns = [
 ].map((title, i) => ({
   id: i + 1,
   title,
-  meta: ['广绣经典', '岭南瑞鸟', '传统团纹', '建筑纹样'][i % 4],
+  ...patternLabels[i % 5],
+  meta: `${patternLabels[i % 5].style} · ${patternLabels[i % 5].elements.join(' / ')}`,
   image: patternImages[i % 5]
 }));
 export const products = [

@@ -69,17 +69,22 @@ onMounted(async () => {
       to="/courses"
     />
     <div class="course-grid">
-      <article
+      <RouterLink
         v-for="c in courseItems"
         :key="c.id"
+        class="course-link"
+        :to="`/courses/${c.id}`"
+        :aria-label="`查看课程：${c.title || c.name}`"
       >
-        <img :src="c.image || c.coverImage" />
-        <div>
-          <span>{{ c.lessons || c.duration }} 节 · 精品课</span>
-          <h3>{{ c.title }}</h3>
-          <p>{{ c.desc || c.description || c.subtitle }}</p>
-        </div>
-      </article>
+        <article>
+          <img :src="c.image || c.coverImage" />
+          <div>
+            <span>{{ c.lessons || c.duration }} 节 · 精品课</span>
+            <h3>{{ c.title || c.name }}</h3>
+            <p>{{ c.desc || c.description || c.subtitle }}</p>
+          </div>
+        </article>
+      </RouterLink>
     </div>
     <SectionTitle
       eyebrow="INSPIRED BY TRADITION"
@@ -109,3 +114,7 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.course-link, .course-link article { display: block; height: 100%; }
+</style>
