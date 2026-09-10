@@ -49,7 +49,9 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
      */
     private static final List<String> SUPPORTED_STYLES = Arrays.asList(
             "classic",
-            "new_chinese"
+            "new_chinese",
+            "embroidery",
+            "lingnan_window"
     );
 
     /**
@@ -57,7 +59,9 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
      */
     private static final List<String> SUPPORTED_COLORS = Arrays.asList(
             "chinese_elegant",
-            "red_gold"
+            "red_gold",
+            "rich_color",
+            "soft_elegant"
     );
 
     /**
@@ -65,7 +69,10 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
      */
     private static final List<String> SUPPORTED_SCENES = Arrays.asList(
             "product",
-            "poster"
+            "poster",
+            "clothing",
+            "home",
+            "package"
     );
 
     /**
@@ -76,11 +83,15 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     private static final Map<String, String> SCENE_MAPPING = new HashMap<>();
 
     static {
+        STYLE_MAPPING.put("广绣经典", "classic");
         STYLE_MAPPING.put("经典广绣", "classic");
         STYLE_MAPPING.put("传统广绣", "classic");
         STYLE_MAPPING.put("经典", "classic");
         STYLE_MAPPING.put("新中式", "new_chinese");
         STYLE_MAPPING.put("新中式风格", "new_chinese");
+        STYLE_MAPPING.put("刺绣风", "embroidery");
+        STYLE_MAPPING.put("刺绣纹样", "embroidery");
+        STYLE_MAPPING.put("岭南花窗", "lingnan_window");
 
         COLOR_MAPPING.put("富贵华彩", "red_gold");
         COLOR_MAPPING.put("红金华彩", "red_gold");
@@ -88,13 +99,19 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         COLOR_MAPPING.put("国风雅韵", "chinese_elegant");
         COLOR_MAPPING.put("清雅素韵", "chinese_elegant");
         COLOR_MAPPING.put("中式雅韵", "chinese_elegant");
+        COLOR_MAPPING.put("清润素韵", "soft_elegant");
+        COLOR_MAPPING.put("素韵", "soft_elegant");
 
         SCENE_MAPPING.put("文创产品", "product");
+        SCENE_MAPPING.put("文创商品", "product");
         SCENE_MAPPING.put("产品定制", "product");
         SCENE_MAPPING.put("文创定制", "product");
         SCENE_MAPPING.put("海报设计", "poster");
         SCENE_MAPPING.put("宣传海报", "poster");
         SCENE_MAPPING.put("海报", "poster");
+        SCENE_MAPPING.put("服饰刺绣", "clothing");
+        SCENE_MAPPING.put("家居软装", "home");
+        SCENE_MAPPING.put("礼品包装", "package");
     }
 
     private final PatternGenerationService patternGenerationService;
@@ -406,7 +423,8 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         if (containsElement(request.getElements(), "醒狮")) {
             orderedImages.add(ossDomain + "demo/pattern/lion-dance-pattern-01.jpg");
         }
-        if ("new_chinese".equals(request.getStyle())) {
+        if ("new_chinese".equals(request.getStyle())
+                || "lingnan_window".equals(request.getStyle())) {
             orderedImages.add(ossDomain + "demo/pattern/lingnan-window-pattern-01.jpg");
         }
         if (containsElement(request.getElements(), "团花")
@@ -552,20 +570,29 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
 
     private String getStyleDisplayName(String style) {
         if ("classic".equals(style)) {
-            return "经典广绣";
+            return "广绣经典";
         }
         if ("new_chinese".equals(style)) {
             return "新中式";
+        }
+        if ("embroidery".equals(style)) {
+            return "刺绣纹样";
+        }
+        if ("lingnan_window".equals(style)) {
+            return "岭南花窗";
         }
         return style;
     }
 
     private String getColorDisplayName(String colorTheme) {
-        if ("red_gold".equals(colorTheme)) {
+        if ("red_gold".equals(colorTheme) || "rich_color".equals(colorTheme)) {
             return "富贵华彩";
         }
         if ("chinese_elegant".equals(colorTheme)) {
             return "国风雅韵";
+        }
+        if ("soft_elegant".equals(colorTheme)) {
+            return "清润素韵";
         }
         return colorTheme;
     }
@@ -576,6 +603,15 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         }
         if ("poster".equals(usageScene)) {
             return "海报设计";
+        }
+        if ("clothing".equals(usageScene)) {
+            return "服饰刺绣";
+        }
+        if ("home".equals(usageScene)) {
+            return "家居软装";
+        }
+        if ("package".equals(usageScene)) {
+            return "礼品包装";
         }
         return usageScene;
     }

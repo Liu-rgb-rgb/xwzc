@@ -169,7 +169,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
         orderItemService.saveBatchOrderItems(orderItems);
 
-        // 扣减库存(已在分布式锁保护下,串行执行,不会再有并发覆盖)
+        // 扣减库存:分布式锁降低竞争,数据库条件更新做最终兜底,
+        // 即使锁因故失效,也不会扣成负数
         for (OrderItem item : orderItems) {
             if (item.getProductId() == null) {
                 continue;
@@ -178,12 +179,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
             if (product == null) {
                 throw new BusinessException("商品已下架,请刷新后重试");
             }
-            int stock = product.getStock() == null ? 0 : product.getStock();
-            if (stock < item.getQuantity()) {
+            boolean updated = productService.lambdaUpdate()
+                    .eq(Product::getId, product.getId())
+                    .ge(Product::getStock, item.getQuantity())
+                    .setSql("stock = stock - " + item.getQuantity())
+                    .update();
+            if (!updated) {
                 throw new BusinessException("商品「" + product.getName() + "」库存不足");
             }
-            product.setStock(stock - item.getQuantity());
-            productService.updateById(product);
         }
 
         // 清理购物车
@@ -307,15 +310,14 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         order.setCancelledAt(LocalDateTime.now());
         updateById(order);
 
-        // 恢复库存
+        // 恢复库存:用原子累加,避免与并发下单/商家改库存等路径相互覆盖
         List<OrderItem> items = orderItemService.listByOrderId(orderId);
         for (OrderItem item : items) {
             if (item.getProductId() != null) {
-                Product product = productService.getById(item.getProductId());
-                if (product != null) {
-                    product.setStock(product.getStock() + item.getQuantity());
-                    productService.updateById(product);
-                }
+                productService.lambdaUpdate()
+                        .eq(Product::getId, item.getProductId())
+                        .setSql("stock = stock + " + item.getQuantity())
+                        .update();
             }
         }
 

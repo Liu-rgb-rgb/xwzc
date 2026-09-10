@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 /**
  * 库存分布式锁。同一商品的扣减/回补必须串行化,避免并发导致超卖或库存被覆盖。
  * 多商品场景通过 RedissonMultiLock 一次性原子获取,并按 productId 排序防止死锁。
+ *
+ * 未显式指定 leaseTime,使用 Redisson watchdog 自动续期(默认 30s 租约、每 10s 续一次),
+ * 避免长业务因固定租约到期锁被提前释放,导致并发进入临界区。
  */
 @Component
 @RequiredArgsConstructor
@@ -21,8 +24,6 @@ public class StockLockService {
     private static final String KEY_PREFIX = "lock:stock:product:";
     /** 最长等待时间(秒),拿不到锁直接抛业务异常,让用户重试 */
     private static final long DEFAULT_WAIT_SECONDS = 3L;
-    /** 锁持有时间(秒),兜底防止业务卡死后死锁 */
-    private static final long DEFAULT_LEASE_SECONDS = 30L;
 
     private final RedissonClient redissonClient;
 
@@ -49,7 +50,8 @@ public class StockLockService {
             lock = redissonClient.getMultiLock(locks);
         }
         try {
-            boolean acquired = lock.tryLock(DEFAULT_WAIT_SECONDS, DEFAULT_LEASE_SECONDS, TimeUnit.SECONDS);
+            // 不显式传 leaseTime,交由 watchdog 自动续期
+            boolean acquired = lock.tryLock(DEFAULT_WAIT_SECONDS, TimeUnit.SECONDS);
             return acquired ? lock : null;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

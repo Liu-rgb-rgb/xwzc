@@ -10,7 +10,9 @@ import com.xiuwen.pattern.service.PatternGenerateService;
 import com.xiuwen.pattern.service.PatternService;
 import com.xiuwen.pattern.vo.GeneratePatternResponse;
 import com.xiuwen.pattern.vo.PatternMyVO;
+import lombok.RequiredArgsConstructor;
 import org.apache.catalina.security.SecurityUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.xiuwen.pattern.dto.RegeneratePatternRequest;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,27 +27,28 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/patterns")
 public class PatternUserController {
-private final PatternService patternService;
+    private final PatternService patternService;
     private final PatternGenerateService patternGenerateService;
 
     public PatternUserController(PatternService patternService, PatternGenerateService patternGenerateService) {
-		this.patternService = patternService;
+        this.patternService = patternService;
         this.patternGenerateService = patternGenerateService;
     }
 
     @GetMapping("/options")
-    public Result<Void> options() { return Result.todo("AI生成选项"); }
+    public Result<Void> options() {
+        return Result.todo("AI生成选项");
+    }
 
     @PostMapping("/generate")
     public Result<GeneratePatternResponse> generate(
             @Valid
             @RequestBody GeneratePatternRequest request) {
-   Long userId = LoginUserHolder.getRequiredUserId();
-    return Result.success(patternGenerateService.generate(
-            userId,
-            request));
-}
-
+        Long userId = LoginUserHolder.getRequiredUserId();
+        return Result.success(patternGenerateService.generate(
+                userId,
+                request));
+    }
 
 
     @PostMapping("/regenerate")
@@ -57,12 +60,12 @@ private final PatternService patternService;
         );
     }
 
-//我的纹样
+    //我的纹样
     @GetMapping("/my")
-    public Result<Map<String,Object>> getMyPatterns(PatternMyQueryDTO queryDTO) {
+    public Result<Map<String, Object>> getMyPatterns(PatternMyQueryDTO queryDTO) {
         Long userId = LoginUserHolder.getRequiredUserId();
         queryDTO.setUserId(userId);
-        Map<String,Object> data = patternService.getMyPatterns(queryDTO);
+        Map<String, Object> data = patternService.getMyPatterns(queryDTO);
         return Result.success(data);
     }
 
@@ -85,41 +88,45 @@ private final PatternService patternService;
 //    public Result<Void> download(@PathVariable Long id) { return Result.todo("下载纹样"); }
 
 
-//================================上面接口错误,到时合并需要改=================================
+    //================================上面接口错误,到时合并需要改=================================
     //todo
 //纹样列表
     @GetMapping("/{patternId}")
     public Result<PatternMyVO> getPatternDetail(@PathVariable Long patternId) {
         Long userId = LoginUserHolder.getUserId();
-        PatternMyVO vo =patternService.getPatternDetail(patternId,userId);
+        PatternMyVO vo = patternService.getPatternDetail(patternId, userId);
         return Result.success(vo);
     }
-//保存纹样
+
+    //保存纹样
     @PostMapping("/{patternId}/save")
     public Result<Void> savePattern(@PathVariable Long patternId) {
         Long userId = LoginUserHolder.getRequiredUserId();
-        patternService.savePattern(patternId,userId);
+        patternService.savePattern(patternId, userId);
         return Result.success();
     }
-//收藏纹样
+
+    //收藏纹样
     @PostMapping("/{patternId}/favorite")
     public Result<Void> favoritePattern(@PathVariable Long patternId) {
         Long userId = LoginUserHolder.getRequiredUserId();
-        patternService.favoritePattern(patternId,userId);
+        patternService.favoritePattern(patternId, userId);
         return Result.success();
     }
-//取消收藏纹样
+
+    //取消收藏纹样
     @DeleteMapping("/{patternId}/favorite")
     public Result<Void> unfavoritePattern(@PathVariable Long patternId) {
         Long userId = LoginUserHolder.getRequiredUserId();
-        patternService.unfavoritePattern(patternId,userId);
+        patternService.unfavoritePattern(patternId, userId);
         return Result.success();
     }
-//删除我的纹样
+
+    //删除我的纹样
     @DeleteMapping("/{patternId}")
     public Result<Void> patternDeleted(@PathVariable Long patternId) {
         Long userId = LoginUserHolder.getRequiredUserId();
-        patternService.patternDeleted(patternId,userId);
+        patternService.patternDeleted(patternId, userId);
         return Result.success();
     }
 

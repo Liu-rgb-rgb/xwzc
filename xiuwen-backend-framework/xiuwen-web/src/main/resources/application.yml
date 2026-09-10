@@ -45,6 +45,12 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
+# 配置日志输出
+logging:
+  level:
+    # WebSocket 连接 / 消息问题
+    org.springframework.web.socket: debug
+
 xiuwen:
   jwt:
     secret: xiuwen-v1-secret-change-in-prod
