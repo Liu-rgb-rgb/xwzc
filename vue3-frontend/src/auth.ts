@@ -9,9 +9,12 @@ export const authState = reactive<{ token: string; user: UserInfo | null }>({
 });
 
 export const isLoggedIn = computed(() => Boolean(authState.token));
-export const isAdmin = computed(() =>
+export const isGuest = computed(() => !isLoggedIn.value);
+export const isMerchant = computed(() =>
   ['ADMIN', 'MERCHANT_ADMIN'].includes(authState.user?.role || '')
 );
+export const isAdmin = isMerchant;
+export const isClient = computed(() => isLoggedIn.value && !isMerchant.value);
 
 export function setLogin(token: string, user: UserInfo) {
   authState.token = token;

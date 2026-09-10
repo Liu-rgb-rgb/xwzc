@@ -1,0 +1,3070 @@
+=== PARAGRAPHS ===
+农策审
+完整 API 接口文档
+农户端 + 管理后台 + Agent层 · 共 55 个接口逐条展开
+依据：《农策审项目全量功能点清单》及相关设计文档
+版本：V2.0    日期：2026-09-06
+文档说明
+本文件以《API接口文档》的章节结构和版式为模板，将农策审项目的前后端交互接口逐条展开。接口路径、请求方式及接口数量基于《农策审项目全量功能点清单》V2.0（含新增功能模块：农业政策与行业动态中心、农业知识学院、方案案例库、农业智能问答Agent）；请求与响应字段依据业务语义补全。
+统一响应结构
+错误码说明
+枚举定义
+第一部分 农户端接口文档
+1. 微信登录
+1.1.1 基本信息
+1.1.2 请求参数
+参数格式：application/json
+请求参数样例：
+1.1.3 响应数据
+参数格式：application/json
+响应数据样例：
+2. 获取用户资料
+2.2.1 基本信息
+2.2.2 请求参数
+参数格式：无
+请求参数样例：
+2.2.3 响应数据
+参数格式：application/json
+响应数据样例：
+3. 上传种植方案文档
+3.3.1 基本信息
+3.3.2 请求参数
+参数格式：multipart/form-data
+请求参数样例：
+3.3.3 响应数据
+参数格式：application/json
+响应数据样例：
+4. 创建预审任务
+4.4.1 基本信息
+4.4.2 请求参数
+参数格式：application/json
+请求参数样例：
+4.4.3 响应数据
+参数格式：application/json
+响应数据样例：
+5. 轮询任务进度
+5.5.1 基本信息
+5.5.2 请求参数
+参数格式：application/json
+请求参数样例：
+5.5.3 响应数据
+参数格式：application/json
+响应数据样例：
+6. 补充缺失信息
+6.6.1 基本信息
+6.6.2 请求参数
+参数格式：application/json
+请求参数样例：
+6.6.3 响应数据
+参数格式：application/json
+响应数据样例：
+7. 获取预审报告
+7.7.1 基本信息
+7.7.2 请求参数
+参数格式：application/json
+请求参数样例：
+7.7.3 响应数据
+参数格式：application/json
+响应数据样例：
+8. 导出报告
+8.8.1 基本信息
+8.8.2 请求参数
+参数格式：application/json
+请求参数样例：
+8.8.3 响应数据
+参数格式：application/json
+响应数据样例：
+9. 历史预审记录
+9.9.1 基本信息
+9.9.2 请求参数
+参数格式：application/json
+请求参数样例：
+9.9.3 响应数据
+参数格式：application/json
+响应数据样例：
+10. 获取会话上下文
+10.10.1 基本信息
+10.10.2 请求参数
+参数格式：无
+请求参数样例：
+10.10.3 响应数据
+参数格式：application/json
+响应数据样例：
+11. 获取引导示例
+11.11.1 基本信息
+11.11.2 请求参数
+参数格式：无
+请求参数样例：
+11.11.3 响应数据
+参数格式：application/json
+响应数据样例：
+12. 政策与预警信息列表
+12.12.1 基本信息
+12.12.2 请求参数
+参数格式：application/json
+请求参数样例：
+12.12.3 响应数据
+参数格式：application/json
+响应数据样例：
+13. 政策详情查看
+13.13.1 基本信息
+13.13.2 请求参数
+参数格式：application/json
+请求参数样例：
+13.13.3 响应数据
+参数格式：application/json
+响应数据样例：
+14. 预警信息展示
+14.14.1 基本信息
+14.14.2 请求参数
+参数格式：application/json
+请求参数样例：
+14.14.3 响应数据
+参数格式：application/json
+响应数据样例：
+15. 政策匹配预审
+15.15.1 基本信息
+15.15.2 请求参数
+参数格式：application/json
+请求参数样例：
+15.15.3 响应数据
+参数格式：application/json
+响应数据样例：
+16. 新手课堂列表与详情
+16.16.1 基本信息
+16.16.2 请求参数
+参数格式：application/json
+请求参数样例：
+16.16.3 响应数据
+参数格式：application/json
+响应数据样例：
+17. AI互动课堂
+17.17.1 基本信息
+17.17.2 请求参数
+参数格式：application/json
+请求参数样例：
+17.17.3 响应数据
+参数格式：application/json
+响应数据样例：
+18. 专家视频课程
+18.18.1 基本信息
+18.18.2 请求参数
+参数格式：application/json
+请求参数样例：
+18.18.3 响应数据
+参数格式：application/json
+响应数据样例：
+19. AI农业问答
+19.19.1 基本信息
+19.19.2 请求参数
+参数格式：application/json
+请求参数样例：
+19.19.3 响应数据
+参数格式：application/json
+响应数据样例：
+20. 案例列表与筛选
+20.20.1 基本信息
+20.20.2 请求参数
+参数格式：application/json
+请求参数样例：
+20.20.3 响应数据
+参数格式：application/json
+响应数据样例：
+21. 案例详情查看
+21.21.1 基本信息
+21.21.2 请求参数
+参数格式：application/json
+请求参数样例：
+21.21.3 响应数据
+参数格式：application/json
+响应数据样例：
+22. 智能案例推荐
+22.22.1 基本信息
+22.22.2 请求参数
+参数格式：application/json
+请求参数样例：
+22.22.3 响应数据
+参数格式：application/json
+响应数据样例：
+23. 原方案vs优化方案对比
+23.23.1 基本信息
+23.23.2 请求参数
+参数格式：application/json
+请求参数样例：
+23.23.3 响应数据
+参数格式：application/json
+响应数据样例：
+24. 智能问答主界面
+24.24.1 基本信息
+24.24.2 请求参数
+参数格式：application/json
+请求参数样例：
+24.24.3 响应数据
+参数格式：application/json
+响应数据样例：
+25. 意图识别与路由
+25.25.1 基本信息
+25.25.2 请求参数
+参数格式：application/json
+请求参数样例：
+25.25.3 响应数据
+参数格式：application/json
+响应数据样例：
+26. 知识库检索增强
+26.26.1 基本信息
+26.26.2 请求参数
+参数格式：application/json
+请求参数样例：
+26.26.3 响应数据
+参数格式：application/json
+响应数据样例：
+27. 回答安全过滤
+27.27.1 基本信息
+27.27.2 请求参数
+参数格式：application/json
+请求参数样例：
+27.27.3 响应数据
+参数格式：application/json
+响应数据样例：
+第二部分 管理后台接口文档
+28. 管理员登录
+28.28.1 基本信息
+28.28.2 请求参数
+参数格式：application/json
+请求参数样例：
+28.28.3 响应数据
+参数格式：application/json
+响应数据样例：
+29. 知识条目列表
+29.29.1 基本信息
+29.29.2 请求参数
+参数格式：application/json
+请求参数样例：
+29.29.3 响应数据
+参数格式：application/json
+响应数据样例：
+30. 新增知识条目
+30.30.1 基本信息
+30.30.2 请求参数
+参数格式：application/json
+请求参数样例：
+30.30.3 响应数据
+参数格式：application/json
+响应数据样例：
+31. 编辑知识条目
+31.31.1 基本信息
+31.31.2 请求参数
+参数格式：application/json
+请求参数样例：
+31.31.3 响应数据
+参数格式：application/json
+响应数据样例：
+32. 删除知识条目
+32.32.1 基本信息
+32.32.2 请求参数
+参数格式：application/json
+请求参数样例：
+32.32.3 响应数据
+参数格式：application/json
+响应数据样例：
+33. 重建向量索引
+33.33.1 基本信息
+33.33.2 请求参数
+参数格式：application/json
+请求参数样例：
+33.33.3 响应数据
+参数格式：application/json
+响应数据样例：
+34. 用户列表
+34.34.1 基本信息
+34.34.2 请求参数
+参数格式：application/json
+请求参数样例：
+34.34.3 响应数据
+参数格式：application/json
+响应数据样例：
+35. 用户详情
+35.35.1 基本信息
+35.35.2 请求参数
+参数格式：application/json
+请求参数样例：
+35.35.3 响应数据
+参数格式：application/json
+响应数据样例：
+36. Agent调用日志
+36.36.1 基本信息
+36.36.2 请求参数
+参数格式：application/json
+请求参数样例：
+36.36.3 响应数据
+参数格式：application/json
+响应数据样例：
+37. 统计面板数据
+37.37.1 基本信息
+37.37.2 请求参数
+参数格式：application/json
+请求参数样例：
+37.37.3 响应数据
+参数格式：application/json
+响应数据样例：
+38. 获取演示配置
+38.38.1 基本信息
+38.38.2 请求参数
+参数格式：无
+请求参数样例：
+38.38.3 响应数据
+参数格式：application/json
+响应数据样例：
+39. 更新演示配置
+39.39.1 基本信息
+39.39.2 请求参数
+参数格式：application/json
+请求参数样例：
+39.39.3 响应数据
+参数格式：application/json
+响应数据样例：
+40. 更新系统配置
+40.40.1 基本信息
+40.40.2 请求参数
+参数格式：application/json
+请求参数样例：
+40.40.3 响应数据
+参数格式：application/json
+响应数据样例：
+41. 新增政策/预警信息
+41.41.1 基本信息
+41.41.2 请求参数
+参数格式：application/json
+请求参数样例：
+41.41.3 响应数据
+参数格式：application/json
+响应数据样例：
+42. 编辑/删除预警信息
+42.42.1 基本信息
+42.42.2 请求参数
+参数格式：application/json
+请求参数样例：
+42.42.3 响应数据
+参数格式：application/json
+响应数据样例：
+43. 新增知识学院课程
+43.43.1 基本信息
+43.43.2 请求参数
+参数格式：application/json
+请求参数样例：
+43.43.3 响应数据
+参数格式：application/json
+响应数据样例：
+44. 视频素材管理
+44.44.1 基本信息
+44.44.2 请求参数
+参数格式：application/json
+请求参数样例：
+44.44.3 响应数据
+参数格式：application/json
+响应数据样例：
+45. 新增方案案例
+45.45.1 基本信息
+45.45.2 请求参数
+参数格式：application/json
+请求参数样例：
+45.45.3 响应数据
+参数格式：application/json
+响应数据样例：
+46. 案例推荐策略管理
+46.46.1 基本信息
+46.46.2 请求参数
+参数格式：application/json
+请求参数样例：
+46.46.3 响应数据
+参数格式：application/json
+响应数据样例：
+47. 问答对管理
+47.47.1 基本信息
+47.47.2 请求参数
+参数格式：application/json
+请求参数样例：
+47.47.3 响应数据
+参数格式：application/json
+响应数据样例：
+48. 意图标签管理
+48.48.1 基本信息
+48.48.2 请求参数
+参数格式：application/json
+请求参数样例：
+48.48.3 响应数据
+参数格式：application/json
+响应数据样例：
+第三部分 Agent层接口文档
+以下接口为后端服务与AgentArts平台之间的内部通信接口，不直接对前端开放。
+49. 启动预审编排
+49.49.1 基本信息
+49.49.2 请求参数
+参数格式：application/json
+请求参数样例：
+49.49.3 响应数据
+参数格式：application/json
+响应数据样例：
+50. Agent进度回调
+50.50.1 基本信息
+50.50.2 请求参数
+参数格式：application/json
+请求参数样例：
+50.50.3 响应数据
+参数格式：application/json
+响应数据样例：
+51. 主动查询状态
+51.51.1 基本信息
+51.51.2 请求参数
+参数格式：application/json
+请求参数样例：
+51.51.3 响应数据
+参数格式：application/json
+响应数据样例：
+52. 意图识别Agent配置
+52.52.1 基本信息
+52.52.2 请求参数
+参数格式：application/json
+请求参数样例：
+52.52.3 响应数据
+参数格式：application/json
+响应数据样例：
+53. 知识库检索Agent配置
+53.53.1 基本信息
+53.53.2 请求参数
+参数格式：application/json
+请求参数样例：
+53.53.3 响应数据
+参数格式：application/json
+响应数据样例：
+54. 回答生成Agent配置
+54.54.1 基本信息
+54.54.2 请求参数
+参数格式：application/json
+请求参数样例：
+54.54.3 响应数据
+参数格式：application/json
+响应数据样例：
+55. 安全过滤Agent配置
+55.55.1 基本信息
+55.55.2 请求参数
+参数格式：application/json
+请求参数样例：
+55.55.3 响应数据
+参数格式：application/json
+响应数据样例：
+
+=== TABLES: 279 ===
+--- TABLE 0 ---
+项目 | 说明
+接口前缀 | /api/v1
+请求格式 | 默认 application/json；文件上传使用 multipart/form-data
+响应格式 | application/json
+认证方式 | Authorization: Bearer {token}
+分页规则 | page 从 1 开始；pageSize 默认 20
+时间格式 | yyyy-MM-dd HH:mm:ss
+农户端接口数 | 27（原有11 + 新增16）
+管理后台接口数 | 21（原有13 + 新增8）
+Agent层接口数 | 7（原有3 + 新增4）
+接口总数 | 55
+--- TABLE 1 ---
+响应字段 | 类型 | 说明
+code | number | 响应码，0 代表成功，非 0 表示业务错误
+message | string | 提示信息
+data | object | 返回数据，失败时可能为 null
+--- TABLE 2 ---
+错误码 | 说明
+0 | 成功
+400 | 请求参数错误
+401 | 未登录或 token 失效
+403 | 无权限
+404 | 资源不存在
+500 | 服务器异常
+--- TABLE 3 ---
+枚举名 | 值 | 说明
+Risk Level | high | 高危（必须整改）
+Risk Level | medium | 建议（建议优化）
+Risk Level | low | 提示（仅参考提示）
+Task Status | pending | 待处理
+Task Status | processing | 处理中
+Task Status | paused | 已暂停（等待补充信息）
+Task Status | completed | 已完成
+Task Status | failed | 失败
+User Role | USER | 普通用户
+User Role | ADMIN | 管理员
+Knowledge Status | active | 生效
+Knowledge Status | inactive | 未生效
+Policy Type | notice | 新农药禁限用通知
+Policy Type | subsidy | 农业补贴政策
+Policy Type | document | 农业农村部文件
+Policy Type | pest_alert | 病虫害预警
+Policy Type | weather_alert | 极端天气预警
+Alert Level | red | 红色预警（紧急）
+Alert Level | orange | 橙色预警（重要）
+Alert Level | yellow | 黄色预警（一般）
+Alert Level | blue | 蓝色预警（关注）
+Class Type | beginner | 新手课堂
+Class Type | ai | AI课堂
+Class Type | expert | 专家课堂
+Case Risk Level | high | 高风险案例
+Case Risk Level | medium | 中风险案例
+Case Risk Level | low | 低风险案例
+Intent Type | agriculture | 农业知识问答
+Intent Type | policy | 政策解读
+Intent Type | pesticide | 农药咨询
+Intent Type | crop | 种植技术指导
+Intent Type | market | 市场行情分析
+--- TABLE 4 ---
+项目 | 说明
+请求路径 | /api/v1/auth/wechat-login
+请求方式 | POST
+接口描述 | 使用微信授权 code 换取 JWT token 与用户基本信息
+访问权限 | 游客
+--- TABLE 5 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+code | string | 必须 | wx_auth_code_abc123 | 微信授权临时凭证
+--- TABLE 6 ---
+{
+"code": "wx_auth_code_abc123"
+}
+--- TABLE 7 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- token | string | 必须 | 访问令牌
+|- tokenType | string | 必须 | Bearer
+|- expiresIn | number | 必须 | 有效期，单位秒
+|- userInfo.id | number | 非必须 | 用户ID
+|- userInfo.openId | string | 非必须 | 微信OpenID
+|- userInfo.phone | string | 非必须 | 手机号
+|- userInfo.nickname | string | 非必须 | 昵称
+|- userInfo.role | string | 非必须 | USER普通用户 ADMIN管理员
+|- userInfo.createdAt | string | 非必须 | 注册时间
+--- TABLE 8 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"token": "eyJhbGciOiJIUzI1NiJ9.xxx",
+"tokenType": "Bearer",
+"expiresIn": 86400,
+"userInfo": {
+"id": 1001,
+"openId": "wx_openid_xxx",
+"phone": "13800138000",
+"nickname": "农户张三",
+"role": "USER",
+"createdAt": "2026-09-01 10:00:00"
+}
+}
+}
+--- TABLE 9 ---
+项目 | 说明
+请求路径 | /api/v1/user/profile
+请求方式 | GET
+接口描述 | 获取当前登录用户的详细资料与历史使用统计
+访问权限 | 登录
+--- TABLE 10 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+--- TABLE 11 ---
+
+无请求参数
+--- TABLE 12 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | number | 非必须 | 用户ID
+|- openId | string | 非必须 | 微信OpenID
+|- phone | string | 非必须 | 手机号
+|- nickname | string | 非必须 | 昵称
+|- avatar | string | 非必须 | 头像URL
+|- role | string | 非必须 | 用户角色
+|- reviewCount | number | 非必须 | 累计预审次数
+|- createdAt | string | 非必须 | 注册时间
+|- updatedAt | string | 非必须 | 更新时间
+--- TABLE 13 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": 1001,
+"openId": "wx_openid_xxx",
+"phone": "13800138000",
+"nickname": "农户张三",
+"avatar": "https://cdn.example.com/avatar/1001.png",
+"role": "USER",
+"reviewCount": 12,
+"createdAt": "2026-09-01 10:00:00",
+"updatedAt": "2026-09-03 14:30:00"
+}
+}
+--- TABLE 14 ---
+项目 | 说明
+请求路径 | /api/v1/files/upload
+请求方式 | POST
+接口描述 | 上传种植方案文档，支持 PDF/Word/TXT 格式，上传成功后返回 fileId 用于后续提交
+访问权限 | 登录
+--- TABLE 15 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+file | file | 必须 | 种植方案文件 | 支持PDF/Word/TXT，不超过20MB
+--- TABLE 16 ---
+
+file: planting_plan.pdf
+Content-Type: multipart/form-data
+--- TABLE 17 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- fileId | string | 必须 | 文件ID
+|- fileName | string | 必须 | 文件名
+|- fileSize | number | 必须 | 文件大小（字节）
+|- fileType | string | 必须 | 文件类型
+|- uploadTime | string | 必须 | 上传时间
+--- TABLE 18 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"fileId": "file_20260903_001",
+"fileName": "水稻种植方案.pdf",
+"fileSize": 245678,
+"fileType": "pdf",
+"uploadTime": "2026-09-03 15:00:00"
+}
+}
+--- TABLE 19 ---
+项目 | 说明
+请求路径 | /api/v1/reviews
+请求方式 | POST
+接口描述 | 提交文本内容或 fileId，触发后端调用 AgentArts 画布开始预审
+访问权限 | 登录
+--- TABLE 20 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+title | string | 非必须 | 水稻种植方案预审 | 任务标题
+content | string | 非必须 | （方案文本内容） | 与fileId二选一
+fileId | string | 非必须 | file_20260903_001 | 已上传文件ID，与content二选一
+cropType | string | 非必须 | 水稻 | 作物类型
+region | string | 非必须 | 湖南省长沙市 | 种植区域
+--- TABLE 21 ---
+{
+"title": "水稻种植方案预审",
+"fileId": "file_20260903_001",
+"cropType": "水稻",
+"region": "湖南省长沙市"
+}
+--- TABLE 22 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- reviewId | string | 必须 | 预审任务ID
+|- status | string | 必须 | processing（处理中）
+|- estimatedTime | number | 非必须 | 预估完成时间（秒）
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 23 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"reviewId": "rev_20260903_001",
+"status": "processing",
+"estimatedTime": 120,
+"createdAt": "2026-09-03 15:05:00"
+}
+}
+--- TABLE 24 ---
+项目 | 说明
+请求路径 | /api/v1/reviews/{reviewId}/progress
+请求方式 | GET
+接口描述 | 查询解析、识别、评审、报告四个阶段的状态，若缺失字段会返回提示
+访问权限 | 登录
+--- TABLE 25 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID（路径参数）
+--- TABLE 26 ---
+
+GET /api/v1/reviews/rev_20260903_001/progress
+--- TABLE 27 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- reviewId | string | 必须 | 预审任务ID
+|- status | string | 必须 | pending/processing/paused/completed/failed
+|- stages | object | 非必须 | 各阶段状态
+|- missingFields | array | 非必须 | 缺失字段列表（status为paused时返回）
+|- createdAt | string | 必须 | 创建时间
+|- updatedAt | string | 必须 | 更新时间
+--- TABLE 28 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"reviewId": "rev_20260903_001",
+"status": "processing",
+"stages": {
+"parsing": {
+"status": "completed",
+"progress": 100
+},
+"recognition": {
+"status": "running",
+"progress": 60
+},
+"review": {
+"status": "pending",
+"progress": 0
+},
+"report": {
+"status": "pending",
+"progress": 0
+}
+},
+"missingFields": [],
+"createdAt": "2026-09-03 15:05:00",
+"updatedAt": "2026-09-03 15:06:30"
+}
+}
+--- TABLE 29 ---
+项目 | 说明
+请求路径 | /api/v1/reviews/{reviewId}/supplement
+请求方式 | POST
+接口描述 | 当任务暂停等待补充时，提交土壤类型、区域等信息后继续流程
+访问权限 | 登录
+--- TABLE 30 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID（路径参数）
+soilType | string | 非必须 | 壤土 | 土壤类型
+region | string | 非必须 | 湖南省长沙市 | 种植区域
+plantingArea | number | 非必须 | 50 | 种植面积（亩）
+cropVariety | string | 非必须 | 湘晚籼 | 作物品种
+--- TABLE 31 ---
+{
+"soilType": "壤土",
+"region": "湖南省长沙市",
+"plantingArea": 50,
+"cropVariety": "湘晚籼"
+}
+--- TABLE 32 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- reviewId | string | 必须 | 预审任务ID
+|- status | string | 必须 | 更新后的状态
+|- message | string | 必须 | 提示信息
+|- resumedAt | string | 必须 | 恢复时间
+--- TABLE 33 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"reviewId": "rev_20260903_001",
+"status": "processing",
+"message": "信息已补充，预审流程继续",
+"resumedAt": "2026-09-03 15:10:00"
+}
+}
+--- TABLE 34 ---
+项目 | 说明
+请求路径 | /api/v1/reviews/{reviewId}/report
+请求方式 | GET
+接口描述 | 获取完整的预审结果，包含方案摘要、分级风险清单、整改建议及农事日历
+访问权限 | 登录
+--- TABLE 35 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID（路径参数）
+--- TABLE 36 ---
+
+GET /api/v1/reviews/rev_20260903_001/report
+--- TABLE 37 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- reviewId | string | 必须 | 预审任务ID
+|- title | string | 必须 | 方案标题
+|- summary | string | 必须 | 方案摘要
+|- riskLevel | string | 必须 | 整体风险等级：high/medium/low
+|- risks | array | 必须 | 风险清单
+|- calendar | object | 非必须 | 农事日历
+|- createdAt | string | 必须 | 报告生成时间
+--- TABLE 38 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"reviewId": "rev_20260903_001",
+"title": "水稻种植方案预审报告",
+"summary": "本方案涵盖水稻种植全流程...",
+"riskLevel": "medium",
+"risks": [
+{
+"id": "risk_001",
+"level": "high",
+"category": "施肥方案",
+"title": "氮肥用量过高",
+"description": "方案中氮肥用量超出推荐范围30%",
+"suggestion": "建议将氮肥用量调整为每亩XX公斤",
+"priority": 5
+}
+],
+"calendar": {
+"plantingTime": "2026年4月上旬",
+"harvestTime": "2026年9月下旬",
+"keyTasks": [
+"育秧",
+"移栽",
+"分蘖期管理"
+]
+},
+"createdAt": "2026-09-03 15:15:00"
+}
+}
+--- TABLE 39 ---
+项目 | 说明
+请求路径 | /api/v1/reviews/{reviewId}/report/export
+请求方式 | GET
+接口描述 | 支持导出为 PDF 或图片格式
+访问权限 | 登录
+--- TABLE 40 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID（路径参数）
+format | string | 必须 | pdf | 导出格式：pdf 或 image
+--- TABLE 41 ---
+
+GET /api/v1/reviews/rev_20260903_001/report/export?format=pdf
+--- TABLE 42 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- downloadUrl | string | 必须 | 下载链接
+|- fileName | string | 必须 | 文件名
+|- expiresIn | number | 必须 | 链接有效期（秒）
+--- TABLE 43 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"downloadUrl": "https://cdn.example.com/reports/rev_20260903_001.pdf",
+"fileName": "水稻种植方案预审报告.pdf",
+"expiresIn": 3600
+}
+}
+--- TABLE 44 ---
+项目 | 说明
+请求路径 | /api/v1/reviews
+请求方式 | GET
+接口描述 | 获取用户的预审历史列表，支持分页及按作物、时间筛选
+访问权限 | 登录
+--- TABLE 45 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码，默认1
+pageSize | number | 非必须 | 20 | 每页条数，默认20
+cropType | string | 非必须 | 水稻 | 按作物筛选
+status | string | 非必须 | completed | 按状态筛选
+--- TABLE 46 ---
+
+GET /api/v1/reviews?page=1&pageSize=20&cropType=水稻
+--- TABLE 47 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 预审记录列表
+|- total | number | 必须 | 总条数
+|- page | number | 必须 | 当前页
+|- pageSize | number | 必须 | 每页条数
+--- TABLE 48 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"reviewId": "rev_20260903_001",
+"title": "水稻种植方案预审",
+"cropType": "水稻",
+"riskLevel": "medium",
+"status": "completed",
+"createdAt": "2026-09-03 15:05:00"
+}
+],
+"total": 12,
+"page": 1,
+"pageSize": 20
+}
+}
+--- TABLE 49 ---
+项目 | 说明
+请求路径 | /api/v1/session/context
+请求方式 | GET
+接口描述 | 获取地块、地域、作物等记忆上下文，实现多轮对话免重复输入
+访问权限 | 登录
+--- TABLE 50 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+--- TABLE 51 ---
+
+无请求参数
+--- TABLE 52 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- userId | string | 必须 | 用户ID
+|- plotInfo | object | 非必须 | 地块信息
+|- favoriteCrops | array | 非必须 | 常用作物
+|- recentRegions | array | 非必须 | 最近使用区域
+--- TABLE 53 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"userId": "user_1001",
+"plotInfo": {
+"region": "湖南省长沙市",
+"soilType": "壤土",
+"plantingArea": 50
+},
+"favoriteCrops": [
+{
+"cropType": "水稻",
+"lastUsed": "2026-09-03 15:00:00"
+}
+],
+"recentRegions": [
+{
+"region": "湖南省长沙市",
+"lastUsed": "2026-09-03 15:00:00"
+}
+]
+}
+}
+--- TABLE 54 ---
+项目 | 说明
+请求路径 | /api/v1/guide/examples
+请求方式 | GET
+接口描述 | 获取使用引导内容与 Demo 场景数据，帮助新用户上手
+访问权限 | 游客
+--- TABLE 55 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+--- TABLE 56 ---
+
+无请求参数
+--- TABLE 57 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- guideContent | string | 必须 | 使用引导文本
+|- demoData | array | 必须 | 演示场景数据
+--- TABLE 58 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"guideContent": "欢迎使用农策审系统！",
+"demoData": [
+{
+"id": "demo_001",
+"title": "水稻种植方案示例",
+"cropType": "水稻",
+"content": "本方案涵盖水稻种植全流程...",
+"expectedResult": "系统将识别方案中的风险点并生成分级整改建议"
+}
+]
+}
+}
+--- TABLE 59 ---
+项目 | 说明
+请求路径 | /api/v1/policies
+请求方式 | GET
+接口描述 | 获取农业政策动态与预警信息列表，支持按类型、区域、时间筛选，供预审时匹配政策约束
+访问权限 | 登录
+--- TABLE 60 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 必须 | 1 | 页码，默认1
+pageSize | number | 必须 | 20 | 每页条数，默认20
+type | string | 非必须 | notice | 类型筛选：notice/subsidy/document/pest_alert/weather_alert
+region | string | 非必须 | 湖南 | 按省份筛选
+keyword | string | 非必须 | 农药 | 搜索关键词
+--- TABLE 61 ---
+
+GET /api/v1/policies?page=1&pageSize=20&type=notice&region=湖南
+--- TABLE 62 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 政策/预警列表
+|- total | number | 必须 | 总条数
+|- page | number | 必须 | 当前页
+|- pageSize | number | 必须 | 每页条数
+--- TABLE 63 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "pol_001",
+"type": "notice",
+"title": "关于禁止使用甲胺磷等五种高毒农药的通知",
+"summary": "农业农村部发布通知，自2026年10月1日起禁止在蔬菜、果树、茶叶、中草药材上使用甲胺磷等五种高毒农药",
+"region": "全国",
+"publishTime": "2026-09-01 09:00:00",
+"expireTime": "2027-09-01"
+},
+{
+"id": "pol_002",
+"type": "weather_alert",
+"title": "湖南省暴雨橙色预警",
+"summary": "预计未来48小时内湖南省大部地区将出现大暴雨",
+"region": "湖南",
+"alertLevel": "orange",
+"publishTime": "2026-09-03 08:00:00"
+}
+],
+"total": 45,
+"page": 1,
+"pageSize": 20
+}
+}
+--- TABLE 64 ---
+项目 | 说明
+请求路径 | /api/v1/policies/{policyId}
+请求方式 | GET
+接口描述 | 查看单条政策/预警的完整内容，含正文、附件、关联作物与农药信息
+访问权限 | 登录
+--- TABLE 65 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+policyId | string | 必须 | pol_001 | 政策/预警ID（路径参数）
+--- TABLE 66 ---
+
+GET /api/v1/policies/pol_001
+--- TABLE 67 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 条目ID
+|- type | string | 必须 | 类型
+|- title | string | 必须 | 标题
+|- content | string | 必须 | 正文内容
+|- attachments | array | 非必须 | 附件列表
+|- region | string | 非必须 | 生效区域
+|- relatedCrops | array | 非必须 | 关联作物
+|- relatedPesticides | array | 非必须 | 关联农药
+|- publishTime | string | 必须 | 发布时间
+|- expireTime | string | 非必须 | 过期时间
+|- source | string | 非必须 | 来源
+--- TABLE 68 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "pol_001",
+"type": "notice",
+"title": "关于禁止使用甲胺磷等五种高毒农药的通知",
+"content": "各省、自治区、直辖市农业农村厅（局、办）：为进一步加强农药使用管理...",
+"attachments": [
+{
+"name": "附件1-禁限用农药名录.pdf",
+"url": "https://cdn.example.com/pol_001_attach1.pdf"
+}
+],
+"region": "全国",
+"relatedCrops": [
+"蔬菜",
+"果树",
+"茶叶",
+"中草药材"
+],
+"relatedPesticides": [
+"甲胺磷",
+"对硫磷",
+"甲基对硫磷",
+"久效磷",
+"磷胺"
+],
+"publishTime": "2026-09-01 09:00:00",
+"expireTime": "2027-09-01",
+"source": "农业农村部"
+}
+}
+--- TABLE 69 ---
+项目 | 说明
+请求路径 | /api/v1/alerts
+请求方式 | GET
+接口描述 | 获取当前生效中的预警信息列表，按紧急程度排序，供用户端首页弹窗或推送
+访问权限 | 登录
+--- TABLE 70 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+region | string | 非必须 | 湖南 | 按省份筛选
+type | string | 非必须 | weather_alert | 预警类型：pest_alert/weather_alert
+--- TABLE 71 ---
+
+GET /api/v1/alerts?region=湖南&type=weather_alert
+--- TABLE 72 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 预警列表
+|- total | number | 必须 | 总条数
+--- TABLE 73 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "alt_001",
+"title": "湖南省暴雨橙色预警",
+"level": "orange",
+"content": "预计未来48小时内湖南省大部地区将出现大暴雨...",
+"region": "湖南",
+"validFrom": "2026-09-03 08:00:00",
+"validTo": "2026-09-05 23:59:59"
+}
+],
+"total": 1
+}
+}
+--- TABLE 74 ---
+项目 | 说明
+请求路径 | /api/v1/reviews/{reviewId}/policy-check
+请求方式 | POST
+接口描述 | 在预审过程中自动匹配相关政策，将政策约束结果追加到预审报告中
+访问权限 | 登录
+--- TABLE 75 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID（路径参数）
+cropType | string | 非必须 | 玉米 | 作物类型
+region | string | 非必须 | 山东 | 种植区域
+pesticides | array | 非必须 | ["草甘膦","草铵膦"] | 使用的农药列表
+--- TABLE 76 ---
+{
+"cropType": "玉米",
+"region": "山东",
+"pesticides": [
+"草甘膦",
+"草铵膦"
+]
+}
+--- TABLE 77 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- reviewId | string | 必须 | 预审任务ID
+|- matchedPolicies | array | 必须 | 匹配到的政策列表
+|- isCompliant | boolean | 必须 | 是否合规
+|- matchedAt | string | 必须 | 匹配时间
+--- TABLE 78 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"reviewId": "rev_20260903_001",
+"matchedPolicies": [
+{
+"policyId": "pol_001",
+"title": "关于禁止使用甲胺磷等五种高毒农药的通知",
+"matchReason": "方案中使用甲胺磷，该农药已在蔬菜上禁用",
+"impact": "方案中玉米种植使用甲胺磷防治害虫，违反农业农村部2026年第5号公告",
+"action": "建议替换为低毒农药如氯虫苯甲酰胺",
+"policyType": "notice"
+}
+],
+"isCompliant": false,
+"matchedAt": "2026-09-03 15:20:00"
+}
+}
+--- TABLE 79 ---
+项目 | 说明
+请求路径 | /api/v1/academy/classes
+请求方式 | GET
+接口描述 | 获取新手课堂课程列表，支持按分类筛选；传入classId可获取单条课程详情
+访问权限 | 登录
+--- TABLE 80 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+classType | string | 非必须 | beginner | 分类：beginner/ai/expert
+classId | string | 非必须 | cls_001 | 课程ID（传入则返回详情）
+--- TABLE 81 ---
+
+GET /api/v1/academy/classes?classType=beginner&page=1&pageSize=20
+--- TABLE 82 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 课程列表
+|- total | number | 必须 | 总条数
+--- TABLE 83 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "cls_001",
+"title": "怎么写种植方案",
+"category": "beginner",
+"coverImage": "https://cdn.example.com/cls_001_cover.jpg",
+"duration": 600,
+"viewCount": 1234,
+"status": "active",
+"createdAt": "2026-08-15 10:00:00"
+}
+],
+"total": 12
+}
+}
+--- TABLE 84 ---
+项目 | 说明
+请求路径 | /api/v1/academy/ai-chat
+请求方式 | POST
+接口描述 | 用户与AI进行农业知识互动学习，AI根据课程内容回答问题并给出学习建议
+访问权限 | 登录
+--- TABLE 85 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+classId | string | 非必须 | cls_001 | 关联课程ID
+question | string | 必须 | 农药配比怎么算？ | 用户提问内容
+context | string | 非必须 | 关于水稻种植方案的农药配比 | 对话上下文
+--- TABLE 86 ---
+{
+"classId": "cls_001",
+"question": "农药配比怎么算？",
+"context": "关于水稻种植方案的农药配比"
+}
+--- TABLE 87 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- answer | string | 必须 | AI回答内容
+|- relatedClasses | array | 非必须 | 推荐相关课程
+|- followUpQuestions | array | 非必须 | 追问建议
+|- createdAt | string | 必须 | 回答时间
+--- TABLE 88 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"answer": "农药配比需要根据有效成分含量和目标浓度来计算...",
+"relatedClasses": [
+{
+"id": "cls_002",
+"title": "农药配比计算方法"
+},
+{
+"id": "cls_005",
+"title": "安全用药常识"
+}
+],
+"followUpQuestions": [
+"不同作物用什么农药？",
+"有机农药有哪些？"
+],
+"createdAt": "2026-09-03 16:00:00"
+}
+}
+--- TABLE 89 ---
+项目 | 说明
+请求路径 | /api/v1/academy/videos
+请求方式 | GET
+接口描述 | 获取专家视频课程列表，支持按专家、分类、时间筛选
+访问权限 | 登录
+--- TABLE 90 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+expert | string | 非必须 | 张教授 | 按专家筛选
+keyword | string | 非必须 | 轮作 | 搜索关键词
+--- TABLE 91 ---
+
+GET /api/v1/academy/videos?expert=张教授&page=1&pageSize=20
+--- TABLE 92 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 视频列表
+|- total | number | 必须 | 总条数
+--- TABLE 93 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "vid_001",
+"title": "水稻高产栽培技术",
+"expertName": "张教授",
+"expertTitle": "省农科院水稻专家",
+"videoUrl": "https://cdn.example.com/vid_001.mp4",
+"coverImage": "https://cdn.example.com/vid_001_cover.jpg",
+"duration": 1800,
+"viewCount": 5678,
+"likeCount": 234,
+"createdAt": "2026-08-20 14:00:00"
+}
+],
+"total": 8
+}
+}
+--- TABLE 94 ---
+项目 | 说明
+请求路径 | /api/v1/academy/ai-question
+请求方式 | POST
+接口描述 | 用户自由提问农业相关问题，AI基于知识库检索后给出专业回答
+访问权限 | 登录
+--- TABLE 95 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 玉米什么时候追肥？ | 用户提问内容
+cropType | string | 非必须 | 玉米 | 关联作物类型
+region | string | 非必须 | 山东 | 关联区域
+--- TABLE 96 ---
+{
+"question": "玉米什么时候追肥？",
+"cropType": "玉米",
+"region": "山东"
+}
+--- TABLE 97 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- answer | string | 必须 | AI回答内容
+|- sources | array | 非必须 | 参考来源
+|- relatedPolicies | array | 非必须 | 关联政策
+|- followUpQuestions | array | 非必须 | 追问建议
+|- answeredAt | string | 必须 | 回答时间
+--- TABLE 98 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"answer": "玉米追肥一般分为大喇叭口期和穗期两个关键时期...",
+"sources": [
+{
+"id": "kb_045",
+"title": "玉米施肥技术规程"
+},
+{
+"id": "kb_067",
+"title": "北方夏玉米高产栽培技术"
+}
+],
+"relatedPolicies": [],
+"followUpQuestions": [
+"追肥用什么肥料好？",
+"玉米苗期管理要点"
+],
+"answeredAt": "2026-09-03 16:30:00"
+}
+}
+--- TABLE 99 ---
+项目 | 说明
+请求路径 | /api/v1/cases
+请求方式 | GET
+接口描述 | 获取方案案例库列表，支持按区域、作物、风险等级筛选
+访问权限 | 登录
+--- TABLE 100 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+region | string | 非必须 | 山东 | 按种植区域筛选
+cropType | string | 非必须 | 玉米 | 按作物类型筛选
+riskLevel | string | 非必须 | low | 按风险等级筛选：high/medium/low
+--- TABLE 101 ---
+
+GET /api/v1/cases?region=山东&cropType=玉米&riskLevel=low&page=1&pageSize=20
+--- TABLE 102 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 案例列表
+|- total | number | 必须 | 总条数
+--- TABLE 103 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "case_001",
+"projectName": "山东寿光玉米高产种植方案",
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 100,
+"riskLevel": "low",
+"finalYield": "亩产1200斤，收益提升15%",
+"aiRecommendCount": 56,
+"createdAt": "2026-08-10 10:00:00"
+}
+],
+"total": 23
+}
+}
+--- TABLE 104 ---
+项目 | 说明
+请求路径 | /api/v1/cases/{caseId}
+请求方式 | GET
+接口描述 | 查看单个案例的完整信息，包含原方案、优化方案及对比分析
+访问权限 | 登录
+--- TABLE 105 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+caseId | string | 必须 | case_001 | 案例ID（路径参数）
+--- TABLE 106 ---
+
+GET /api/v1/cases/case_001
+--- TABLE 107 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 案例ID
+|- projectName | string | 必须 | 项目名称
+|- region | string | 必须 | 种植区域
+|- cropType | string | 必须 | 作物类型
+|- riskLevel | string | 必须 | 风险等级
+|- originalPlan | object | 必须 | 原方案内容
+|- optimizedPlan | object | 必须 | 优化方案内容
+|- comparison | object | 非必须 | 方案对比分析
+|- finalYield | string | 非必须 | 最终收益描述
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 108 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "case_001",
+"projectName": "山东寿光玉米高产种植方案",
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 100,
+"riskLevel": "low",
+"originalPlan": {
+"content": "原方案采用传统密植方式，每亩3500株...",
+"riskPoints": [
+"氮肥过量",
+"病虫害防治不及时"
+]
+},
+"optimizedPlan": {
+"content": "优化后采用合理密植，每亩3000株，配合测土配方施肥...",
+"improvements": [
+"氮肥减少20%",
+"病虫害预警提前3天"
+]
+},
+"comparison": {
+"yieldChange": "+15%",
+"costChange": "-10%",
+"riskReduction": "高风险项减少2项"
+},
+"finalYield": "亩产1200斤，收益提升15%",
+"createdAt": "2026-08-10 10:00:00"
+}
+}
+--- TABLE 109 ---
+项目 | 说明
+请求路径 | /api/v1/cases/recommend
+请求方式 | POST
+接口描述 | 根据用户指定的区域、作物、面积等条件，智能推荐相似的成功案例
+访问权限 | 登录
+--- TABLE 110 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+region | string | 必须 | 山东 | 种植区域
+cropType | string | 必须 | 玉米 | 作物类型
+plantingArea | number | 非必须 | 100 | 种植面积（亩）
+limit | number | 非必须 | 5 | 推荐数量，默认5
+--- TABLE 111 ---
+{
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 100,
+"limit": 5
+}
+--- TABLE 112 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 推荐案例列表
+|- total | number | 必须 | 推荐总数
+--- TABLE 113 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"case": {
+"id": "case_001",
+"projectName": "山东寿光玉米高产种植方案",
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 100,
+"riskLevel": "low",
+"finalYield": "亩产1200斤，收益提升15%"
+},
+"matchScore": 95,
+"matchReason": "区域、作物、面积完全匹配"
+},
+{
+"case": {
+"id": "case_005",
+"projectName": "山东聊城玉米绿色种植方案",
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 80,
+"riskLevel": "low",
+"finalYield": "亩产1150斤，收益提升12%"
+},
+"matchScore": 88,
+"matchReason": "区域、作物匹配，面积接近"
+}
+],
+"total": 2
+}
+}
+--- TABLE 114 ---
+项目 | 说明
+请求路径 | /api/v1/cases/{caseId}/compare
+请求方式 | GET
+接口描述 | 获取单个案例的原方案与优化方案的详细对比，直观展示AI改进效果
+访问权限 | 登录
+--- TABLE 115 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+caseId | string | 必须 | case_001 | 案例ID（路径参数）
+--- TABLE 116 ---
+
+GET /api/v1/cases/case_001/compare
+--- TABLE 117 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- originalPlan | object | 必须 | 原方案详情
+|- optimizedPlan | object | 必须 | 优化方案详情
+|- comparison | object | 必须 | 对比分析
+|- finalResult | string | 非必须 | 最终结果描述
+--- TABLE 118 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"originalPlan": {
+"content": "原方案采用传统密植方式，每亩3500株，氮肥用量每亩50公斤",
+"riskPoints": [
+"氮肥过量",
+"病虫害防治不及时",
+"灌溉方式落后"
+],
+"estimatedYield": "亩产1000斤"
+},
+"optimizedPlan": {
+"content": "优化后采用合理密植，每亩3000株，配合测土配方施肥",
+"improvements": [
+"氮肥减少20%",
+"病虫害预警提前3天",
+"改用滴灌节水30%"
+],
+"estimatedYield": "亩产1200斤"
+},
+"comparison": {
+"yieldChange": "+20%",
+"costChange": "-10%",
+"riskReduction": "高风险项减少3项"
+},
+"finalResult": "亩产1200斤，收益提升15%"
+}
+}
+--- TABLE 119 ---
+项目 | 说明
+请求路径 | /api/v1/qa/chat
+请求方式 | POST
+接口描述 | 农业智能问答主接口，用户输入问题后AI进行意图识别、知识库检索、回答生成全流程
+访问权限 | 登录
+--- TABLE 120 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 今年种大豆赚钱吗？ | 用户提问内容
+userId | string | 必须 | user_1001 | 用户ID
+context | string | 非必须 | {"region":"黑龙江"} | 上下文信息（JSON字符串）
+sessionId | string | 非必须 | session_001 | 会话ID（多轮对话使用）
+--- TABLE 121 ---
+{
+"question": "今年种大豆赚钱吗？",
+"userId": "user_1001",
+"context": "{\"region\":\"黑龙江\"}",
+"sessionId": "session_001"
+}
+--- TABLE 122 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- answer | string | 必须 | AI回答内容
+|- intent | string | 必须 | 识别到的意图类型
+|- intentScore | number | 非必须 | 意图识别置信度
+|- sources | array | 非必须 | 参考来源
+|- relatedPolicies | array | 非必须 | 关联政策
+|- followUpQuestions | array | 非必须 | 追问建议
+|- sessionId | string | 必须 | 会话ID
+|- answeredAt | string | 必须 | 回答时间
+--- TABLE 123 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"answer": "根据2026年最新数据，黑龙江大豆种植收益分析如下：...",
+"intent": "market",
+"intentScore": 0.92,
+"sources": [
+{
+"id": "kb_100",
+"title": "2026年大豆市场价格走势分析"
+},
+{
+"id": "kb_101",
+"title": "黑龙江省大豆种植补贴政策"
+}
+],
+"relatedPolicies": [
+{
+"id": "pol_010",
+"title": "2026年大豆生产者补贴政策"
+}
+],
+"followUpQuestions": [
+"大豆最佳种植品种推荐",
+"大豆病虫害防治方案"
+],
+"sessionId": "session_001",
+"answeredAt": "2026-09-03 17:00:00"
+}
+}
+--- TABLE 124 ---
+项目 | 说明
+请求路径 | /api/v1/qa/intent
+请求方式 | POST
+接口描述 | 识别用户提问的意图类型，并路由到对应的处理Agent
+访问权限 | 登录
+--- TABLE 125 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 玉米和大豆轮作行不行？ | 用户提问内容
+userId | string | 非必须 | user_1001 | 用户ID
+--- TABLE 126 ---
+{
+"question": "玉米和大豆轮作行不行？",
+"userId": "user_1001"
+}
+--- TABLE 127 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- intent | string | 必须 | 意图类型：agriculture/policy/pesticide/crop/market
+|- intentLabel | string | 必须 | 意图标签
+|- intentScore | number | 必须 | 置信度（0-1）
+|- routingAgent | string | 必须 | 路由目标Agent
+|- keywords | array | 非必须 | 提取的关键字
+|- entities | array | 非必须 | 提取的实体
+|- confidence | string | 非必须 | 整体置信度等级
+--- TABLE 128 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"intent": "crop",
+"intentLabel": "种植技术指导-轮作",
+"intentScore": 0.95,
+"routingAgent": "crop_advisor_agent",
+"keywords": [
+"玉米",
+"大豆",
+"轮作"
+],
+"entities": [
+{
+"type": "crop",
+"value": "玉米"
+},
+{
+"type": "crop",
+"value": "大豆"
+},
+{
+"type": "practice",
+"value": "轮作"
+}
+],
+"confidence": "high"
+}
+}
+--- TABLE 129 ---
+项目 | 说明
+请求路径 | /api/v1/qa/knowledge-search
+请求方式 | POST
+接口描述 | 基于用户问题在向量知识库中检索相关内容，返回Top-K相关片段用于回答生成
+访问权限 | 登录
+--- TABLE 130 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+query | string | 必须 | 大豆轮作技术 | 检索查询词
+userId | string | 非必须 | user_1001 | 用户ID
+topK | number | 非必须 | 5 | 返回结果数量，默认5
+threshold | number | 非必须 | 0.7 | 相似度阈值，默认0.7
+--- TABLE 131 ---
+{
+"query": "大豆轮作技术",
+"userId": "user_1001",
+"topK": 5,
+"threshold": 0.7
+}
+--- TABLE 132 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- results | array | 必须 | 检索结果列表
+|- total | number | 必须 | 检索到的总结果数
+|- searchTime | number | 非必须 | 检索耗时（毫秒）
+--- TABLE 133 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"results": [
+{
+"id": "kb_200",
+"title": "大豆玉米轮作技术规程",
+"content": "大豆与玉米实行轮作可有效降低土壤病害发生率30%以上...",
+"score": 0.95,
+"type": "technical_guide"
+},
+{
+"id": "kb_201",
+"title": "东北黑土地保护性耕作技术",
+"content": "轮作是黑土地保护的重要措施，建议大豆-玉米轮作周期为3-4年...",
+"score": 0.88,
+"type": "policy_guide"
+}
+],
+"total": 2,
+"searchTime": 45
+}
+}
+--- TABLE 134 ---
+项目 | 说明
+请求路径 | /api/v1/qa/safety-filter
+请求方式 | POST
+接口描述 | 对AI生成的回答进行安全过滤，确保内容合规、准确、无害
+访问权限 | 登录
+--- TABLE 135 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+content | string | 必须 | AI生成的回答内容 | 待过滤的回答文本
+question | string | 非必须 | 原始问题 | 用户原始问题（用于上下文校验）
+intent | string | 非必须 | crop | 意图类型
+--- TABLE 136 ---
+{
+"content": "根据最新数据，今年种大豆收益很好...",
+"question": "今年种大豆赚钱吗？",
+"intent": "market"
+}
+--- TABLE 137 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- isSafe | boolean | 必须 | 是否安全
+|- filteredContent | string | 必须 | 过滤后的内容
+|- issues | array | 非必须 | 发现的问题列表
+|- needsReview | boolean | 非必须 | 是否需要人工审核
+|- filteredAt | string | 必须 | 过滤时间
+--- TABLE 138 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"isSafe": true,
+"filteredContent": "根据2026年最新数据，黑龙江大豆种植收益分析如下：...",
+"issues": [],
+"needsReview": false,
+"filteredAt": "2026-09-03 17:00:01"
+}
+}
+--- TABLE 139 ---
+项目 | 说明
+请求路径 | /api/v1/admin/auth/login
+请求方式 | POST
+接口描述 | 使用账号密码登录，签发管理员专属 JWT
+访问权限 | 游客
+--- TABLE 140 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+username | string | 必须 | admin | 管理员账号
+password | string | 必须 | Admin123456 | 管理员密码
+--- TABLE 141 ---
+{
+"username": "admin",
+"password": "Admin123456"
+}
+--- TABLE 142 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- token | string | 必须 | 访问令牌
+|- tokenType | string | 必须 | Bearer
+|- expiresIn | number | 必须 | 有效期，单位秒
+|- adminInfo | object | 必须 | 管理员信息
+|- adminInfo.id | string | 必须 | 管理员ID
+|- adminInfo.username | string | 必须 | 管理员账号
+|- adminInfo.role | string | 必须 | 角色
+|- adminInfo.lastLoginAt | string | 非必须 | 最近登录时间
+--- TABLE 143 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"token": "eyJhbGciOiJIUzI1NiJ9.admin_xxx",
+"tokenType": "Bearer",
+"expiresIn": 86400,
+"adminInfo": {
+"id": "admin_001",
+"username": "admin",
+"role": "SUPER_ADMIN",
+"lastLoginAt": "2026-09-02 09:00:00"
+}
+}
+}
+--- TABLE 144 ---
+项目 | 说明
+请求路径 | /api/v1/admin/knowledge/{libCode}
+请求方式 | GET
+接口描述 | 获取指定知识库的条目列表，支持分页与关键词搜索
+访问权限 | 登录（管理员）
+--- TABLE 145 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+libCode | string | 必须 | crop | 知识库编码：crop/pesticide/rotation/region
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+keyword | string | 非必须 | 水稻 | 搜索关键词
+--- TABLE 146 ---
+
+GET /api/v1/admin/knowledge/crop?page=1&pageSize=20&keyword=水稻
+--- TABLE 147 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 条目列表
+|- total | number | 必须 | 总条数
+--- TABLE 148 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "kb_001",
+"title": "水稻品种选择指南",
+"content": "根据湖南省气候条件，推荐选择中晚熟杂交稻品种...",
+"tags": [
+"水稻",
+"品种选择"
+],
+"source": "湖南省农科院",
+"regions": [
+"湖南",
+"湖北"
+],
+"status": "active",
+"createdAt": "2026-08-01 10:00:00",
+"updatedAt": "2026-09-01 14:00:00"
+}
+],
+"total": 45
+}
+}
+--- TABLE 149 ---
+项目 | 说明
+请求路径 | /api/v1/admin/knowledge/{libCode}
+请求方式 | POST
+接口描述 | 录入知识条目正文、标签、来源、生效区域等信息
+访问权限 | 登录（管理员）
+--- TABLE 150 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+libCode | string | 必须 | crop | 知识库编码
+title | string | 必须 | 水稻品种选择指南 | 标题
+content | string | 必须 | （正文内容） | 正文内容
+tags | array | 非必须 | ["水稻","品种选择"] | 标签列表
+source | string | 非必须 | 湖南省农科院 | 来源
+regions | array | 非必须 | ["湖南","湖北"] | 生效区域
+status | string | 非必须 | active | active/inactive，默认active
+--- TABLE 151 ---
+{
+"title": "水稻品种选择指南",
+"content": "根据湖南省气候条件，推荐选择中晚熟杂交稻品种...",
+"tags": [
+"水稻",
+"品种选择"
+],
+"source": "湖南省农科院",
+"regions": [
+"湖南",
+"湖北"
+],
+"status": "active"
+}
+--- TABLE 152 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建条目ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 153 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "kb_046",
+"createdAt": "2026-09-03 16:00:00"
+}
+}
+--- TABLE 154 ---
+项目 | 说明
+请求路径 | /api/v1/admin/knowledge/{libCode}/{entryId}
+请求方式 | PUT
+接口描述 | 修改现有知识条目内容，系统自动保存修改记录
+访问权限 | 登录（管理员）
+--- TABLE 155 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+libCode | string | 必须 | crop | 知识库编码
+entryId | string | 必须 | kb_001 | 条目ID
+title | string | 非必须 | 水稻品种选择指南（更新） | 标题
+content | string | 非必须 | （更新后的正文） | 正文内容
+tags | array | 非必须 | ["水稻","品种选择","更新"] | 标签列表
+source | string | 非必须 | 湖南省农科院 | 来源
+regions | array | 非必须 | ["湖南","湖北","江西"] | 生效区域
+status | string | 非必须 | active | active/inactive
+--- TABLE 156 ---
+{
+"title": "水稻品种选择指南（更新）",
+"content": "根据最新气候数据，推荐选择中晚熟杂交稻品种...",
+"tags": [
+"水稻",
+"品种选择",
+"更新"
+],
+"regions": [
+"湖南",
+"湖北",
+"江西"
+]
+}
+--- TABLE 157 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 条目ID
+|- updatedAt | string | 必须 | 更新时间
+--- TABLE 158 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "kb_001",
+"updatedAt": "2026-09-03 16:30:00"
+}
+}
+--- TABLE 159 ---
+项目 | 说明
+请求路径 | /api/v1/admin/knowledge/{libCode}/{entryId}
+请求方式 | DELETE
+接口描述 | 执行软删除操作，数据可追溯恢复
+访问权限 | 登录（管理员）
+--- TABLE 160 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+libCode | string | 必须 | crop | 知识库编码
+entryId | string | 必须 | kb_001 | 条目ID
+--- TABLE 161 ---
+
+DELETE /api/v1/admin/knowledge/crop/kb_001
+--- TABLE 162 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- message | string | 必须 | 删除成功
+|- deletedAt | string | 必须 | 软删除时间
+--- TABLE 163 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"message": "删除成功",
+"deletedAt": "2026-09-03 17:00:00"
+}
+}
+--- TABLE 164 ---
+项目 | 说明
+请求路径 | /api/v1/admin/knowledge/reindex
+请求方式 | POST
+接口描述 | 触发将最新知识重新嵌入向量库，保证检索时效性
+访问权限 | 登录（管理员）
+--- TABLE 165 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+libCode | string | 非必须 | crop | 指定重建某个知识库，不传则全部重建
+--- TABLE 166 ---
+{
+"libCode": "crop"
+}
+--- TABLE 167 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- jobId | string | 必须 | 任务ID
+|- status | string | 必须 | queued（排队中）
+|- message | string | 必须 | 提示信息
+--- TABLE 168 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"jobId": "reindex_20260903_001",
+"status": "queued",
+"message": "索引重建任务已提交，请稍后查看进度"
+}
+}
+--- TABLE 169 ---
+项目 | 说明
+请求路径 | /api/v1/admin/users
+请求方式 | GET
+接口描述 | 查看所有注册用户，支持分页与关键词搜索
+访问权限 | 登录（管理员）
+--- TABLE 170 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+keyword | string | 非必须 | 张三 | 搜索关键词
+--- TABLE 171 ---
+
+GET /api/v1/admin/users?page=1&pageSize=20&keyword=张三
+--- TABLE 172 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 用户列表
+|- total | number | 必须 | 总条数
+--- TABLE 173 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "user_1001",
+"nickname": "农户张三",
+"phone": "13800138000",
+"role": "USER",
+"reviewCount": 12,
+"lastLoginAt": "2026-09-03 14:30:00",
+"status": "active",
+"createdAt": "2026-09-01 10:00:00"
+}
+],
+"total": 156
+}
+}
+--- TABLE 174 ---
+项目 | 说明
+请求路径 | /api/v1/admin/users/{userId}
+请求方式 | GET
+接口描述 | 查看特定用户的预审次数、最近任务记录、常用作物偏好
+访问权限 | 登录（管理员）
+--- TABLE 175 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+userId | string | 必须 | user_1001 | 用户ID
+--- TABLE 176 ---
+
+GET /api/v1/admin/users/user_1001
+--- TABLE 177 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 用户ID
+|- nickname | string | 非必须 | 昵称
+|- phone | string | 非必须 | 手机号
+|- role | string | 必须 | 角色
+|- reviewCount | number | 非必须 | 预审次数
+|- lastLoginAt | string | 非必须 | 最近登录时间
+|- status | string | 必须 | active/disabled
+--- TABLE 178 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "user_1001",
+"nickname": "农户张三",
+"phone": "13800138000",
+"role": "USER",
+"reviewCount": 12,
+"lastLoginAt": "2026-09-03 14:30:00",
+"status": "active"
+}
+}
+--- TABLE 179 ---
+项目 | 说明
+请求路径 | /api/v1/admin/agent-logs
+请求方式 | GET
+接口描述 | 查看系统运行日志，支持按Agent名称、时间范围、任务ID筛选
+访问权限 | 登录（管理员）
+--- TABLE 180 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+page | number | 非必须 | 1 | 页码
+pageSize | number | 非必须 | 20 | 每页条数
+agentName | string | 非必须 | parsing_agent | Agent名称筛选
+startTime | string | 非必须 | 2026-09-01 00:00:00 | 开始时间
+endTime | string | 非必须 | 2026-09-03 23:59:59 | 结束时间
+taskId | string | 非必须 | rev_20260903_001 | 任务ID筛选
+--- TABLE 181 ---
+
+GET /api/v1/admin/agent-logs?page=1&pageSize=20&agentName=parsing_agent
+--- TABLE 182 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- list | array | 必须 | 日志列表
+|- total | number | 必须 | 总条数
+--- TABLE 183 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"list": [
+{
+"id": "log_001",
+"agentName": "parsing_agent",
+"taskId": "rev_20260903_001",
+"status": "completed",
+"duration": 15000,
+"input": "文件解析任务...",
+"output": "解析完成，提取文本5000字",
+"createdAt": "2026-09-03 15:05:00"
+}
+],
+"total": 1234
+}
+}
+--- TABLE 184 ---
+项目 | 说明
+请求路径 | /api/v1/admin/stats/overview
+请求方式 | GET
+接口描述 | 获取系统概览数据：调用量趋势、风险等级分布、Token消耗统计
+访问权限 | 登录（管理员）
+--- TABLE 185 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+startTime | string | 非必须 | 2026-09-01 00:00:00 | 开始时间
+endTime | string | 非必须 | 2026-09-03 23:59:59 | 结束时间
+--- TABLE 186 ---
+
+GET /api/v1/admin/stats/overview?startTime=2026-09-01 00:00:00
+--- TABLE 187 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- totalReviews | number | 必须 | 总预审次数
+|- totalUsers | number | 必须 | 总用户数
+|- riskDistribution | object | 非必须 | 风险等级分布
+|- tokenUsage | object | 非必须 | Token消耗统计
+|- trend | array | 非必须 | 调用量趋势
+--- TABLE 188 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"totalReviews": 156,
+"totalUsers": 156,
+"riskDistribution": {
+"high": 23,
+"medium": 67,
+"low": 66
+},
+"tokenUsage": {
+"totalTokens": 1234567,
+"todayTokens": 45678
+},
+"trend": [
+{
+"date": "2026-09-01",
+"count": 45
+},
+{
+"date": "2026-09-02",
+"count": 52
+},
+{
+"date": "2026-09-03",
+"count": 59
+}
+]
+}
+}
+--- TABLE 189 ---
+项目 | 说明
+请求路径 | /api/v1/admin/demo/config
+请求方式 | GET
+接口描述 | 获取前端演示场景所需的配置数据
+访问权限 | 登录（管理员）
+--- TABLE 190 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+--- TABLE 191 ---
+
+无请求参数
+--- TABLE 192 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- inputExamples | array | 非必须 | 输入样例列表
+|- expectedOutputs | array | 非必须 | 预期输出列表
+--- TABLE 193 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"inputExamples": [
+{
+"id": "demo_001",
+"title": "水稻种植方案示例",
+"content": "本方案涵盖水稻种植全流程..."
+}
+],
+"expectedOutputs": [
+{
+"id": "demo_001",
+"result": "系统将识别方案中的风险点并生成分级整改建议"
+}
+]
+}
+}
+--- TABLE 194 ---
+项目 | 说明
+请求路径 | /api/v1/admin/demo/config
+请求方式 | PUT
+接口描述 | 修改输入样例、预期输出等演示场景配置
+访问权限 | 登录（管理员）
+--- TABLE 195 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+inputExamples | array | 非必须 | [{"id":"demo_001","title":"水稻种植方案示例"}] | 输入样例列表
+expectedOutputs | array | 非必须 | [{"id":"demo_001","result":"系统将识别方案中的风险点"}] | 预期输出列表
+--- TABLE 196 ---
+{
+"inputExamples": [
+{
+"id": "demo_001",
+"title": "水稻种植方案示例"
+}
+],
+"expectedOutputs": [
+{
+"id": "demo_001",
+"result": "系统将识别方案中的风险点并生成分级整改建议"
+}
+]
+}
+--- TABLE 197 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- message | string | 必须 | 更新成功
+|- updatedAt | string | 必须 | 更新时间
+--- TABLE 198 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"message": "更新成功",
+"updatedAt": "2026-09-03 17:30:00"
+}
+}
+--- TABLE 199 ---
+项目 | 说明
+请求路径 | /api/v1/admin/system-config
+请求方式 | PUT
+接口描述 | 修改全局系统参数并记录操作审计日志
+访问权限 | 登录（管理员）
+--- TABLE 200 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+configKey | string | 必须 | maxFileSize | 配置键
+configValue | string | 必须 | 20 | 配置值
+description | string | 非必须 | 最大上传文件大小（MB） | 配置说明
+--- TABLE 201 ---
+{
+"configKey": "maxFileSize",
+"configValue": "20",
+"description": "最大上传文件大小（MB）"
+}
+--- TABLE 202 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- configKey | string | 必须 | 配置键
+|- configValue | string | 必须 | 配置值
+|- updatedAt | string | 必须 | 更新时间
+|- updatedBy | string | 必须 | 更新人
+--- TABLE 203 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"configKey": "maxFileSize",
+"configValue": "20",
+"updatedAt": "2026-09-03 17:30:00",
+"updatedBy": "admin_001"
+}
+}
+--- TABLE 204 ---
+项目 | 说明
+请求路径 | /api/v1/admin/policies
+请求方式 | POST
+接口描述 | 新增农业政策或预警信息，支持设置生效区域、关联作物与农药
+访问权限 | 登录（管理员）
+--- TABLE 205 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+type | string | 必须 | notice | 类型：notice/subsidy/document/pest_alert/weather_alert
+title | string | 必须 | 关于禁止使用甲胺磷的通知 | 标题
+content | string | 必须 | （正文内容） | 正文内容
+region | string | 非必须 | 全国 | 生效区域
+relatedCrops | array | 非必须 | ["蔬菜","果树"] | 关联作物
+relatedPesticides | array | 非必须 | ["甲胺磷"] | 关联农药
+alertLevel | string | 非必须 | orange | 预警等级（仅预警类型）
+validFrom | string | 非必须 | 2026-09-01 00:00:00 | 生效开始时间
+validTo | string | 非必须 | 2027-09-01 | 过期时间
+source | string | 非必须 | 农业农村部 | 来源
+--- TABLE 206 ---
+{
+"type": "notice",
+"title": "关于禁止使用甲胺磷的通知",
+"content": "各省、自治区、直辖市农业农村厅...",
+"region": "全国",
+"relatedCrops": [
+"蔬菜",
+"果树"
+],
+"relatedPesticides": [
+"甲胺磷"
+],
+"source": "农业农村部"
+}
+--- TABLE 207 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建条目ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 208 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "pol_046",
+"createdAt": "2026-09-03 18:00:00"
+}
+}
+--- TABLE 209 ---
+项目 | 说明
+请求路径 | /api/v1/admin/alerts/{alertId}
+请求方式 | PUT/DELETE
+接口描述 | 编辑或删除预警信息，支持设置生效/失效状态
+访问权限 | 登录（管理员）
+--- TABLE 210 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+alertId | string | 必须 | alt_001 | 预警ID（路径参数）
+method | string | 必须 | PUT | PUT编辑/DELETE删除
+level | string | 非必须 | red | 预警等级：red/orange/yellow/blue
+content | string | 非必须 | （更新内容） | 更新后的内容
+validTo | string | 非必须 | 2026-09-10 | 失效时间
+--- TABLE 211 ---
+
+PUT /api/v1/admin/alerts/alt_001
+--- TABLE 212 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 预警ID
+|- updatedAt | string | 必须 | 更新时间
+--- TABLE 213 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "alt_001",
+"updatedAt": "2026-09-03 18:30:00"
+}
+}
+--- TABLE 214 ---
+项目 | 说明
+请求路径 | /api/v1/admin/academy/classes
+请求方式 | POST
+接口描述 | 新增知识学院课程，支持设置课程类型、封面图、视频素材等
+访问权限 | 登录（管理员）
+--- TABLE 215 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+title | string | 必须 | 怎么写种植方案 | 课程标题
+classType | string | 必须 | beginner | 分类：beginner/ai/expert
+content | string | 必须 | （课程内容） | 课程正文内容
+coverImage | string | 非必须 | https://cdn.example.com/cls_001_cover.jpg | 封面图URL
+videoUrl | string | 非必须 | https://cdn.example.com/cls_001_video.mp4 | 视频URL
+duration | number | 非必须 | 600 | 时长（秒）
+tags | array | 非必须 | ["新手","种植方案"] | 标签
+status | string | 非必须 | active | active/inactive
+--- TABLE 216 ---
+{
+"title": "怎么写种植方案",
+"classType": "beginner",
+"content": "种植方案是农业生产的规划文件...",
+"coverImage": "https://cdn.example.com/cls_001_cover.jpg",
+"duration": 600,
+"tags": [
+"新手",
+"种植方案"
+],
+"status": "active"
+}
+--- TABLE 217 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建课程ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 218 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "cls_013",
+"createdAt": "2026-09-03 19:00:00"
+}
+}
+--- TABLE 219 ---
+项目 | 说明
+请求路径 | /api/v1/admin/academy/videos
+请求方式 | POST
+接口描述 | 新增专家视频课程素材，支持上传视频文件、设置封面和简介
+访问权限 | 登录（管理员）
+--- TABLE 220 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+title | string | 必须 | 水稻高产栽培技术 | 视频标题
+expertName | string | 必须 | 张教授 | 专家姓名
+expertTitle | string | 非必须 | 省农科院水稻专家 | 专家职称
+videoUrl | string | 必须 | https://cdn.example.com/vid_001.mp4 | 视频播放链接
+coverImage | string | 非必须 | https://cdn.example.com/vid_001_cover.jpg | 封面图
+duration | number | 非必须 | 1800 | 时长（秒）
+description | string | 非必须 | 视频简介 | 视频简介
+status | string | 非必须 | active | active/inactive
+--- TABLE 221 ---
+{
+"title": "水稻高产栽培技术",
+"expertName": "张教授",
+"expertTitle": "省农科院水稻专家",
+"videoUrl": "https://cdn.example.com/vid_001.mp4",
+"duration": 1800,
+"description": "详细介绍水稻高产栽培技术要点",
+"status": "active"
+}
+--- TABLE 222 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建视频ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 223 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "vid_009",
+"createdAt": "2026-09-03 19:30:00"
+}
+}
+--- TABLE 224 ---
+项目 | 说明
+请求路径 | /api/v1/admin/cases
+请求方式 | POST
+接口描述 | 新增方案案例，包含原方案、优化方案及对比分析
+访问权限 | 登录（管理员）
+--- TABLE 225 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+projectName | string | 必须 | 山东寿光玉米高产种植方案 | 项目名称
+region | string | 必须 | 山东 | 种植区域
+cropType | string | 必须 | 玉米 | 作物类型
+plantingArea | number | 非必须 | 100 | 种植面积（亩）
+riskLevel | string | 必须 | low | 风险等级：high/medium/low
+originalPlan | string | 必须 | 原方案内容 | 原方案内容
+optimizedPlan | string | 必须 | 优化方案内容 | 优化方案内容
+comparison | string | 非必须 | 对比分析 | 方案对比分析
+finalYield | string | 非必须 | 亩产1200斤，收益提升15% | 最终收益描述
+--- TABLE 226 ---
+{
+"projectName": "山东寿光玉米高产种植方案",
+"region": "山东",
+"cropType": "玉米",
+"plantingArea": 100,
+"riskLevel": "low",
+"originalPlan": "原方案采用传统密植方式...",
+"optimizedPlan": "优化后采用合理密植...",
+"finalYield": "亩产1200斤，收益提升15%"
+}
+--- TABLE 227 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建案例ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 228 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "case_024",
+"createdAt": "2026-09-03 20:00:00"
+}
+}
+--- TABLE 229 ---
+项目 | 说明
+请求路径 | /api/v1/admin/cases/recommend-strategy
+请求方式 | PUT
+接口描述 | 配置案例推荐的权重策略，如区域匹配权重、作物匹配权重等
+访问权限 | 登录（管理员）
+--- TABLE 230 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+regionWeight | number | 非必须 | 0.4 | 区域匹配权重（0-1）
+cropWeight | number | 非必须 | 0.3 | 作物匹配权重（0-1）
+areaWeight | number | 非必须 | 0.2 | 面积匹配权重（0-1）
+riskWeight | number | 非必须 | 0.1 | 风险等级权重（0-1）
+topN | number | 非必须 | 5 | 默认推荐数量
+--- TABLE 231 ---
+{
+"regionWeight": 0.4,
+"cropWeight": 0.3,
+"areaWeight": 0.2,
+"riskWeight": 0.1,
+"topN": 5
+}
+--- TABLE 232 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- message | string | 必须 | 更新成功
+|- updatedAt | string | 必须 | 更新时间
+--- TABLE 233 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"message": "推荐策略更新成功",
+"updatedAt": "2026-09-03 20:30:00"
+}
+}
+--- TABLE 234 ---
+项目 | 说明
+请求路径 | /api/v1/admin/qa/entries
+请求方式 | POST
+接口描述 | 管理AI问答的标准问答对，用于提升回答质量和一致性
+访问权限 | 登录（管理员）
+--- TABLE 235 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 玉米什么时候追肥？ | 标准问题
+answer | string | 必须 | 玉米追肥一般分为大喇叭口期和穗期两个关键时期... | 标准答案
+intent | string | 非必须 | crop | 意图类型
+tags | array | 非必须 | ["玉米","追肥"] | 标签
+status | string | 非必须 | active | active/inactive
+--- TABLE 236 ---
+{
+"question": "玉米什么时候追肥？",
+"answer": "玉米追肥一般分为大喇叭口期和穗期两个关键时期...",
+"intent": "crop",
+"tags": [
+"玉米",
+"追肥"
+],
+"status": "active"
+}
+--- TABLE 237 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- id | string | 必须 | 新建问答对ID
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 238 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"id": "qa_001",
+"createdAt": "2026-09-03 21:00:00"
+}
+}
+--- TABLE 239 ---
+项目 | 说明
+请求路径 | /api/v1/admin/qa/intent-tags
+请求方式 | PUT
+接口描述 | 管理AI问答的意图标签体系，增删改意图类型和标签
+访问权限 | 登录（管理员）
+--- TABLE 240 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+action | string | 必须 | add | 操作：add/edit/delete/list
+intentType | string | 非必须 | agriculture | 意图类型
+intentLabel | string | 非必须 | 农业知识问答 | 意图标签
+keywords | array | 非必须 | ["种植","施肥","病虫害"] | 关联关键词
+--- TABLE 241 ---
+{
+"action": "add",
+"intentType": "agriculture",
+"intentLabel": "农业知识问答",
+"keywords": [
+"种植",
+"施肥",
+"病虫害"
+]
+}
+--- TABLE 242 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- message | string | 必须 | 操作结果
+|- intentTags | array | 非必须 | 更新后的意图标签列表
+--- TABLE 243 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"message": "意图标签添加成功",
+"intentTags": [
+{
+"type": "agriculture",
+"label": "农业知识问答",
+"keywords": [
+"种植",
+"施肥",
+"病虫害"
+]
+},
+{
+"type": "policy",
+"label": "政策解读",
+"keywords": [
+"政策",
+"补贴",
+"法规"
+]
+}
+]
+}
+}
+--- TABLE 244 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/run
+请求方式 | POST
+接口描述 | 后端调用AgentArts画布，传入方案原文/解析结果与会话上下文，启动预审流程
+访问权限 | 内部服务
+--- TABLE 245 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+reviewId | string | 必须 | rev_20260903_001 | 预审任务ID
+documentContent | string | 必须 | （方案原文） | 方案原文内容
+parsedResult | object | 非必须 | {"crops":["水稻"],"region":"湖南"} | 文件解析结果
+sessionContext | object | 非必须 | {"userId":"user_1001","region":"湖南"} | 会话上下文
+policyFlags | boolean | 非必须 | true | 是否启用政策匹配
+--- TABLE 246 ---
+{
+"reviewId": "rev_20260903_001",
+"documentContent": "本方案涵盖水稻种植全流程...",
+"parsedResult": {
+"crops": [
+"水稻"
+],
+"region": "湖南"
+},
+"sessionContext": {
+"userId": "user_1001",
+"region": "湖南"
+},
+"policyFlags": true
+}
+--- TABLE 247 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- jobId | string | 必须 | Agent任务ID
+|- status | string | 必须 | queued（排队中）
+|- estimatedTime | number | 非必须 | 预估完成时间（秒）
+|- createdAt | string | 必须 | 创建时间
+--- TABLE 248 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"jobId": "agent_20260903_001",
+"status": "queued",
+"estimatedTime": 120,
+"createdAt": "2026-09-03 15:05:00"
+}
+}
+--- TABLE 249 ---
+项目 | 说明
+请求路径 | /api/v1/callback/agent-progress
+请求方式 | POST
+接口描述 | AgentArts异步上报各阶段状态、缺失字段、最终报告与回滚迭代次数
+访问权限 | 内部服务
+--- TABLE 250 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+jobId | string | 必须 | agent_20260903_001 | Agent任务ID
+stage | string | 必须 | review | 阶段名称：parsing/recognition/review/report
+status | string | 必须 | completed | 阶段状态
+progress | number | 非必须 | 100 | 进度 0-100
+data | object | 非必须 | {"report":"..."} | 阶段数据（完成时返回）
+missingFields | array | 非必须 | [{"field":"soilType"}] | 缺失字段（暂停时返回）
+rollbackCount | number | 非必须 | 0 | 回滚迭代次数
+--- TABLE 251 ---
+{
+"jobId": "agent_20260903_001",
+"stage": "review",
+"status": "completed",
+"progress": 100,
+"data": {
+"report": "预审报告内容..."
+},
+"rollbackCount": 0
+}
+--- TABLE 252 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- jobId | string | 必须 | Agent任务ID
+|- stage | string | 必须 | 阶段名称
+|- status | string | 必须 | 当前状态
+|- processedAt | string | 必须 | 处理时间
+--- TABLE 253 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"jobId": "agent_20260903_001",
+"stage": "review",
+"status": "completed",
+"processedAt": "2026-09-03 15:10:00"
+}
+}
+--- TABLE 254 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/query-status
+请求方式 | POST
+接口描述 | 作为回调丢失时的兜底补偿机制，主动查询画布运行状态
+访问权限 | 内部服务
+--- TABLE 255 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+jobId | string | 必须 | agent_20260903_001 | Agent任务ID
+--- TABLE 256 ---
+{
+"jobId": "agent_20260903_001"
+}
+--- TABLE 257 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- jobId | string | 必须 | Agent任务ID
+|- overallStatus | string | 必须 | 整体状态
+|- stages | object | 非必须 | 各阶段状态
+|- lastUpdated | string | 非必须 | 最后更新时间
+|- error | string | 非必须 | 错误信息（失败时）
+--- TABLE 258 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"jobId": "agent_20260903_001",
+"overallStatus": "processing",
+"stages": {
+"parsing": {
+"status": "completed",
+"progress": 100
+},
+"recognition": {
+"status": "running",
+"progress": 60
+},
+"review": {
+"status": "pending",
+"progress": 0
+},
+"report": {
+"status": "pending",
+"progress": 0
+}
+},
+"lastUpdated": "2026-09-03 15:06:30"
+}
+}
+--- TABLE 259 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/qa-intent
+请求方式 | POST
+接口描述 | 调用意图识别Agent，对用户问题进行意图分类和路由
+访问权限 | 内部服务
+--- TABLE 260 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 今年种大豆赚钱吗？ | 用户提问内容
+userId | string | 非必须 | user_1001 | 用户ID
+history | array | 非必须 | [{"role":"user","content":"上次的问题"}] | 对话历史
+availableIntents | array | 非必须 | ["agriculture","policy","pesticide","crop","market"] | 可用意图列表
+--- TABLE 261 ---
+{
+"question": "今年种大豆赚钱吗？",
+"userId": "user_1001",
+"history": [
+{
+"role": "user",
+"content": "上次的问题"
+}
+],
+"availableIntents": [
+"agriculture",
+"policy",
+"pesticide",
+"crop",
+"market"
+]
+}
+--- TABLE 262 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- intent | string | 必须 | 识别到的意图类型
+|- intentLabel | string | 必须 | 意图标签
+|- intentScore | number | 必须 | 置信度（0-1）
+|- routingAgent | string | 必须 | 路由目标Agent
+|- keywords | array | 非必须 | 提取的关键字
+|- entities | array | 非必须 | 提取的实体
+|- confidence | string | 非必须 | 整体置信度等级
+|- processedAt | string | 必须 | 处理时间
+--- TABLE 263 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"intent": "market",
+"intentLabel": "市场行情分析",
+"intentScore": 0.92,
+"routingAgent": "market_analyst_agent",
+"keywords": [
+"大豆",
+"种植",
+"收益"
+],
+"entities": [
+{
+"type": "crop",
+"value": "大豆"
+},
+{
+"type": "topic",
+"value": "市场行情"
+}
+],
+"confidence": "high",
+"processedAt": "2026-09-03 17:00:00"
+}
+}
+--- TABLE 264 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/qa-knowledge
+请求方式 | POST
+接口描述 | 调用知识库检索Agent，在向量知识库中检索与用户问题相关的内容片段
+访问权限 | 内部服务
+--- TABLE 265 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+query | string | 必须 | 大豆轮作技术 | 检索查询词
+userId | string | 非必须 | user_1001 | 用户ID
+topK | number | 非必须 | 5 | 返回结果数量，默认5
+threshold | number | 非必须 | 0.7 | 相似度阈值，默认0.7
+knowledgeBases | array | 非必须 | ["crop","pesticide","region"] | 检索的知识库范围
+--- TABLE 266 ---
+{
+"query": "大豆轮作技术",
+"userId": "user_1001",
+"topK": 5,
+"threshold": 0.7,
+"knowledgeBases": [
+"crop",
+"pesticide",
+"region"
+]
+}
+--- TABLE 267 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- results | array | 必须 | 检索结果列表
+|- total | number | 必须 | 检索到的总结果数
+|- searchTime | number | 非必须 | 检索耗时（毫秒）
+|- queryExpansion | string | 非必须 | 查询扩展说明
+--- TABLE 268 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"results": [
+{
+"id": "kb_200",
+"title": "大豆玉米轮作技术规程",
+"content": "大豆与玉米实行轮作可有效降低土壤病害发生率30%以上...",
+"score": 0.95,
+"type": "technical_guide"
+},
+{
+"id": "kb_201",
+"title": "东北黑土地保护性耕作技术",
+"content": "轮作是黑土地保护的重要措施...",
+"score": 0.88,
+"type": "policy_guide"
+}
+],
+"total": 2,
+"searchTime": 45,
+"queryExpansion": "扩展检索词：大豆种植、轮作制度"
+}
+}
+--- TABLE 269 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/qa-generate
+请求方式 | POST
+接口描述 | 调用回答生成Agent，基于检索到的知识片段和用户问题生成最终回答
+访问权限 | 内部服务
+--- TABLE 270 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+question | string | 必须 | 大豆轮作有什么好处？ | 用户问题
+knowledgeSnippets | array | 必须 | [{"id":"kb_200","content":"大豆与玉米实行轮作..."}] | 检索到的知识片段
+intent | string | 非必须 | crop | 意图类型
+userId | string | 非必须 | user_1001 | 用户ID
+style | string | 非必须 | professional | 回答风格：professional/casual/simple
+--- TABLE 271 ---
+{
+"question": "大豆轮作有什么好处？",
+"knowledgeSnippets": [
+{
+"id": "kb_200",
+"content": "大豆与玉米实行轮作可有效降低土壤病害发生率30%以上..."
+}
+],
+"intent": "crop",
+"userId": "user_1001",
+"style": "professional"
+}
+--- TABLE 272 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- answer | string | 必须 | 生成的回答内容
+|- sources | array | 非必须 | 引用来源
+|- confidence | number | 非必须 | 回答置信度（0-1）
+|- needsHumanReview | boolean | 非必须 | 是否需要人工审核
+|- generatedAt | string | 必须 | 生成时间
+--- TABLE 273 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"answer": "大豆轮作具有以下好处：1. 改善土壤结构，增加土壤有机质含量；2. 降低土壤病害发生率30%以上；3. 减少化肥使用量；4. 提高作物产量和品质...",
+"sources": [
+{
+"id": "kb_200",
+"title": "大豆玉米轮作技术规程"
+},
+{
+"id": "kb_201",
+"title": "东北黑土地保护性耕作技术"
+}
+],
+"confidence": 0.93,
+"needsHumanReview": false,
+"generatedAt": "2026-09-03 17:00:02"
+}
+}
+--- TABLE 274 ---
+项目 | 说明
+请求路径 | /api/v1/internal/agent/qa-filter
+请求方式 | POST
+接口描述 | 调用安全过滤Agent，对生成的回答进行合规性、准确性、安全性检查
+访问权限 | 内部服务
+--- TABLE 275 ---
+参数名 | 类型 | 是否必须 | 示例 | 备注
+content | string | 必须 | AI生成的回答内容 | 待过滤的回答文本
+question | string | 非必须 | 用户原始问题 | 用户原始问题（用于上下文校验）
+intent | string | 非必须 | crop | 意图类型
+userId | string | 非必须 | user_1001 | 用户ID
+--- TABLE 276 ---
+{
+"content": "根据最新数据，大豆轮作可以提高产量...",
+"question": "大豆轮作有什么好处？",
+"intent": "crop",
+"userId": "user_1001"
+}
+--- TABLE 277 ---
+参数名 | 类型 | 是否必须 | 备注
+code | number | 必须 | 响应码，0 代表成功
+message | string | 必须 | 提示信息
+data | object | 非必须 | 返回数据
+|- isSafe | boolean | 必须 | 是否安全
+|- filteredContent | string | 必须 | 过滤后的内容
+|- issues | array | 非必须 | 发现的问题列表
+|  |- type | string | 必须 | 问题类型：sensitive/inaccurate/outdated/harmful
+|  |- description | string | 必须 | 问题描述
+|  |- suggestion | string | 非必须 | 修改建议
+|- needsReview | boolean | 非必须 | 是否需要人工审核
+|- filteredAt | string | 必须 | 过滤时间
+--- TABLE 278 ---
+{
+"code": 0,
+"message": "ok",
+"data": {
+"isSafe": true,
+"filteredContent": "大豆轮作具有以下好处：1. 改善土壤结构，增加土壤有机质含量；2. 降低土壤病害发生率30%以上；3. 减少化肥使用量；4. 提高作物产量和品质...",
+"issues": [],
+"needsHumanReview": false,
+"filteredAt": "2026-09-03 17:00:03"
+}
+}

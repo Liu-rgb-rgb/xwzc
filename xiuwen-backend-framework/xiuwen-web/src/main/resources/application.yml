@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: xiuwen-backend
+  config:
+    # 敏感配置从独立文件读取（该文件已加入 .gitignore，不会提交到仓库）
+    import: optional:classpath:application-secret.yml
   servlet:
     multipart:
       max-file-size: 50MB
@@ -13,6 +16,18 @@ spring:
     url: jdbc:mysql://localhost:3306/xwzc?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: 1234
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+    # 如果本地 Redis 设置了密码,填这里;没有就留空
+
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 16
+        max-idle: 8
+        min-idle: 0
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -39,8 +54,9 @@ xiuwen:
     access-prefix: /api/uploads
   oss:
     endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id: xxxxxx
-    access-key-secret: xxxxxx
+    # 以下两个密钥请配置在 application-secret.yml（已加入 .gitignore）
+    access-key-id:
+    access-key-secret:
     bucket-name: xwzc
     domain: https://xwzc.oss-cn-beijing.aliyuncs.com
   # AI 图像生成配置
@@ -48,7 +64,7 @@ xiuwen:
     # 生图服务商：qwen（阿里云百炼 Qwen-Image，默认）/ openai（切回 DALL-E 时改这里）
     provider: qwen
     # ===== 阿里云百炼 Qwen-Image =====
-    # 百炼 API Key（在 bailian.console.aliyun.com 创建后填这里）
+    # 百炼 API Key（在 bailian.console.aliyun.com 创建后填到 application-secret.yml）
     qwen-api-key:
     # 模型名，默认 qwen-image-3.0（可不填）
     qwen-model: qwen-image-3.0
