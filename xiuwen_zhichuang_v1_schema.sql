@@ -218,7 +218,7 @@ CREATE TABLE `product_category` (
     `name` VARCHAR(50) NOT NULL COMMENT '分类名称，例如帆布袋、明信片、丝巾等',
     `icon` VARCHAR(255) DEFAULT NULL COMMENT '分类图标URL',
     `sort` INT NOT NULL DEFAULT 0 COMMENT '排序值，越小越靠前',
-    `status` TINYINT NOT NULL DEFAULT 1 COMMENT '分类状态：1启用 0禁用',
+    `status` VARCHAR(20) NOT NULL DEFAULT 'NORMAL' COMMENT '分类状态：NORMAL启用 DISABLED禁用',
     `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
@@ -317,6 +317,7 @@ CREATE TABLE `orders` (
     `receiver_phone` VARCHAR(20) DEFAULT NULL COMMENT '收货人手机号',
     `receiver_address` VARCHAR(255) DEFAULT NULL COMMENT '完整收货地址',
     `remark` VARCHAR(255) DEFAULT NULL COMMENT '用户订单备注',
+    `merchant_remark` VARCHAR(500) DEFAULT NULL COMMENT '商家备注',
     `paid_at` DATETIME DEFAULT NULL COMMENT '支付时间',
     `confirmed_at` DATETIME DEFAULT NULL COMMENT '商家接单时间',
     `produced_at` DATETIME DEFAULT NULL COMMENT '制作完成时间',
@@ -527,6 +528,16 @@ ALTER TABLE `learning_resource` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 
 ALTER TABLE `file_resource` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删除 1已删除';
 ALTER TABLE `home_banner` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删除 1已删除';
 ALTER TABLE `home_recommend` ADD COLUMN `deleted` TINYINT NOT NULL DEFAULT 0 COMMENT '逻辑删除：0未删除 1已删除';
+
+INSERT INTO `product_category` (`parent_id`, `name`, `icon`, `sort`, `status`) VALUES
+(NULL, '帆布袋', NULL, 1, 'NORMAL'),
+(NULL, '明信片', NULL, 2, 'NORMAL'),
+(NULL, '丝巾', NULL, 3, 'NORMAL'),
+(NULL, '杯垫', NULL, 4, 'NORMAL'),
+(NULL, '摆件', NULL, 5, 'NORMAL'),
+(NULL, '笔记本', NULL, 6, 'NORMAL'),
+(NULL, '钥匙扣', NULL, 7, 'NORMAL'),
+(NULL, '冰箱贴', NULL, 8, 'NORMAL');
 
 INSERT INTO `user` (`username`, `password_hash`, `nickname`, `phone`, `role`, `status`)
 VALUES ('shopadmin', 'e10adc3949ba59abbe56e057f20f883e', '绣纹智创管理员', '13800000000', 'MERCHANT_ADMIN', 1);

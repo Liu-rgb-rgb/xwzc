@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { computed, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { api } from '../../api';
 
+const route = useRoute();
 const router = useRouter();
+const merchantPortal = computed(() => route.query.portal === 'merchant');
+const loginPath = computed(() => (merchantPortal.value ? '/merchant/login' : '/login'));
 const form = reactive({ username: '', password: '', confirmPassword: '', nickname: '', phone: '' });
 const error = ref('');
 async function submit() {
   if (form.password !== form.confirmPassword) return (error.value = '两次输入的密码不一致');
   try {
     await api.auth.register(form);
-    router.push('/login');
+    router.push(loginPath.value);
   } catch {
     error.value = '后端未启动或注册失败，请稍后重试';
   }
@@ -23,8 +26,8 @@ async function submit() {
       @submit.prevent="submit"
     >
       <span class="brand-mark">绣</span>
-      <h1>注册绣纹智创</h1>
-      <p>创建账号，开启您的广绣创意之旅</p>
+      <h1>{{ merchantPortal ? '商家端注册' : '注册绣纹智创' }}</h1>
+      <p>{{ merchantPortal ? '创建账号，进入商家管理平台' : '创建账号，开启您的广绣创意之旅' }}</p>
       <input
         v-model="form.username"
         required
@@ -61,7 +64,7 @@ async function submit() {
       >
         注册账号
       </button>
-      <RouterLink to="/login">已有账号？返回登录</RouterLink>
+      <RouterLink :to="loginPath">已有账号？返回登录</RouterLink>
     </form>
   </div>
 </template>

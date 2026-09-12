@@ -24,7 +24,9 @@ export const api = {
     register: (data: Payload) => post('/api/auth/register', data),
     login: (data: { username: string; password: string }) => post('/api/auth/login', data),
     logout: () => post('/api/auth/logout'),
-    me: () => get('/api/auth/me')
+    me: () => get('/api/auth/me'),
+    // 个人资料更新接口在文档中归属于 /api/user/profile，保留 auth 命名便于个人中心调用。
+    updateProfile: (data: Payload) => put('/api/user/profile', data)
   },
   user: {
     profile: () => get('/api/user/profile'),
@@ -35,7 +37,29 @@ export const api = {
     createAddress: (data: Payload) => post('/api/user/addresses', data),
     updateAddress: (addressId: Id, data: Payload) => put(`/api/user/addresses/${addressId}`, data),
     deleteAddress: (addressId: Id) => del(`/api/user/addresses/${addressId}`),
-    setDefaultAddress: (addressId: Id) => put(`/api/user/addresses/${addressId}/default`)
+    setDefaultAddress: (addressId: Id) => put(`/api/user/addresses/${addressId}/default`),
+    // 文档未单独提供统计接口，这里聚合已定义的纹样、收藏和订单接口。
+    getStats: async () => {
+      const [patternsResult, favoritesResult, ordersResult] = await Promise.allSettled([
+        get('/api/patterns/my', { page: 1, pageSize: 1 }),
+        get('/api/patterns/my', { page: 1, pageSize: 1, tab: 'favorite' }),
+        get('/api/orders/status-count')
+      ]);
+      const total = (result: any) => {
+        const value = result?.total ?? result?.totalCount ?? result?.pagination?.total ?? listFrom(result).length;
+        return Number(value || 0);
+      };
+      const orderTotal = (result: any) => {
+        if (!result || typeof result !== 'object') return 0;
+        const values = Object.values(result).filter((value) => typeof value === 'number');
+        return values.reduce((sum, value) => sum + Number(value), 0);
+      };
+      return {
+        patterns: patternsResult.status === 'fulfilled' ? total(patternsResult.value) : 0,
+        favorites: favoritesResult.status === 'fulfilled' ? total(favoritesResult.value) : 0,
+        orders: ordersResult.status === 'fulfilled' ? orderTotal(ordersResult.value) : 0
+      };
+    }
   },
   messages: {
     list: (params: Query = {}) => get('/api/messages', params),
@@ -112,7 +136,7 @@ export const api = {
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/status`, data),
       updateRemark: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/remark`, data)
     },
-    productCategories: listCreateUpdateDelete('/api/admin/product-categories'),
+    productCategories: listCreateUpdateDelete('/api/admin/products/categories'),
     products: {
       ...crud('/api/admin/products'),
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/products/${id}/status`, data)
@@ -147,11 +171,11 @@ export const api = {
       detail: (id: Id) => get(`/api/admin/users/${id}`),
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/users/${id}/status`, data)
     },
-    homeBanners: listCreateUpdateDelete('/api/admin/home-banners'),
-    homeRecommends: listCreateUpdateDelete('/api/admin/home-recommends'),
+    homeBanners: listCreateUpdateDelete('/api/admin/home/banners'),
+    homeRecommends: listCreateUpdateDelete('/api/admin/home/recommend'),
     shop: {
-      detail: () => get('/api/admin/shop/info'),
-      update: (data: Payload) => put('/api/admin/shop/info', data)
+      detail: () => get('/api/admin/shop'),
+      update: (data: Payload) => put('/api/admin/shop', data)
     },
     sendMessage: (data: Payload) => post('/api/admin/messages', data),
     uploadFile: (data: FormData) => post('/api/admin/files/upload', data)

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { authState, logout } from './auth';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { authState, isRealClient } from './auth';
+import { readUserData, userDataEvent } from './userData';
 const route = useRoute();
-const router = useRouter();
 const nav = [
   ['/', '首页'],
   ['/generate', 'AI纹样生成'],
@@ -10,10 +11,22 @@ const nav = [
   ['/patterns', '我的纹样'],
   ['/courses', '非遗课堂']
 ];
-function signOut() {
-  logout();
-  router.push('/');
+const cartTarget = computed(() => isRealClient.value ? '/cart' : { path: '/login', query: { redirect: '/cart' } });
+const profileTarget = computed(() => isRealClient.value ? '/profile' : { path: '/login', query: { redirect: '/profile' } });
+const profileVersion = ref(0);
+const headerProfile = computed(() => {
+  profileVersion.value;
+  return readUserData<any>('profile', {});
+});
+const headerAvatar = computed(() => String(headerProfile.value?.avatar || ''));
+const avatarText = computed(() => String(
+  headerProfile.value?.nickname || authState.user?.nickname || authState.user?.username || '绣'
+).trim().slice(0, 1) || '绣');
+function syncHeaderProfile(event: Event) {
+  if ((event as CustomEvent).detail?.name === 'profile') profileVersion.value += 1;
 }
+onMounted(() => window.addEventListener(userDataEvent, syncHeaderProfile));
+onBeforeUnmount(() => window.removeEventListener(userDataEvent, syncHeaderProfile));
 </script>
 <template>
   <RouterView v-if="route.meta.layout === 'auth' || route.meta.layout === 'merchant'" />
@@ -26,7 +39,7 @@ function signOut() {
         to="/"
         class="brand"
         ><span class="brand-mark">绣</span
-        ><span><b>绣纹智创</b><small>广绣 AI 纹样设计与商家服务平台</small></span></RouterLink
+        ><span><b>绣纹智创</b><small>绣纹智创·AI非遗活态传承计划</small></span></RouterLink
       >
       <nav>
         <RouterLink
@@ -38,18 +51,19 @@ function signOut() {
       </nav>
       <div class="head-actions">
         <RouterLink to="/resources">创作资源</RouterLink
-        ><RouterLink to="/cart">🛒 购物车</RouterLink
+        ><RouterLink :to="cartTarget">🛒 购物车</RouterLink
         ><RouterLink
           v-if="!authState.token"
           class="login-pill"
           to="/login"
-          >♙ 游客 · 登录 / 注册</RouterLink
-        ><template v-else
-          ><RouterLink
-            class="login-pill"
-            to="/login"
-            >登入</RouterLink
-          ><button @click="signOut">退出</button></template
+          >登录 / 注册</RouterLink
+        ><RouterLink
+          v-else
+          class="header-avatar"
+          :to="profileTarget"
+          aria-label="个人中心"
+          title="个人中心"
+          ><img v-if="headerAvatar" :src="headerAvatar" alt="用户头像" /><span v-else>{{ avatarText }}</span></RouterLink
         >
       </div>
     </header>
@@ -60,7 +74,7 @@ function signOut() {
           to="/"
           class="brand"
           ><span class="brand-mark">绣</span
-          ><span><b>绣纹智创</b><small>广绣 AI 纹样设计与商家服务平台</small></span></RouterLink
+          ><span><b>绣纹智创</b><small>绣纹智创·AI非遗活态传承计划</small></span></RouterLink
         >
         <p>以 AI 赋能广绣设计，连接传统与商业，创造美，传承美。</p>
       </div>

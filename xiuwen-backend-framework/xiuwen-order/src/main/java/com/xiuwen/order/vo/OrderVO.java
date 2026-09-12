@@ -29,6 +29,7 @@ public class OrderVO {
     private String receiverPhone;
     private String receiverAddress;
     private String remark;
+    private String merchantRemark;
     private LocalDateTime paidAt;
     private LocalDateTime confirmedAt;
     private LocalDateTime producedAt;
@@ -65,6 +66,7 @@ public class OrderVO {
         vo.setReceiverPhone(order.getReceiverPhone());
         vo.setReceiverAddress(order.getReceiverAddress());
         vo.setRemark(order.getRemark());
+        vo.setMerchantRemark(order.getMerchantRemark());
         vo.setPaidAt(order.getPaidAt());
         vo.setConfirmedAt(order.getConfirmedAt());
         vo.setProducedAt(order.getProducedAt());

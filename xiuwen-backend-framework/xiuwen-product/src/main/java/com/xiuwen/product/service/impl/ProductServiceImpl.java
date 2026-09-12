@@ -129,7 +129,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         product.setIsRecommend(dto.getIsRecommend() != null ? dto.getIsRecommend() : 0);
         product.setSalesCount(0);
         product.setSort(dto.getSort() != null ? dto.getSort() : 0);
-        product.setStatus("DRAFT");
+        product.setStatus(StringUtils.hasText(dto.getStatus()) ? dto.getStatus() : "ON_SALE");
 
         save(product);
 

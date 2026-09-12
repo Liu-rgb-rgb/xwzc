@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiuwen.common.exception.BusinessException;
 import com.xiuwen.common.utils.IdUtil;
+import com.xiuwen.framework.lock.StockLockService;
 import com.xiuwen.order.entity.OrderDetail;
 import com.xiuwen.order.entity.OrderItem;
 import com.xiuwen.order.entity.Orders;
@@ -13,13 +14,18 @@ import com.xiuwen.order.mapper.OrderMapper;
 import com.xiuwen.order.service.OrderItemService;
 import com.xiuwen.order.service.OrderService;
 import com.xiuwen.order.vo.OrderStatusCountVO;
+import com.xiuwen.product.entity.CartItem;
 import com.xiuwen.product.entity.CartItemDetail;
+import com.xiuwen.product.entity.CustomDesign;
 import com.xiuwen.product.entity.CustomDesignDetail;
 import com.xiuwen.product.entity.Product;
 import com.xiuwen.product.service.CartItemService;
 import com.xiuwen.product.service.CustomDesignService;
 import com.xiuwen.product.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RLock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -28,10 +34,17 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * orders 表服务实现。
+ *
+ * 库存超卖防护:下单/取消订单入口先按商品维度获取 Redisson 分布式锁,再触发事务;
+ * 锁释放发生在事务提交之后,避免解锁瞬间另一线程读到旧库存的问题。
  */
 @RequiredArgsConstructor
 @Service
@@ -41,12 +54,32 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     private final ProductService productService;
     private final OrderItemService orderItemService;
     private final CustomDesignService customDesignService;
+    private final StockLockService stockLockService;
+
+    /** 自身代理,用于让 @Transactional 在 doXxxInTx 方法上真正生效。 */
+    @Lazy
+    @Autowired
+    private OrderServiceImpl self;
 
     // =============== 创建订单 ===============
-    @Transactional(rollbackFor = Exception.class)
     @Override
     public Orders createOrder(Long userId, Long addressId, Long[] cartItemIds,
                               Long customDesignId, Integer quantity, String remark) {
+        Set<Long> productIds = resolveProductIds(cartItemIds, customDesignId);
+        RLock lock = stockLockService.tryLockStock(productIds);
+        if (lock == null) {
+            throw new BusinessException("当前下单人数较多,请稍后再试");
+        }
+        try {
+            return self.doCreateOrderInTx(userId, addressId, cartItemIds, customDesignId, quantity, remark);
+        } finally {
+            stockLockService.unlock(lock);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Orders doCreateOrderInTx(Long userId, Long addressId, Long[] cartItemIds,
+                                    Long customDesignId, Integer quantity, String remark) {
 
         // 收货地址（临时硬编码，等 UserAddressService 完成后替换）
         String receiverName = "待填充";    // TODO: 从地址服务获取
@@ -136,15 +169,21 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
         orderItemService.saveBatchOrderItems(orderItems);
 
-        // 扣减库存
+        // 扣减库存(已在分布式锁保护下,串行执行,不会再有并发覆盖)
         for (OrderItem item : orderItems) {
-            if (item.getProductId() != null) {
-                Product product = productService.getById(item.getProductId());
-                if (product != null) {
-                    product.setStock(product.getStock() - item.getQuantity());
-                    productService.updateById(product);
-                }
+            if (item.getProductId() == null) {
+                continue;
             }
+            Product product = productService.getById(item.getProductId());
+            if (product == null) {
+                throw new BusinessException("商品已下架,请刷新后重试");
+            }
+            int stock = product.getStock() == null ? 0 : product.getStock();
+            if (stock < item.getQuantity()) {
+                throw new BusinessException("商品「" + product.getName() + "」库存不足");
+            }
+            product.setStock(stock - item.getQuantity());
+            productService.updateById(product);
         }
 
         // 清理购物车
@@ -153,6 +192,23 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
 
         return order;
+    }
+
+    /** 提前解析出本次下单涉及的所有 productId,用于按商品维度加锁。 */
+    private Set<Long> resolveProductIds(Long[] cartItemIds, Long customDesignId) {
+        Set<Long> ids = new HashSet<>();
+        if (cartItemIds != null && cartItemIds.length > 0) {
+            List<CartItem> items = cartItemService.listByIds(Arrays.asList(cartItemIds));
+            for (CartItem ci : items) {
+                if (ci.getProductId() != null) ids.add(ci.getProductId());
+            }
+        } else if (customDesignId != null) {
+            CustomDesign design = customDesignService.getById(customDesignId);
+            if (design != null && design.getProductId() != null) {
+                ids.add(design.getProductId());
+            }
+        }
+        return ids;
     }
 
     // =============== 模拟支付 ===============
@@ -219,8 +275,26 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
     // =============== 取消订单 ===============
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Orders cancelOrder(Long userId, Long orderId) {
+        List<OrderItem> items = orderItemService.listByOrderId(orderId);
+        Set<Long> productIds = items.stream()
+                .map(OrderItem::getProductId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        // 即便没有商品需要回补(理论上不会),也要走一遍事务体,保证状态更新与后续清购物车原子
+        RLock lock = productIds.isEmpty() ? null : stockLockService.tryLockStock(productIds);
+        if (!productIds.isEmpty() && lock == null) {
+            throw new BusinessException("操作繁忙,请稍后再试");
+        }
+        try {
+            return self.doCancelOrderInTx(userId, orderId);
+        } finally {
+            stockLockService.unlock(lock);
+        }
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public Orders doCancelOrderInTx(Long userId, Long orderId) {
         Orders order = getById(orderId);
         if (order == null || !order.getUserId().equals(userId)) {
             throw new BusinessException("订单不存在或无权操作");
@@ -416,8 +490,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     public OrderStatusCountVO getAdminOrderStatusCount() {
         OrderStatusCountVO vo = new OrderStatusCountVO();
         vo.setAll(countAll());
-        vo.setWaitPay(countAllByStatus("WAIT_PAY"));
         vo.setWaitConfirm(countAllByStatus("WAIT_CONFIRM"));
+        vo.setWaitPay(countAllByStatus("WAIT_PAY"));
         vo.setProducing(countAllByStatus("PRODUCING"));
         vo.setWaitDelivery(countAllByStatus("WAIT_DELIVERY"));
         vo.setDelivered(countAllByStatus("DELIVERED"));

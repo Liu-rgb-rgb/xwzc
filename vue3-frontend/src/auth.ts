@@ -15,6 +15,10 @@ export const isMerchant = computed(() =>
 );
 export const isAdmin = isMerchant;
 export const isClient = computed(() => isLoggedIn.value && !isMerchant.value);
+export const isDemoAccount = computed(() =>
+  authState.token === 'client-demo-token' || authState.user?.username === 'client-demo'
+);
+export const isRealClient = computed(() => isClient.value && !isDemoAccount.value);
 
 export function setLogin(token: string, user: UserInfo) {
   authState.token = token;
