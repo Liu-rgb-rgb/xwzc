@@ -6,10 +6,10 @@ import { readUserData, userDataEvent } from './userData';
 const route = useRoute();
 const nav = [
   ['/', '首页'],
+  ['/courses', '非遗课堂'],
   ['/generate', 'AI纹样生成'],
-  ['/products', '文创商品'],
   ['/patterns', '我的纹样'],
-  ['/courses', '非遗课堂']
+  ['/products', '文创商品']
 ];
 const cartTarget = computed(() => isRealClient.value ? '/cart' : { path: '/login', query: { redirect: '/cart' } });
 const profileTarget = computed(() => isRealClient.value ? '/profile' : { path: '/login', query: { redirect: '/profile' } });

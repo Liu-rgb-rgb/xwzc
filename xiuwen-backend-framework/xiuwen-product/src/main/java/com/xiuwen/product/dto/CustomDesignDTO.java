@@ -22,6 +22,7 @@ public class CustomDesignDTO {
     @NotNull(message = "纹样id不能为空")
     private Long patternId;
     private String remark;
+    private String previewImageUrl;
     @JsonDeserialize(using = JsonObjectToStringDeserializer.class)
     private String designConfig;
 

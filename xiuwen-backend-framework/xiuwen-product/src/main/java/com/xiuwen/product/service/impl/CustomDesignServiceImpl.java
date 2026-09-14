@@ -29,7 +29,7 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
     private final OssFileService ossFileService;
 
     @Override
-    public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String remark) {
+    public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String previewImageUrl, String remark) {
         CustomDesign design = new CustomDesign();
         design.setUserId(userId);
         design.setProductId(productId);
@@ -38,10 +38,13 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
         design.setRemark(remark);
         design.setStatus("NORMAL");
 
-        // 生成预览图URL（实际项目中应调用图片合成服务，此处暂用占位 OSS 地址）
-        design.setPreviewImageUrl(
-                ossFileService.getOssDomain() + "custom/preview-" + System.currentTimeMillis() + ".png"
-        );
+        if (StringUtils.hasText(previewImageUrl)) {
+            design.setPreviewImageUrl(previewImageUrl.trim());
+        } else {
+            design.setPreviewImageUrl(
+                    ossFileService.getOssDomain() + "custom/preview-" + System.currentTimeMillis() + ".png"
+            );
+        }
 
         save(design);
         return baseMapper.selectDesignWithDetails(design.getId());

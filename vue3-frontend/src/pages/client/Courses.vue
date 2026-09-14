@@ -12,6 +12,17 @@ const keyword = ref('');
 const category = ref('全部课程');
 const categories = ['全部课程', '历史文化', '纹样解析', '针法基础', '创作实践'];
 const categoryByIndex = ['历史文化', '纹样解析', '针法基础', '创作实践'];
+function fallbackCourseImage(index: number) {
+  return String(courses[index % courses.length]?.image || '/demo/pattern/peony-phoenix-pattern-01.jpg');
+}
+function courseImage(course: any, index: number) {
+  return String(course.image || course.coverImage || course.imageUrl || fallbackCourseImage(index));
+}
+function useFallbackImage(event: Event, index: number) {
+  const image = event.currentTarget as HTMLImageElement;
+  const fallback = fallbackCourseImage(index);
+  if (!image.src.endsWith(fallback)) image.src = fallback;
+}
 const filteredCourses = computed(() => {
   const query = keyword.value.trim().toLowerCase();
   return courseItems.value.filter((course, index) => {
@@ -30,7 +41,11 @@ onMounted(async () => {
   ]);
   if (courseResult.status === 'fulfilled') {
     const list = listFrom(courseResult.value);
-    if (list.length) courseItems.value = list;
+    if (list.length) courseItems.value = list.map((course, index) => ({
+      ...courses[index % courses.length],
+      ...course,
+      image: courseImage(course, index)
+    }));
   }
   if (resourceResult.status === 'fulfilled') resourceItems.value = listFrom(resourceResult.value);
 });
@@ -72,7 +87,7 @@ onMounted(async () => {
         v-for="(c, i) in filteredCourses"
         :key="c.id"
       >
-        <img :src="c.image || c.coverImage" />
+        <img :src="courseImage(c, i)" :alt="c.title || '非遗课程封面'" @error="useFallbackImage($event, i)" />
         <div>
           <span>{{ i % 2 ? '初级' : '热门' }} · {{ c.lessons || c.duration }} 节</span>
           <h3>{{ c.title }}</h3>

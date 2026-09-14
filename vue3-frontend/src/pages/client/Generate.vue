@@ -25,13 +25,23 @@ const paletteOptions = [
   { name: '清润素韵', className: 'p3', value: 'soft_elegant' }
 ];
 const sceneValues: Record<string, string> = {
-  文创商品: 'product', 服饰刺绣: 'clothing', 家居软装: 'home', 礼品包装: 'package'
+  文创商品: 'product',
+  服饰刺绣: 'clothing',
+  家居软装: 'home',
+  礼品包装: 'package'
 };
-const resultToneClass = computed(() => ({
-  国风雅韵: 'tone-elegant', 富贵华彩: 'tone-rich', 清润素韵: 'tone-soft'
-}[palette.value] || 'tone-elegant'));
-const inspirationPatterns = computed(() => patterns.value.length ? patterns.value : demoPatterns);
-function useKeyword(value: string) { description.value = description.value ? `${description.value} ${value}` : value; }
+const resultToneClass = computed(
+  () =>
+    ({
+      国风雅韵: 'tone-elegant',
+      富贵华彩: 'tone-rich',
+      清润素韵: 'tone-soft'
+    })[palette.value] || 'tone-elegant'
+);
+const inspirationPatterns = computed(() => (patterns.value.length ? patterns.value : demoPatterns));
+function useKeyword(value: string) {
+  description.value = description.value ? `${description.value} ${value}` : value;
+}
 function toggleChoice(target: 'style' | 'element', value: string) {
   const choices = target === 'style' ? styles : elements;
   const wasSelected = choices.value.includes(value);
@@ -46,7 +56,14 @@ const selectedElementsText = computed(() => elements.value.join('、'));
 function createDemoResults() {
   const condition = `${selectedStylesText.value}${selectedElementsText.value}${palette.value}${scene.value}${description.value}${Date.now()}`;
   const seed = [...condition].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  const elementStart: Record<string, number> = { 牡丹: 0, 凤凰: 1, 花鸟: 2, 祥云: 3, 莲花: 2, 醒狮: 4 };
+  const elementStart: Record<string, number> = {
+    牡丹: 0,
+    凤凰: 1,
+    花鸟: 2,
+    祥云: 3,
+    莲花: 2,
+    醒狮: 4
+  };
   const start = (elementStart[elements.value[0]] ?? 0) + seed;
   const ordered = Array.from({ length: Number(count.value) }, (_, index) => {
     const source = demoPatterns[(start + index) % demoPatterns.length];
@@ -101,21 +118,22 @@ async function run() {
       generateCount: Number(count.value)
     });
     const list = listFrom(result?.patterns ?? result);
-    if (list.length) {
-      patterns.value = list.map((p: any, i: number) => ({
-        ...demoPatterns[i % demoPatterns.length],
-        ...p,
-        image: p.imageUrl || p.thumbnailUrl || demoPatterns[i % demoPatterns.length].image
-      }));
-    } else {
-      patterns.value = createDemoResults();
-    }
-  } catch {
-    patterns.value = createDemoResults();
-  } finally {
+    if (!list.length) throw new Error('生成接口未返回纹样');
+    patterns.value = list.map((p: any, i: number) => ({
+      ...demoPatterns[i % demoPatterns.length],
+      ...p,
+      image: p.imageUrl || p.thumbnailUrl || demoPatterns[i % demoPatterns.length].image
+    }));
     const history = readUserData<any[]>('recent_generations', []);
-    writeUserData('recent_generations', [...patterns.value.map((p) => ({ ...p, createdAt: Date.now() })), ...history].slice(0, 50));
+    writeUserData(
+      'recent_generations',
+      [...patterns.value.map((p) => ({ ...p, createdAt: Date.now() })), ...history].slice(0, 50)
+    );
     notice.value = `已生成 ${patterns.value.length} 张纹样`;
+  } catch (reason: any) {
+    patterns.value = [];
+    notice.value = reason?.response?.data?.message || reason?.message || '纹样生成失败，请稍后重试';
+  } finally {
     loading.value = false;
   }
 }
@@ -132,14 +150,23 @@ function syncGeneratedPatterns() {
   }));
   const saved = readUserData<any[]>('saved_patterns', []);
   const merged = [...stamped, ...saved];
-  writeUserData('saved_patterns', merged.filter((item, index) =>
-    merged.findIndex((other) => String(other.id) === String(item.id)) === index
-  ));
+  writeUserData(
+    'saved_patterns',
+    merged.filter(
+      (item, index) => merged.findIndex((other) => String(other.id) === String(item.id)) === index
+    )
+  );
   const recent = readUserData<any[]>('recent_generations', []);
   const recentMerged = [...stamped, ...recent];
-  writeUserData('recent_generations', recentMerged.filter((item, index) =>
-    recentMerged.findIndex((other) => String(other.id) === String(item.id)) === index
-  ).slice(0, 50));
+  writeUserData(
+    'recent_generations',
+    recentMerged
+      .filter(
+        (item, index) =>
+          recentMerged.findIndex((other) => String(other.id) === String(item.id)) === index
+      )
+      .slice(0, 50)
+  );
 }
 
 async function savePatterns() {
@@ -198,7 +225,9 @@ async function favoritePatterns() {
           :key="option.name"
           :class="{ on: palette === option.name }"
           @click="palette = option.name"
-        ><i :class="option.className" />{{ option.name }}</button>
+        >
+          <i :class="option.className" />{{ option.name }}
+        </button>
       </div>
       <label>04 · 应用场景</label
       ><select v-model="scene">
@@ -226,7 +255,11 @@ async function favoritePatterns() {
         @dragover.prevent
         @drop.prevent="chooseReference($event.dataTransfer?.files?.[0])"
       >
-        <img v-if="referencePreview" :src="referencePreview" alt="参考图预览" />
+        <img
+          v-if="referencePreview"
+          :src="referencePreview"
+          alt="参考图预览"
+        />
         <template v-else>⇧<b>点击或拖拽上传参考图</b><small>JPG / PNG，不超过 5MB</small></template>
       </button>
       <label
@@ -247,7 +280,11 @@ async function favoritePatterns() {
       <div class="result-head">
         <h2>生成结果</h2>
       </div>
-      <div v-if="patterns.length" class="result-grid" :class="[resultToneClass, { enhanced }]">
+      <div
+        v-if="patterns.length"
+        class="result-grid"
+        :class="[resultToneClass, { enhanced }]"
+      >
         <img
           class="featured"
           :src="patterns[0].image"
@@ -256,16 +293,41 @@ async function favoritePatterns() {
           :src="p.image"
         />
       </div>
-      <div v-else class="result-empty">
+      <div
+        v-else
+        class="result-empty"
+      >
         <span>✦</span>
         <b>暂未生成纹样</b>
         <p>选择左侧条件后，点击“立即生成纹样”</p>
       </div>
-      <div v-if="patterns.length" class="result-actions">
-        <button :disabled="loading" @click="run">↻ 重新生成</button><button :class="{ on: enhanced }" @click="enhanceDetails">✦ 细节增强</button
-        ><button class="jade" @click="savePatterns">⇩ 保存纹样</button><button @click="favoritePatterns">♡ 收藏纹样</button>
+      <div
+        v-if="patterns.length"
+        class="result-actions"
+      >
+        <button
+          :disabled="loading"
+          @click="run"
+        >
+          ↻ 重新生成</button
+        ><button
+          :class="{ on: enhanced }"
+          @click="enhanceDetails"
+        >
+          ✦ 细节增强</button
+        ><button
+          class="jade"
+          @click="savePatterns"
+        >
+          ⇩ 保存纹样</button
+        ><button @click="favoritePatterns">♡ 收藏纹样</button>
       </div>
-      <p v-if="patterns.length && notice" class="form-notice result-notice">{{ notice }}</p>
+      <p
+        v-if="patterns.length && notice"
+        class="form-notice result-notice"
+      >
+        {{ notice }}
+      </p>
     </section>
   </div>
   <div class="content inspiration">

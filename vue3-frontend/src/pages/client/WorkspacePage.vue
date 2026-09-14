@@ -4,6 +4,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { api, listFrom } from '../../api';
 import { patterns, products } from '../../data';
 import { readUserData, userDataEvent, writeUserData } from '../../userData';
+import PatternComposer from '../../components/PatternComposer.vue';
+
+type DesignConfig = { x: number; y: number; scale: number; rotation: number };
 
 const route = useRoute();
 const router = useRouter();
@@ -14,14 +17,115 @@ const selectedCartKeys = ref<Set<string>>(new Set());
 const knownCartKeys = ref<Set<string>>(new Set());
 const profile = ref<any>({ nickname: '', phone: '', email: '', intro: '' });
 const customProductId = ref<number>(Number(products[0]?.id || 501));
-const customPatternId = ref<number>(Number(patterns[0]?.id || 301));
+const customPatternId = ref<number>(0);
+const customProducts = ref<any[]>([...products]);
+const customPatterns = ref<any[]>([]);
+const designConfig = ref<DesignConfig>({ x: 0.5, y: 0.48, scale: 0.75, rotation: 0 });
+const composer = ref<{ exportBlob: () => Promise<Blob> } | null>(null);
+const generatingPreview = ref(false);
 const customNote = ref('');
 const notice = ref('');
 const savedDesigns = ref<any[]>([]);
 const selectedItem = ref<any>(null);
 const detailLoading = ref(false);
 const submittingOrder = ref(false);
-const addresses = ref<any[]>([]); const messages = ref<any[]>([]); const addressForm = ref<any>({receiverName:'',receiverPhone:'',province:'',city:'',district:'',detailAddress:'',isDefault:0}); const editingAddress = ref<any>(null);
+const addresses = ref<any[]>([]);
+const messages = ref<any[]>([]);
+const addressForm = ref<any>({
+  receiverName: '',
+  receiverPhone: '',
+  province: '',
+  city: '',
+  district: '',
+  detailAddress: '',
+  isDefault: 0
+});
+const editingAddress = ref<any>(null);
+
+function imageUrl(...values: unknown[]) {
+  return String(
+    values.find((value) => typeof value === 'string' && /^(https?:|data:|blob:|\/)/.test(value)) ||
+      ''
+  );
+}
+
+function normalizeCustomProduct(product: any, index: number) {
+  const fallback = products[index % products.length];
+  return {
+    ...fallback,
+    ...product,
+    id: product.id ?? fallback.id,
+    title: product.title || product.name || fallback.title,
+    image: imageUrl(product.image, product.mockupImage, product.coverImage, fallback.image)
+  };
+}
+
+function normalizeCustomPattern(pattern: any, index: number) {
+  const id = pattern.id ?? pattern.patternId;
+  return {
+    ...pattern,
+    id,
+    title: pattern.title || pattern.name || `AI 纹样 #${id ?? index + 1}`,
+    image: imageUrl(pattern.image, pattern.imageUrl, pattern.thumbnailUrl, pattern.previewImageUrl)
+  };
+}
+
+function uniqueById(values: any[]) {
+  return values.filter(
+    (value, index, all) =>
+      value?.id != null &&
+      all.findIndex((other) => String(other?.id) === String(value.id)) === index
+  );
+}
+
+const selectedCustomProduct = computed(
+  () =>
+    customProducts.value.find((product) => String(product.id) === String(customProductId.value)) ||
+    customProducts.value[0]
+);
+const selectedCustomPattern = computed(
+  () =>
+    customPatterns.value.find((pattern) => String(pattern.id) === String(customPatternId.value)) ||
+    customPatterns.value[0]
+);
+
+async function loadCustomizeOptions() {
+  const patternSources = [
+    ...readUserData<any[]>('saved_patterns', []),
+    ...readUserData<any[]>('recent_generations', [])
+  ];
+  const candidates = uniqueById(patternSources.map(normalizeCustomPattern)).filter(
+    (pattern) => pattern.image
+  );
+  const verified = await Promise.allSettled(
+    candidates.map(async (pattern, index) => {
+      const detail: any = await api.patterns.detail(pattern.id);
+      return normalizeCustomPattern({ ...pattern, ...detail }, index);
+    })
+  );
+  customPatterns.value = verified
+    .filter((result): result is PromiseFulfilledResult<any> => result.status === 'fulfilled')
+    .map((result) => result.value)
+    .filter((pattern) => pattern.image);
+  try {
+    const serverProducts = listFrom(await api.products.list({ page: 1, pageSize: 100 }));
+    customProducts.value = serverProducts.length
+      ? serverProducts.map(normalizeCustomProduct)
+      : products.map(normalizeCustomProduct);
+  } catch {
+    customProducts.value = products.map(normalizeCustomProduct);
+  }
+  if (
+    !customProducts.value.some((product) => String(product.id) === String(customProductId.value))
+  ) {
+    customProductId.value = Number(customProducts.value[0]?.id || 0);
+  }
+  if (
+    !customPatterns.value.some((pattern) => String(pattern.id) === String(customPatternId.value))
+  ) {
+    customPatternId.value = Number(customPatterns.value[0]?.id || 0);
+  }
+}
 
 async function loadItems() {
   items.value = [];
@@ -31,7 +135,11 @@ async function loadItems() {
     try {
       const serverCart = listFrom(await api.cart.items());
       if (!localCart.length && serverCart.length) {
-        items.value = serverCart.map((item) => ({ ...item, cartItemId: item.id, serverCartItem: true }));
+        items.value = serverCart.map((item) => ({
+          ...item,
+          cartItemId: item.id,
+          serverCartItem: true
+        }));
       }
     } catch {
       /* 后端未启动时直接使用本地购物车。 */
@@ -44,24 +152,74 @@ async function loadItems() {
     items.value = localOrders;
     try {
       const serverOrders = listFrom(await api.orders.mine());
-      items.value = [...serverOrders, ...localOrders].filter((order, index, values) =>
-        values.findIndex((other) => String(other.id || other.orderNo) === String(order.id || order.orderNo)) === index
+      items.value = [...serverOrders, ...localOrders].filter(
+        (order, index, values) =>
+          values.findIndex(
+            (other) => String(other.id || other.orderNo) === String(order.id || order.orderNo)
+          ) === index
       );
-    } catch { /* 后端未启动时显示本地提交的订单。 */ }
+    } catch {
+      /* 后端未启动时显示本地提交的订单。 */
+    }
     return;
   }
   try {
     if (mode.value === 'resources') items.value = listFrom(await api.resources.list());
-    else if (mode.value === 'profile') { profile.value = await api.user.profile(); addresses.value = listFrom(await api.user.addresses()); messages.value = listFrom(await api.messages.list()); }
-  } catch { if (mode.value === 'profile') profile.value = readUserData<any>('profile', profile.value); }
+    else if (mode.value === 'profile') {
+      profile.value = await api.user.profile();
+      addresses.value = listFrom(await api.user.addresses());
+      messages.value = listFrom(await api.messages.list());
+    }
+  } catch {
+    if (mode.value === 'profile') profile.value = readUserData<any>('profile', profile.value);
+  }
   if (!items.value.length && mode.value !== 'profile') {
     items.value = patterns.slice(0, 6);
   }
 }
-async function saveAddress(){ const data={...addressForm.value}; try { const r=editingAddress.value?await api.user.updateAddress(editingAddress.value.id,data):await api.user.createAddress(data); if(editingAddress.value) addresses.value=addresses.value.map(a=>a.id===editingAddress.value.id?(r||{...a,...data}):a); else addresses.value.push(r||{...data,id:Date.now()}); } catch { addresses.value.push({...data,id:Date.now()}); } editingAddress.value=null; addressForm.value={receiverName:'',receiverPhone:'',province:'',city:'',district:'',detailAddress:'',isDefault:0}; }
-async function deleteAddress(a:any){ try{await api.user.deleteAddress(a.id);}catch{} addresses.value=addresses.value.filter(x=>x.id!==a.id); }
-async function setDefault(a:any){ try{await api.user.setDefaultAddress(a.id);}catch{} addresses.value=addresses.value.map(x=>({...x,isDefault:x.id===a.id?1:0})); }
-async function markAllMessages(){try{await api.messages.markAllRead();}catch{} messages.value=messages.value.map(m=>({...m,isRead:1}));}
+async function saveAddress() {
+  const data = { ...addressForm.value };
+  try {
+    const r = editingAddress.value
+      ? await api.user.updateAddress(editingAddress.value.id, data)
+      : await api.user.createAddress(data);
+    if (editingAddress.value)
+      addresses.value = addresses.value.map((a) =>
+        a.id === editingAddress.value.id ? r || { ...a, ...data } : a
+      );
+    else addresses.value.push(r || { ...data, id: Date.now() });
+  } catch {
+    addresses.value.push({ ...data, id: Date.now() });
+  }
+  editingAddress.value = null;
+  addressForm.value = {
+    receiverName: '',
+    receiverPhone: '',
+    province: '',
+    city: '',
+    district: '',
+    detailAddress: '',
+    isDefault: 0
+  };
+}
+async function deleteAddress(a: any) {
+  try {
+    await api.user.deleteAddress(a.id);
+  } catch {}
+  addresses.value = addresses.value.filter((x) => x.id !== a.id);
+}
+async function setDefault(a: any) {
+  try {
+    await api.user.setDefaultAddress(a.id);
+  } catch {}
+  addresses.value = addresses.value.map((x) => ({ ...x, isDefault: x.id === a.id ? 1 : 0 }));
+}
+async function markAllMessages() {
+  try {
+    await api.messages.markAllRead();
+  } catch {}
+  messages.value = messages.value.map((m) => ({ ...m, isRead: 1 }));
+}
 
 function handleUserData(event: Event) {
   if ((event as CustomEvent).detail?.name === 'cart_items' && mode.value === 'cart') loadItems();
@@ -77,14 +235,20 @@ onMounted(() => {
   if (queryProductId) customProductId.value = queryProductId;
   if (queryPatternId) customPatternId.value = queryPatternId;
   loadItems();
+  if (mode.value === 'customize') void loadCustomizeOptions();
   savedDesigns.value = readUserData<any[]>('applied_designs', []);
   window.addEventListener(userDataEvent, handleUserData);
 });
 onBeforeUnmount(() => window.removeEventListener(userDataEvent, handleUserData));
-watch(mode, loadItems);
+watch(mode, (value) => {
+  void loadItems();
+  if (value === 'customize') void loadCustomizeOptions();
+});
 
 function cartProduct(item: any) {
-  const source = products.find((product) => String(product.id) === String(item.productId || item.id));
+  const source = products.find(
+    (product) => String(product.id) === String(item.productId || item.id)
+  );
   return { ...source, ...item };
 }
 
@@ -94,9 +258,7 @@ function cartItemKey(item: any) {
 
 function syncCartSelection() {
   const currentKeys = new Set(items.value.map(cartItemKey));
-  const nextKeys = new Set(
-    [...selectedCartKeys.value].filter((key) => currentKeys.has(key))
-  );
+  const nextKeys = new Set([...selectedCartKeys.value].filter((key) => currentKeys.has(key)));
   currentKeys.forEach((key) => {
     if (!knownCartKeys.value.has(key)) nextKeys.add(key);
   });
@@ -123,29 +285,35 @@ function updateCartQuantity(item: any, change: number) {
   const cart = readUserData<any[]>('cart_items', []);
   const id = String(item.productId || item.id);
   const next = cart
-    .map((entry) => String(entry.productId || entry.id) === id
-      ? { ...entry, quantity: Math.max(0, Number(entry.quantity || 1) + change) }
-      : entry)
+    .map((entry) =>
+      String(entry.productId || entry.id) === id
+        ? { ...entry, quantity: Math.max(0, Number(entry.quantity || 1) + change) }
+        : entry
+    )
     .filter((entry) => Number(entry.quantity || 0) > 0);
   writeUserData('cart_items', next);
 }
 
 function removeFromCart(item: any) {
   const id = String(item.productId || item.id);
-  writeUserData('cart_items', readUserData<any[]>('cart_items', []).filter(
-    (entry) => String(entry.productId || entry.id) !== id
-  ));
+  writeUserData(
+    'cart_items',
+    readUserData<any[]>('cart_items', []).filter(
+      (entry) => String(entry.productId || entry.id) !== id
+    )
+  );
 }
 
 const selectedCartItems = computed(() => items.value.filter(isCartSelected));
-const selectedCartQuantity = computed(() => selectedCartItems.value.reduce(
-  (sum, item) => sum + Number(item.quantity || 1),
-  0
-));
-const cartTotal = computed(() => selectedCartItems.value.reduce((sum, item) => {
-  const product = cartProduct(item);
-  return sum + Number(product.price ?? product.unitPrice ?? 0) * Number(item.quantity || 1);
-}, 0));
+const selectedCartQuantity = computed(() =>
+  selectedCartItems.value.reduce((sum, item) => sum + Number(item.quantity || 1), 0)
+);
+const cartTotal = computed(() =>
+  selectedCartItems.value.reduce((sum, item) => {
+    const product = cartProduct(item);
+    return sum + Number(product.price ?? product.unitPrice ?? 0) * Number(item.quantity || 1);
+  }, 0)
+);
 
 async function submitOrder() {
   if (!selectedCartItems.value.length) {
@@ -177,11 +345,19 @@ async function submitOrder() {
   };
   const orders = readUserData<any[]>('user_orders', []);
   writeUserData('user_orders', [localOrder, ...orders]);
-  void api.orders.create({ items: orderItems, totalAmount: cartTotal.value }).then((result: any) => {
-    if (!result) return;
-    const current = readUserData<any[]>('user_orders', []);
-    writeUserData('user_orders', current.map((order) => order.id === localOrder.id ? { ...order, ...result } : order));
-  }).catch(() => { /* 后端未启动时保留本地订单。 */ });
+  void api.orders
+    .create({ items: orderItems, totalAmount: cartTotal.value })
+    .then((result: any) => {
+      if (!result) return;
+      const current = readUserData<any[]>('user_orders', []);
+      writeUserData(
+        'user_orders',
+        current.map((order) => (order.id === localOrder.id ? { ...order, ...result } : order))
+      );
+    })
+    .catch(() => {
+      /* 后端未启动时保留本地订单。 */
+    });
   itemsToSubmit.forEach((item) => {
     if (item.serverCartItem && item.cartItemId) {
       void api.cart.remove(item.cartItemId).catch(() => {});
@@ -209,52 +385,84 @@ async function saveProfile() {
 }
 
 async function createPreview() {
+  if (generatingPreview.value) return;
   notice.value = '';
-  recordAppliedDesign();
-  notice.value = '定制预览已保存到我的纹样和个人中心';
-  void api.customDesigns.create({
-    productId: customProductId.value,
-    patternId: customPatternId.value,
-    designConfig: { x: 0.5, y: 0.48, scale: 0.75, rotation: 0 },
-    remark: customNote.value
-  }).catch(() => { /* 后端未启动时保留本地定制记录。 */ });
+  if (!selectedCustomProduct.value || !selectedCustomPattern.value || !composer.value) {
+    notice.value = '请选择商品和纹样';
+    return;
+  }
+  generatingPreview.value = true;
+  try {
+    const blob = await composer.value.exportBlob();
+    const formData = new FormData();
+    formData.append('file', blob, 'preview.png');
+    const uploaded: any = await api.files.upload(formData);
+    const previewImageUrl = String(uploaded?.fileUrl || '');
+    if (!previewImageUrl) throw new Error('上传接口未返回 fileUrl');
+
+    const created: any = await api.customDesigns.create({
+      productId: customProductId.value,
+      patternId: customPatternId.value,
+      designConfig: { ...designConfig.value },
+      previewImageUrl,
+      remark: customNote.value
+    });
+    recordAppliedDesign(previewImageUrl, created);
+    notice.value = '定制预览已生成并保存';
+  } catch (reason: any) {
+    notice.value = reason?.response?.data?.message || reason?.message || '定制预览生成失败';
+  } finally {
+    generatingPreview.value = false;
+  }
 }
 
-function recordAppliedDesign() {
+function recordAppliedDesign(previewImageUrl: string, created: any) {
   const records = readUserData<any[]>('applied_designs', []);
-  const patternSources = [
-    ...readUserData<any[]>('saved_patterns', []),
-    ...readUserData<any[]>('recent_generations', []),
-    ...patterns
-  ];
-  const selectedPattern = patternSources.find((pattern) => String(pattern.id) === String(customPatternId.value)) || patterns[0];
-  const selectedProduct = products.find((product) => String(product.id) === String(customProductId.value)) || products[0];
+  const selectedPattern = selectedCustomPattern.value;
+  const selectedProduct = selectedCustomProduct.value;
   const saved = {
-    id: `design-${Date.now()}`,
+    ...created,
+    id: created?.id ?? `design-${Date.now()}`,
     productId: customProductId.value,
     patternId: customPatternId.value,
-    title: selectedProduct?.title,
-    productName: selectedProduct?.title,
-    productImage: selectedProduct?.image,
-    patternTitle: selectedPattern?.title,
-    patternImage: selectedPattern?.image,
+    title: created?.productName || selectedProduct?.title,
+    productName: created?.productName || selectedProduct?.title,
+    productImage: created?.productCoverImage || selectedProduct?.image,
+    patternTitle: created?.patternTitle || selectedPattern?.title,
+    patternImage: created?.patternImageUrl || selectedPattern?.image,
     pattern: selectedPattern,
+    previewImageUrl,
+    designConfig: { ...designConfig.value },
     remark: customNote.value,
-    createdAt: new Date().toLocaleString('zh-CN')
+    createdAt: created?.createdAt || new Date().toLocaleString('zh-CN')
   };
-  writeUserData('applied_designs', [saved, ...records]);
-  savedDesigns.value = [saved, ...records];
+  const next = [saved, ...records].filter(
+    (design, index, all) =>
+      all.findIndex((other) => String(other.id) === String(design.id)) === index
+  );
+  writeUserData('applied_designs', next);
+  savedDesigns.value = next;
 }
 
 function designProduct(design: any) {
-  return products.find((product) => String(product.id) === String(design.productId)) || products[0];
+  return (
+    customProducts.value.find((product) => String(product.id) === String(design.productId)) ||
+    products[0]
+  );
 }
 
 function designPattern(design: any) {
-  return design.pattern ||
-    readUserData<any[]>('saved_patterns', []).find((pattern) => String(pattern.id) === String(design.patternId)) ||
-    readUserData<any[]>('recent_generations', []).find((pattern) => String(pattern.id) === String(design.patternId)) ||
-    patterns.find((pattern) => String(pattern.id) === String(design.patternId)) || patterns[0];
+  return (
+    design.pattern ||
+    readUserData<any[]>('saved_patterns', []).find(
+      (pattern) => String(pattern.id) === String(design.patternId)
+    ) ||
+    readUserData<any[]>('recent_generations', []).find(
+      (pattern) => String(pattern.id) === String(design.patternId)
+    ) ||
+    patterns.find((pattern) => String(pattern.id) === String(design.patternId)) ||
+    patterns[0]
+  );
 }
 
 function removeDesign(design: any) {
@@ -310,8 +518,40 @@ async function openDetail(item: any) {
           保存资料
         </button>
         <p v-if="notice">{{ notice }}</p>
-        <h3>收货地址</h3><div v-for="a in addresses" :key="a.id"><b>{{a.receiverName}}</b> {{a.receiverPhone}} {{a.province}}{{a.city}}{{a.district}}{{a.detailAddress}} <button @click="setDefault(a)">{{a.isDefault?'默认':'设为默认'}}</button><button @click="editingAddress=a;addressForm={...a}">修改</button><button @click="deleteAddress(a)">删除</button></div><input v-model="addressForm.receiverName" placeholder="收货人"/><input v-model="addressForm.receiverPhone" placeholder="电话"/><input v-model="addressForm.detailAddress" placeholder="详细地址"/><button @click="saveAddress">{{editingAddress?'保存修改':'新增地址'}}</button>
-        <h3>消息中心 <button @click="markAllMessages">全部已读</button></h3><div v-for="m in messages" :key="m.id">{{m.title}} <span>{{m.isRead?'已读':'未读'}}</span></div>
+        <h3>收货地址</h3>
+        <div
+          v-for="a in addresses"
+          :key="a.id"
+        >
+          <b>{{ a.receiverName }}</b> {{ a.receiverPhone }} {{ a.province }}{{ a.city
+          }}{{ a.district }}{{ a.detailAddress }}
+          <button @click="setDefault(a)">{{ a.isDefault ? '默认' : '设为默认' }}</button
+          ><button
+            @click="
+              editingAddress = a;
+              addressForm = { ...a };
+            "
+          >
+            修改</button
+          ><button @click="deleteAddress(a)">删除</button>
+        </div>
+        <input
+          v-model="addressForm.receiverName"
+          placeholder="收货人"
+        /><input
+          v-model="addressForm.receiverPhone"
+          placeholder="电话"
+        /><input
+          v-model="addressForm.detailAddress"
+          placeholder="详细地址"
+        /><button @click="saveAddress">{{ editingAddress ? '保存修改' : '新增地址' }}</button>
+        <h3>消息中心 <button @click="markAllMessages">全部已读</button></h3>
+        <div
+          v-for="m in messages"
+          :key="m.id"
+        >
+          {{ m.title }} <span>{{ m.isRead ? '已读' : '未读' }}</span>
+        </div>
       </form>
     </div>
     <div
@@ -319,26 +559,79 @@ async function openDetail(item: any) {
       class="panel customize-panel"
     >
       <h2>文创商品定制</h2>
-      <p>选择纹样、商品与数量，预览专属广绣文创作品。</p>
-      <div class="option-row">
-        <button
-          v-for="x in products.slice(0, 4)"
-          :key="x.id"
-          :class="{ on: customProductId === Number(x.id) }"
-          @click="customProductId = Number(x.id); customNote = customNote ? `${customNote} ${x.title}` : String(x.title)"
-        >
-          {{ x.title }}
-        </button>
+      <p>选择商品和已生成的纹样，在画布中调整位置、大小与角度。</p>
+      <div class="customize-layout">
+        <div class="customize-options">
+          <section>
+            <h3>选择商品</h3>
+            <div class="custom-choice-grid">
+              <button
+                v-for="product in customProducts"
+                :key="product.id"
+                type="button"
+                :class="{ on: customProductId === Number(product.id) }"
+                @click="customProductId = Number(product.id)"
+              >
+                <img
+                  :src="product.image"
+                  :alt="product.title"
+                />
+                <span>{{ product.title }}</span>
+              </button>
+            </div>
+          </section>
+          <section>
+            <h3>选择已生成的 AI 纹样</h3>
+            <div
+              v-if="customPatterns.length"
+              class="custom-choice-grid pattern-choices"
+            >
+              <button
+                v-for="pattern in customPatterns"
+                :key="pattern.id"
+                type="button"
+                :class="{ on: customPatternId === Number(pattern.id) }"
+                @click="customPatternId = Number(pattern.id)"
+              >
+                <img
+                  :src="pattern.image"
+                  :alt="pattern.title"
+                />
+                <span>{{ pattern.title }}</span>
+              </button>
+            </div>
+            <div
+              v-else
+              class="custom-pattern-empty"
+            >
+              <p>暂无可用的 AI 纹样，请先完成纹样生成。</p>
+              <button
+                type="button"
+                @click="router.push('/generate')"
+              >
+                去生成纹样
+              </button>
+            </div>
+          </section>
+        </div>
+        <PatternComposer
+          ref="composer"
+          v-model="designConfig"
+          :product-image="selectedCustomProduct?.image || ''"
+          :pattern-image="selectedCustomPattern?.image || ''"
+        />
       </div>
       <textarea
         v-model="customNote"
         placeholder="填写您的定制要求"
-      ></textarea
-      ><button
+      ></textarea>
+      <button
         class="primary"
+        type="button"
+        :disabled="generatingPreview || !selectedCustomProduct || !selectedCustomPattern"
         @click="createPreview"
       >
-        生成定制预览
+        {{ generatingPreview ? '正在生成…' : '生成定制预览' }}
       </button>
       <p v-if="notice">{{ notice }}</p>
       <div class="saved-designs">
@@ -346,25 +639,50 @@ async function openDetail(item: any) {
           <h3>我的定制作品</h3>
           <span>{{ savedDesigns.length }} 件</span>
         </div>
-        <div v-if="savedDesigns.length" class="saved-design-grid">
-          <article v-for="design in savedDesigns" :key="design.id" class="saved-design-card">
-            <img :src="String(designProduct(design).image || '')" :alt="String(designProduct(design).title || '')" />
+        <div
+          v-if="savedDesigns.length"
+          class="saved-design-grid"
+        >
+          <article
+            v-for="design in savedDesigns"
+            :key="design.id"
+            class="saved-design-card"
+          >
+            <img
+              :src="String(design.previewImageUrl || designProduct(design).image || '')"
+              :alt="String(design.productName || designProduct(design).title || '')"
+            />
             <div>
-              <b>{{ designProduct(design).title }}</b>
+              <b>{{ design.productName || designProduct(design).title }}</b>
               <span>纹样：{{ designPattern(design).title }}</span>
               <small v-if="design.remark">{{ design.remark }}</small>
               <button @click="removeDesign(design)">删除记录</button>
             </div>
           </article>
         </div>
-        <p v-else class="saved-empty">生成预览后，定制作品会保存在这里。</p>
+        <p
+          v-else
+          class="saved-empty"
+        >
+          生成预览后，定制作品会保存在这里。
+        </p>
       </div>
     </div>
-    <div v-else-if="mode === 'cart'" class="cart-panel">
+    <div
+      v-else-if="mode === 'cart'"
+      class="cart-panel"
+    >
       <template v-if="items.length">
         <div class="cart-list">
-          <article v-for="item in items" :key="item.productId || item.id" class="cart-item">
-            <label class="cart-select" :title="isCartSelected(item) ? '取消选择' : '选择商品'">
+          <article
+            v-for="item in items"
+            :key="item.productId || item.id"
+            class="cart-item"
+          >
+            <label
+              class="cart-select"
+              :title="isCartSelected(item) ? '取消选择' : '选择商品'"
+            >
               <input
                 class="cart-selector"
                 type="checkbox"
@@ -374,19 +692,41 @@ async function openDetail(item: any) {
               />
             </label>
             <img
-              :src="cartProduct(item).image || cartProduct(item).coverImage || cartProduct(item).mockupImage"
+              :src="
+                cartProduct(item).image ||
+                cartProduct(item).coverImage ||
+                cartProduct(item).mockupImage
+              "
               :alt="cartProduct(item).title || cartProduct(item).name"
             />
             <div class="cart-info">
               <b>{{ cartProduct(item).title || cartProduct(item).name }}</b>
               <span>¥ {{ cartProduct(item).price }}</span>
             </div>
-            <div class="quantity-control" aria-label="商品数量">
-              <button aria-label="减少数量" @click="updateCartQuantity(item, -1)">−</button>
+            <div
+              class="quantity-control"
+              aria-label="商品数量"
+            >
+              <button
+                aria-label="减少数量"
+                @click="updateCartQuantity(item, -1)"
+              >
+                −
+              </button>
               <span>{{ item.quantity || 1 }}</span>
-              <button aria-label="增加数量" @click="updateCartQuantity(item, 1)">＋</button>
+              <button
+                aria-label="增加数量"
+                @click="updateCartQuantity(item, 1)"
+              >
+                ＋
+              </button>
             </div>
-            <button class="remove-cart" @click="removeFromCart(item)">移除</button>
+            <button
+              class="remove-cart"
+              @click="removeFromCart(item)"
+            >
+              移除
+            </button>
           </article>
         </div>
         <div class="cart-checkout">
@@ -395,13 +735,27 @@ async function openDetail(item: any) {
             <span>已选 {{ selectedCartQuantity }} 件 · 商品合计</span>
             <strong>¥ {{ cartTotal.toFixed(2) }}</strong>
           </div>
-          <button class="primary" :disabled="submittingOrder || !selectedCartItems.length" @click="submitOrder">{{ submittingOrder ? '正在提交…' : '提交订单' }}</button>
+          <button
+            class="primary"
+            :disabled="submittingOrder || !selectedCartItems.length"
+            @click="submitOrder"
+          >
+            {{ submittingOrder ? '正在提交…' : '提交订单' }}
+          </button>
         </div>
       </template>
-      <div v-else class="result-empty">
+      <div
+        v-else
+        class="result-empty"
+      >
         <b>购物车还是空的</b>
         <p>去文创商品页挑选喜欢的广绣好物吧。</p>
-        <button class="primary" @click="router.push('/products')">去选购商品</button>
+        <button
+          class="primary"
+          @click="router.push('/products')"
+        >
+          去选购商品
+        </button>
       </div>
     </div>
     <div
@@ -436,7 +790,13 @@ async function openDetail(item: any) {
       @click.self="selectedItem = null"
     >
       <article class="resource-detail-card">
-        <button class="detail-close" aria-label="关闭" @click="selectedItem = null">×</button>
+        <button
+          class="detail-close"
+          aria-label="关闭"
+          @click="selectedItem = null"
+        >
+          ×
+        </button>
         <img
           :src="selectedItem.image || selectedItem.coverImage || selectedItem.imageUrl"
           :alt="selectedItem.title || selectedItem.name"
@@ -444,9 +804,21 @@ async function openDetail(item: any) {
         <div>
           <span class="eyebrow">CREATIVE RESOURCE</span>
           <h2>{{ selectedItem.title || selectedItem.name || '资源详情' }}</h2>
-          <p>{{ selectedItem.description || selectedItem.desc || selectedItem.meta || '广绣文化创作与学习资源。' }}</p>
+          <p>
+            {{
+              selectedItem.description ||
+              selectedItem.desc ||
+              selectedItem.meta ||
+              '广绣文化创作与学习资源。'
+            }}
+          </p>
           <small v-if="detailLoading">正在读取详细资料…</small>
-          <button class="primary" @click="selectedItem = null">关闭详情</button>
+          <button
+            class="primary"
+            @click="selectedItem = null"
+          >
+            关闭详情
+          </button>
         </div>
       </article>
     </div>
@@ -454,36 +826,286 @@ async function openDetail(item: any) {
 </template>
 
 <style scoped>
-.cart-list { display: grid; gap: 14px; }
-.cart-item { display: grid; grid-template-columns: 26px 110px 1fr auto auto; gap: 22px; align-items: center; padding: 16px; border: 1px solid var(--line); border-radius: 14px; background: #fffaf3; }
-.cart-select { display: grid; place-items: center; cursor: pointer; }
-.cart-selector { appearance: none; width: 22px; height: 22px; margin: 0; border: 1.5px solid #c9a98d; border-radius: 50%; background: #fff; cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
-.cart-selector:hover { border-color: var(--red); }
-.cart-selector:checked { border-color: var(--red); background: var(--red); box-shadow: inset 0 0 0 5px #fff; }
-.cart-selector:focus-visible { outline: 2px solid color-mix(in srgb, var(--red) 45%, transparent); outline-offset: 3px; }
-.cart-item img { width: 110px; height: 90px; object-fit: cover; border-radius: 10px; }
-.cart-info { display: grid; gap: 10px; }
-.cart-info span { color: var(--red); font-weight: 700; }
-.quantity-control { display: flex; align-items: center; gap: 12px; }
-.quantity-control button { width: 32px; height: 32px; border: 1px solid var(--line); border-radius: 8px; background: white; cursor: pointer; }
-.remove-cart { border: 0; background: transparent; color: var(--red); cursor: pointer; }
-.cart-checkout { display: flex; justify-content: flex-end; align-items: center; gap: 28px; margin-top: 20px; padding: 20px 24px; border: 1px solid var(--line); border-radius: 14px; background: #fffaf3; box-shadow: var(--shadow); }
-.cart-checkout .cart-summary { display: flex; align-items: baseline; gap: 12px; color: var(--muted); }
-.cart-summary small { color: var(--red); }
-.cart-checkout strong { color: var(--red); font-size: 28px; }
-.cart-checkout button { min-width: 150px; }
-.cart-checkout button:disabled { opacity: .6; cursor: not-allowed; }
-.saved-designs { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
-.saved-designs-heading { display: flex; align-items: center; justify-content: space-between; }
-.saved-designs-heading h3 { margin: 0; }
-.saved-designs-heading span { color: var(--muted); }
-.saved-design-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 15px; }
-.saved-design-card { display: flex; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: #fffaf3; }
-.saved-design-card img { width: 82px; height: 82px; object-fit: cover; border-radius: 8px; }
-.saved-design-card div { display: grid; gap: 5px; align-content: start; }
-.saved-design-card span, .saved-design-card small { color: var(--muted); }
-.saved-design-card button { width: fit-content; border: 0; padding: 0; background: transparent; color: var(--red); cursor: pointer; }
-.saved-empty { color: var(--muted); }
-@media (max-width: 700px) { .cart-item { grid-template-columns: 24px 80px 1fr; gap: 12px; } .cart-item img { width: 80px; height: 72px; } .quantity-control { grid-column: 2 / 4; justify-self: end; } .remove-cart { grid-column: 3; justify-self: end; } .cart-checkout { align-items: stretch; flex-direction: column; } .cart-checkout .cart-summary { flex-wrap: wrap; } }
-@media (max-width: 900px) { .saved-design-grid { grid-template-columns: 1fr; } }
+.customize-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+  gap: 28px;
+  margin: 24px 0;
+  align-items: start;
+}
+.customize-options {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.customize-options h3 {
+  margin: 0 0 12px;
+}
+.custom-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-height: 290px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.custom-choice-grid button {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fffaf3;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+}
+.custom-choice-grid button.on {
+  border-color: var(--red);
+  box-shadow: 0 0 0 1px var(--red);
+}
+.custom-choice-grid img {
+  width: 62px;
+  height: 54px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #f3eadf;
+}
+.custom-choice-grid span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.custom-pattern-empty {
+  padding: 22px;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+.custom-pattern-empty p {
+  margin: 0 0 12px;
+}
+.custom-pattern-empty button {
+  border: 0;
+  background: transparent;
+  color: var(--red);
+  cursor: pointer;
+}
+.customize-panel > textarea {
+  width: 100%;
+  min-height: 92px;
+  margin-bottom: 14px;
+}
+.customize-panel > .primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.cart-list {
+  display: grid;
+  gap: 14px;
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 26px 110px 1fr auto auto;
+  gap: 22px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffaf3;
+}
+.cart-select {
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.cart-selector {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 1.5px solid #c9a98d;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    background 0.18s ease;
+}
+.cart-selector:hover {
+  border-color: var(--red);
+}
+.cart-selector:checked {
+  border-color: var(--red);
+  background: var(--red);
+  box-shadow: inset 0 0 0 5px #fff;
+}
+.cart-selector:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--red) 45%, transparent);
+  outline-offset: 3px;
+}
+.cart-item img {
+  width: 110px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.cart-info {
+  display: grid;
+  gap: 10px;
+}
+.cart-info span {
+  color: var(--red);
+  font-weight: 700;
+}
+.quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.quantity-control button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+}
+.remove-cart {
+  border: 0;
+  background: transparent;
+  color: var(--red);
+  cursor: pointer;
+}
+.cart-checkout {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 28px;
+  margin-top: 20px;
+  padding: 20px 24px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffaf3;
+  box-shadow: var(--shadow);
+}
+.cart-checkout .cart-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--muted);
+}
+.cart-summary small {
+  color: var(--red);
+}
+.cart-checkout strong {
+  color: var(--red);
+  font-size: 28px;
+}
+.cart-checkout button {
+  min-width: 150px;
+}
+.cart-checkout button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.saved-designs {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.saved-designs-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.saved-designs-heading h3 {
+  margin: 0;
+}
+.saved-designs-heading span {
+  color: var(--muted);
+}
+.saved-design-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 15px;
+}
+.saved-design-card {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fffaf3;
+}
+.saved-design-card img {
+  width: 82px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.saved-design-card div {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+}
+.saved-design-card span,
+.saved-design-card small {
+  color: var(--muted);
+}
+.saved-design-card button {
+  width: fit-content;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--red);
+  cursor: pointer;
+}
+.saved-empty {
+  color: var(--muted);
+}
+@media (max-width: 700px) {
+  .cart-item {
+    grid-template-columns: 24px 80px 1fr;
+    gap: 12px;
+  }
+  .cart-item img {
+    width: 80px;
+    height: 72px;
+  }
+  .quantity-control {
+    grid-column: 2 / 4;
+    justify-self: end;
+  }
+  .remove-cart {
+    grid-column: 3;
+    justify-self: end;
+  }
+  .cart-checkout {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .cart-checkout .cart-summary {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 900px) {
+  .customize-layout {
+    grid-template-columns: 1fr;
+  }
+  .saved-design-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 560px) {
+  .custom-choice-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

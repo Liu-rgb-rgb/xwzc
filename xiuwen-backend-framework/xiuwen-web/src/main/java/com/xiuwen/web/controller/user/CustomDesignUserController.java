@@ -47,14 +47,15 @@ public class CustomDesignUserController {
     //创建商品定制预览
     @PostMapping
     public Result<CustomDesignVO> createDesign(@Valid @RequestBody CustomDesignDTO customDesignDTO) {
-     Long userId = LoginUserHolder.getRequiredUserId();
-     CustomDesign design = customDesignService.createDesignDetail(
-             userId,
-             customDesignDTO.getProductId(),
-             customDesignDTO.getPatternId(),
-             customDesignDTO.getDesignConfig(),
-             customDesignDTO.getRemark()
-     );
+        Long userId = LoginUserHolder.getRequiredUserId();
+        CustomDesign design = customDesignService.createDesignDetail(
+                userId,
+                customDesignDTO.getProductId(),
+                customDesignDTO.getPatternId(),
+                customDesignDTO.getDesignConfig(),
+                customDesignDTO.getPreviewImageUrl(),
+                customDesignDTO.getRemark()
+        );
         return Result.success(CustomDesignVO.fromDetail(design));
     }
     // 我的定制方案列表

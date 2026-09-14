@@ -9,13 +9,28 @@ import { courses, patterns, products } from '../../data';
 const courseItems = ref<any[]>(courses);
 const patternItems = ref<any[]>(patterns);
 const productItems = ref<any[]>(products);
+function fallbackCourseImage(index: number) {
+  return String(courses[index % courses.length]?.image || '/demo/pattern/peony-phoenix-pattern-01.jpg');
+}
+function courseImage(course: any, index: number) {
+  return String(course.image || course.coverImage || course.imageUrl || fallbackCourseImage(index));
+}
+function useCourseFallback(event: Event, index: number) {
+  const image = event.currentTarget as HTMLImageElement;
+  const fallback = fallbackCourseImage(index);
+  if (!image.src.endsWith(fallback)) image.src = fallback;
+}
 onMounted(async () => {
   try {
     const home: any = await api.home.detail();
     const remoteCourses = listFrom(home?.courses || home?.courseList || []);
     const remotePatterns = listFrom(home?.patterns || home?.patternList || []);
     const remoteProducts = listFrom(home?.products || home?.productList || []);
-    if (remoteCourses.length) courseItems.value = remoteCourses;
+    if (remoteCourses.length) courseItems.value = remoteCourses.map((course, index) => ({
+      ...courses[index % courses.length],
+      ...course,
+      image: courseImage(course, index)
+    }));
     if (remotePatterns.length) patternItems.value = remotePatterns;
     if (remoteProducts.length) productItems.value = remoteProducts;
   } catch {}
@@ -47,10 +62,10 @@ onMounted(async () => {
   <section class="service-strip">
     <div
       v-for="x in [
-        ['✦', 'AI纹样生成', '输入灵感，一键生成'],
-        ['◇', '文创商品', '纹样应用，创意变现'],
         ['▤', '非遗课堂', '系统学习，传承匠心'],
-        ['◈', '版权存证', '守护每一份原创']
+        ['✦', 'AI纹样生成', '输入灵感，一键生成'],
+        ['◈', '版权存证', '守护每一份原创'],
+        ['◇', '文创商品', '纹样应用，创意变现']
       ]"
       :key="x[1]"
     >
@@ -70,14 +85,14 @@ onMounted(async () => {
     />
     <div class="course-grid">
       <RouterLink
-        v-for="c in courseItems"
+        v-for="(c, i) in courseItems"
         :key="c.id"
         class="course-link"
         :to="`/courses/${c.id}`"
         :aria-label="`查看课程：${c.title || c.name}`"
       >
         <article>
-          <img :src="c.image || c.coverImage" />
+          <img :src="courseImage(c, i)" :alt="c.title || '非遗课程封面'" @error="useCourseFallback($event, i)" />
           <div>
             <span>{{ c.lessons || c.duration }} 节 · 精品课</span>
             <h3>{{ c.title || c.name }}</h3>
