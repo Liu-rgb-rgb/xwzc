@@ -15,5 +15,8 @@ Thumbs.db
 .env.local
 *.log
 
+# Local secrets (keep real credentials out of version control)
+application-secret.yml
+
 # Temporary extraction artifact
 api-doc-extract.txt

@@ -31,6 +31,7 @@
         <lombok.version>1.18.30</lombok.version>
         <jjwt.version>0.13.0</jjwt.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
+        <redisson.version>3.20.1</redisson.version>
     </properties>
 
     <!-- 在 pom.xml 中加入这段 -->
@@ -79,6 +80,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-boot-starter</artifactId>
+                <version>${redisson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

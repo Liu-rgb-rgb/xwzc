@@ -713,8 +713,7 @@ main {
   font-size: 31px;
 }
 .section-title a,
-.section-title > span,
-.section-title > button {
+.section-title > span {
   color: var(--jade);
   font-size: 14px;
 }
