@@ -78,8 +78,15 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
         if(quantity == null || quantity <= 0){
             quantity = 1;
         }
+        int stock = product.getStock() == null ? 0 : product.getStock();
+        if(stock <= 0){
+            throw new BusinessException("商品已售罄，无法加入购物车");
+        }
         CartItem existing = baseMapper.selectExistingCartItem(userId,productId,patternId,customDesignId);
         if(existing != null){
+            if(existing.getQuantity() + quantity > stock){
+                throw new BusinessException("商品库存不足，最多可购买" + stock + "件");
+            }
             existing.setQuantity(existing.getQuantity() + quantity);
             baseMapper.updateById(existing);
             return baseMapper.selectCartItemsWithDetails(userId).stream()
@@ -87,6 +94,9 @@ public class CartItemServiceImpl extends ServiceImpl<CartItemMapper, CartItem> i
                     .findFirst().orElse(null);
         }
         CartItem cartItem = new CartItem();
+        if(quantity > stock){
+            throw new BusinessException("商品库存不足，最多可购买" + stock + "件");
+        }
         cartItem.setUserId(userId);
         cartItem.setProductId(productId);
         cartItem.setPatternId(patternId);

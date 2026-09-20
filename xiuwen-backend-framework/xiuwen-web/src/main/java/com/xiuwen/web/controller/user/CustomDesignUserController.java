@@ -3,8 +3,11 @@ package com.xiuwen.web.controller.user;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.xiuwen.common.core.domain.PageResult;
 import com.xiuwen.common.core.domain.Result;
+import com.xiuwen.common.exception.BusinessException;
 
 import com.xiuwen.framework.security.LoginUserHolder;
+import com.xiuwen.pattern.service.PatternService;
+import com.xiuwen.pattern.vo.PatternMyVO;
 import com.xiuwen.product.dto.CustomDesignDTO;
 import com.xiuwen.product.entity.CustomDesign;
 import com.xiuwen.product.entity.CustomDesignDetail;
@@ -22,9 +25,11 @@ import java.util.List;
 @RequestMapping("/api/custom-designs")
 public class CustomDesignUserController {
     private final CustomDesignService customDesignService;
+    private final PatternService patternService;
 
-    public CustomDesignUserController(CustomDesignService customDesignService) {
+    public CustomDesignUserController(CustomDesignService customDesignService, PatternService patternService) {
         this.customDesignService = customDesignService;
+        this.patternService = patternService;
     }
 //todo 到时合并要修改
 ////创建商品定制预览
@@ -47,14 +52,21 @@ public class CustomDesignUserController {
     //创建商品定制预览
     @PostMapping
     public Result<CustomDesignVO> createDesign(@Valid @RequestBody CustomDesignDTO customDesignDTO) {
-     Long userId = LoginUserHolder.getRequiredUserId();
-     CustomDesign design = customDesignService.createDesignDetail(
-             userId,
-             customDesignDTO.getProductId(),
-             customDesignDTO.getPatternId(),
-             customDesignDTO.getDesignConfig(),
-             customDesignDTO.getRemark()
-     );
+        Long userId = LoginUserHolder.getRequiredUserId();
+        PatternMyVO pattern = patternService.getPatternDetail(customDesignDTO.getPatternId(), userId);
+        if (pattern == null
+                || pattern.getGenerationId() == null
+                || !"NORMAL".equals(pattern.getStatus())) {
+            throw new BusinessException("请选择有效的 AI 纹样");
+        }
+        CustomDesign design = customDesignService.createDesignDetail(
+                userId,
+                customDesignDTO.getProductId(),
+                customDesignDTO.getPatternId(),
+                customDesignDTO.getDesignConfig(),
+                customDesignDTO.getPreviewImageUrl(),
+                customDesignDTO.getRemark()
+        );
         return Result.success(CustomDesignVO.fromDetail(design));
     }
     // 我的定制方案列表

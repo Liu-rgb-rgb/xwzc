@@ -64,14 +64,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     // =============== 创建订单 ===============
     @Override
     public Orders createOrder(Long userId, Long addressId, Long[] cartItemIds,
-                              Long customDesignId, Integer quantity, String remark) {
+                              Long customDesignId, Integer quantity, String remark,
+                              String receiverName, String receiverPhone, String receiverAddress) {
         Set<Long> productIds = resolveProductIds(cartItemIds, customDesignId);
         RLock lock = stockLockService.tryLockStock(productIds);
         if (lock == null) {
             throw new BusinessException("当前下单人数较多,请稍后再试");
         }
         try {
-            return self.doCreateOrderInTx(userId, addressId, cartItemIds, customDesignId, quantity, remark);
+            return self.doCreateOrderInTx(userId, addressId, cartItemIds, customDesignId, quantity,
+                    remark, receiverName, receiverPhone, receiverAddress);
         } finally {
             stockLockService.unlock(lock);
         }
@@ -79,12 +81,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
     @Transactional(rollbackFor = Exception.class)
     public Orders doCreateOrderInTx(Long userId, Long addressId, Long[] cartItemIds,
-                                    Long customDesignId, Integer quantity, String remark) {
-
-        // 收货地址（临时硬编码，等 UserAddressService 完成后替换）
-        String receiverName = "待填充";    // TODO: 从地址服务获取
-        String receiverPhone = "待填充";   // TODO
-        String receiverAddress = "待填充"; // TODO
+                                    Long customDesignId, Integer quantity, String remark,
+                                    String receiverName, String receiverPhone, String receiverAddress) {
 
         // 构建订单项
         List<OrderItem> orderItems = new ArrayList<>();
@@ -155,8 +153,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         order.setCustomDesignId(customDesignId);
         order.setTotalAmount(totalAmount);
         order.setPayAmount(totalAmount);
-        order.setStatus("WAIT_PAY");
-        order.setPayStatus("UNPAID");
+        order.setStatus("WAIT_DELIVERY");
+        order.setPayStatus("PAID");
+        order.setPaidAt(LocalDateTime.now());
         order.setReceiverName(receiverName);
         order.setReceiverPhone(receiverPhone);
         order.setReceiverAddress(receiverAddress);
@@ -169,8 +168,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
         orderItemService.saveBatchOrderItems(orderItems);
 
-        // 扣减库存:分布式锁降低竞争,数据库条件更新做最终兜底,
-        // 即使锁因故失效,也不会扣成负数
+        // 扣减库存(已在分布式锁保护下,串行执行,不会再有并发覆盖)
         for (OrderItem item : orderItems) {
             if (item.getProductId() == null) {
                 continue;
@@ -179,14 +177,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
             if (product == null) {
                 throw new BusinessException("商品已下架,请刷新后重试");
             }
-            boolean updated = productService.lambdaUpdate()
-                    .eq(Product::getId, product.getId())
-                    .ge(Product::getStock, item.getQuantity())
-                    .setSql("stock = stock - " + item.getQuantity())
-                    .update();
-            if (!updated) {
+            int stock = product.getStock() == null ? 0 : product.getStock();
+            if (stock < item.getQuantity()) {
                 throw new BusinessException("商品「" + product.getName() + "」库存不足");
             }
+            product.setStock(stock - item.getQuantity());
+            productService.updateById(product);
         }
 
         // 清理购物车
@@ -222,13 +218,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         if (order == null || !order.getUserId().equals(userId)) {
             throw new BusinessException("订单不存在或无权操作");
         }
+        if ("WAIT_DELIVERY".equals(order.getStatus()) && "PAID".equals(order.getPayStatus())) {
+            return order;
+        }
         if (!"WAIT_PAY".equals(order.getStatus())) {
             throw new BusinessException("订单状态不允许支付");
         }
 
         order.setPayStatus("PAID");
         order.setPaidAt(LocalDateTime.now());
-        order.setStatus("WAIT_CONFIRM");
+        order.setStatus("WAIT_DELIVERY");
         updateById(order);
         return order;
     }
@@ -307,17 +306,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
 
         order.setStatus("CANCELLED");
+        order.setPayStatus("FAILED");
         order.setCancelledAt(LocalDateTime.now());
         updateById(order);
 
-        // 恢复库存:用原子累加,避免与并发下单/商家改库存等路径相互覆盖
+        // 恢复库存
         List<OrderItem> items = orderItemService.listByOrderId(orderId);
         for (OrderItem item : items) {
             if (item.getProductId() != null) {
-                productService.lambdaUpdate()
-                        .eq(Product::getId, item.getProductId())
-                        .setSql("stock = stock + " + item.getQuantity())
-                        .update();
+                Product product = productService.getById(item.getProductId());
+                if (product != null) {
+                    product.setStock(product.getStock() + item.getQuantity());
+                    productService.updateById(product);
+                }
             }
         }
 

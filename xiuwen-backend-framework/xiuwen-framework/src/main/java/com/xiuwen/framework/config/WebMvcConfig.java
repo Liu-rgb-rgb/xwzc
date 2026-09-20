@@ -64,10 +64,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/search/**",
                         "/api/shop/info",
                         "/api/patterns/options",
+                        "/api/patterns/public",
                         "/api/products/**",
                         "/api/courses/**",
-                        "/api/resources",
-                        "/api/resources/*",
+                        "/api/resources/**",
                         normalizeAccessPrefix(fileUploadProperties.getAccessPrefix()) + "/**"
                 );
     }

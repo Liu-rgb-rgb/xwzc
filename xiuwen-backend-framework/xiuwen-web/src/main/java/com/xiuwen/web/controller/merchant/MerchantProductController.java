@@ -2,6 +2,7 @@ package com.xiuwen.web.controller.merchant;
 
 import com.xiuwen.common.core.domain.PageResult;
 import com.xiuwen.common.core.domain.Result;
+import com.xiuwen.common.exception.BusinessException;
 import com.xiuwen.product.dto.ProductCategoryDTO;
 import com.xiuwen.product.dto.ProductCreateDTO;
 import com.xiuwen.product.dto.ProductQueryDTO;
@@ -90,6 +91,7 @@ public class MerchantProductController {
      */
     @PostMapping
     public Result<ProductVO> create(@Valid @RequestBody ProductCreateDTO dto) {
+        validateCategory(dto.getCategoryId());
         ProductVO vo = productService.createProduct(dto);
         return Result.success(vo);
     }
@@ -122,11 +124,15 @@ public class MerchantProductController {
         if (product == null) {
             return Result.fail("商品不存在");
         }
+        validateCategory(dto.getCategoryId());
         product.setCategoryId(dto.getCategoryId());
         product.setName(dto.getName());
         product.setSubtitle(dto.getSubtitle());
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());
+        if (dto.getStatus() != null) {
+            product.setStatus(dto.getStatus());
+        }
         product.setCoverImage(dto.getCoverImage());
         product.setMockupImage(dto.getMockupImage());
         product.setDescription(dto.getDescription());
@@ -135,6 +141,12 @@ public class MerchantProductController {
         product.setSort(dto.getSort() != null ? dto.getSort() : 0);
         productService.updateById(product);
         return Result.success(ProductVO.from(product));
+    }
+
+    private void validateCategory(Long categoryId) {
+        if (categoryId == null || productCategoryService.getById(categoryId) == null) {
+            throw new BusinessException("商品分类不存在，请从下拉列表重新选择");
+        }
     }
 
     /**

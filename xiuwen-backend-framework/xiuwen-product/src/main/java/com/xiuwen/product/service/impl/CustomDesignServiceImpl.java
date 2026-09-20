@@ -7,8 +7,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiuwen.common.exception.BusinessException;
 import com.xiuwen.product.entity.CustomDesign;
 import com.xiuwen.product.entity.CustomDesignDetail;
+import com.xiuwen.product.entity.Product;
 import com.xiuwen.product.mapper.CustomDesignMapper;
 import com.xiuwen.product.service.CustomDesignService;
+import com.xiuwen.product.service.ProductService;
 import com.xiuwen.framework.service.OssFileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,9 +29,20 @@ import java.util.Map;
 public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, CustomDesign> implements CustomDesignService {
 
     private final OssFileService ossFileService;
+    private final ProductService productService;
 
     @Override
-    public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String remark) {
+    public CustomDesignDetail createDesignDetail(Long userId, Long productId, Long patternId, String designConfig, String previewImageUrl, String remark) {
+        Product product = productService.getById(productId);
+        if (product == null || !"ON_SALE".equals(product.getStatus())) {
+            throw new BusinessException("商品不存在或已下架");
+        }
+        if (!Integer.valueOf(1).equals(product.getIsCustomizable())) {
+            throw new BusinessException("该商品不支持定制");
+        }
+        if (product.getStock() == null || product.getStock() <= 0) {
+            throw new BusinessException("商品已售罄，暂不可定制");
+        }
         CustomDesign design = new CustomDesign();
         design.setUserId(userId);
         design.setProductId(productId);
@@ -38,10 +51,13 @@ public class CustomDesignServiceImpl extends ServiceImpl<CustomDesignMapper, Cus
         design.setRemark(remark);
         design.setStatus("NORMAL");
 
-        // 生成预览图URL（实际项目中应调用图片合成服务，此处暂用占位 OSS 地址）
-        design.setPreviewImageUrl(
-                ossFileService.getOssDomain() + "custom/preview-" + System.currentTimeMillis() + ".png"
-        );
+        if (StringUtils.hasText(previewImageUrl)) {
+            design.setPreviewImageUrl(previewImageUrl.trim());
+        } else {
+            design.setPreviewImageUrl(
+                    ossFileService.getOssDomain() + "custom/preview-" + System.currentTimeMillis() + ".png"
+            );
+        }
 
         save(design);
         return baseMapper.selectDesignWithDetails(design.getId());

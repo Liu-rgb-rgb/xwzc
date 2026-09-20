@@ -57,14 +57,14 @@ public class MerchantCourseController {
             course.setIsRecommend(0);
         }
         courseService.save(course);
-        Course created = courseService.getByIdWithCategory(course.getId());
+        Course created = courseService.getAdminByIdWithCategory(course.getId());
         return Result.success(created);
     }
 
     /** [10.3] 课程详情 */
     @GetMapping("/{courseId}")
     public Result<Course> detail(@PathVariable Long courseId) {
-        Course course = courseService.getByIdWithCategory(courseId);
+        Course course = courseService.getAdminByIdWithCategory(courseId);
         if (course == null) {
             throw new BusinessException("课程不存在");
         }
@@ -83,7 +83,7 @@ public class MerchantCourseController {
         BeanUtils.copyProperties(request, course);
         course.setId(courseId);
         courseService.updateById(course);
-        Course updated = courseService.getByIdWithCategory(courseId);
+        Course updated = courseService.getAdminByIdWithCategory(courseId);
         return Result.success(updated);
     }
 

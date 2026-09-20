@@ -45,12 +45,6 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
 
-# 配置日志输出
-logging:
-  level:
-    # WebSocket 连接 / 消息问题
-    org.springframework.web.socket: debug
-
 xiuwen:
   jwt:
     secret: xiuwen-v1-secret-change-in-prod
@@ -72,6 +66,8 @@ xiuwen:
     # ===== 阿里云百炼 Qwen-Image =====
     # 百炼 API Key（在 bailian.console.aliyun.com 创建后填到 application-secret.yml）
     qwen-api-key:
+    # 可选：按百炼工作空间/地域填写自定义接口地址，留空使用默认地址
+    qwen-base-url:
     # 模型名，默认 qwen-image-3.0（可不填）
     qwen-model: qwen-image-3.0
     # 是否让 Qwen 自动扩写提示词提升画质，默认 true（可不填）
