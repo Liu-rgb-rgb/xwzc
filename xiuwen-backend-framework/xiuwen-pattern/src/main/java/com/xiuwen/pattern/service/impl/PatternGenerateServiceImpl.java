@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.xiuwen.common.constant.PatternStatus;
 import com.xiuwen.common.exception.BusinessException;
+import com.xiuwen.framework.service.AiImageService;
+import com.xiuwen.framework.service.OssFileService;
 import com.xiuwen.pattern.dto.GeneratePatternRequest;
 import com.xiuwen.pattern.dto.RegeneratePatternRequest;
 import com.xiuwen.pattern.entity.Pattern;
@@ -13,7 +15,6 @@ import com.xiuwen.pattern.service.PatternGenerationService;
 import com.xiuwen.pattern.service.PatternService;
 import com.xiuwen.pattern.vo.GeneratePatternResponse;
 import com.xiuwen.pattern.vo.PatternItemVO;
-import com.xiuwen.framework.service.OssFileService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,37 +22,24 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * AI 纹样生成业务实现。
  *
- * 第一版使用固定 Mock 图片，后续替换为真实 AI 调用。
+ * 调用统一 AI 图像服务生成图片，并将结果持久化为纹样记录。
  */
 @Service
 public class PatternGenerateServiceImpl implements PatternGenerateService {
-    /**
-     * 当前已经放入项目中的 Mock 纹样图片。
-     */
-    private static final List<String> MOCK_IMAGE_PATHS = Arrays.asList(
-            "demo/pattern/peony-phoenix-pattern-01.jpg",
-            "demo/pattern/peony-phoenix-pattern-02.jpg",
-            "demo/pattern/lingnan-window-pattern-01.jpg",
-            "demo/pattern/round-flower-pattern-01.jpg",
-            "demo/pattern/lion-dance-pattern-01.jpg"
-    );
-
     /**
      * 后端内部支持的纹样风格编码。
      */
     private static final List<String> SUPPORTED_STYLES = Arrays.asList(
             "classic",
             "new_chinese",
-            "embroidery",
-            "lingnan_window"
+            "lingnan_window",
+            "embroidery"
     );
 
     /**
@@ -60,7 +48,6 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     private static final List<String> SUPPORTED_COLORS = Arrays.asList(
             "chinese_elegant",
             "red_gold",
-            "rich_color",
             "soft_elegant"
     );
 
@@ -89,21 +76,18 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         STYLE_MAPPING.put("经典", "classic");
         STYLE_MAPPING.put("新中式", "new_chinese");
         STYLE_MAPPING.put("新中式风格", "new_chinese");
-        STYLE_MAPPING.put("刺绣风", "embroidery");
-        STYLE_MAPPING.put("刺绣纹样", "embroidery");
         STYLE_MAPPING.put("岭南花窗", "lingnan_window");
+        STYLE_MAPPING.put("刺绣纹样", "embroidery");
 
         COLOR_MAPPING.put("富贵华彩", "red_gold");
         COLOR_MAPPING.put("红金华彩", "red_gold");
         COLOR_MAPPING.put("红金配色", "red_gold");
         COLOR_MAPPING.put("国风雅韵", "chinese_elegant");
+        COLOR_MAPPING.put("清润素韵", "soft_elegant");
         COLOR_MAPPING.put("清雅素韵", "chinese_elegant");
         COLOR_MAPPING.put("中式雅韵", "chinese_elegant");
-        COLOR_MAPPING.put("清润素韵", "soft_elegant");
-        COLOR_MAPPING.put("素韵", "soft_elegant");
 
         SCENE_MAPPING.put("文创产品", "product");
-        SCENE_MAPPING.put("文创商品", "product");
         SCENE_MAPPING.put("产品定制", "product");
         SCENE_MAPPING.put("文创定制", "product");
         SCENE_MAPPING.put("海报设计", "poster");
@@ -117,20 +101,23 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     private final PatternGenerationService patternGenerationService;
     private final PatternService patternService;
     private final ObjectMapper objectMapper;
+    private final AiImageService aiImageService;
     private final OssFileService ossFileService;
 
     public PatternGenerateServiceImpl(PatternGenerationService patternGenerationService,
                                       PatternService patternService,
                                       ObjectMapper objectMapper,
+                                      AiImageService aiImageService,
                                       OssFileService ossFileService) {
         this.patternGenerationService = patternGenerationService;
         this.patternService = patternService;
         this.objectMapper = objectMapper;
+        this.aiImageService = aiImageService;
         this.ossFileService = ossFileService;
     }
 
     /**
-     * 创建生成记录、生成 Mock 纹样并返回结果。
+     * 创建生成记录、调用 AI 生成纹样并返回结果。
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -165,7 +152,17 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
             throw new BusinessException("生成任务保存失败");
         }
 
-        List<String> imageUrls = selectMockImages(request);
+        List<byte[]> generatedImages = aiImageService.generateImages(
+                promptText,
+                request.getGenerateCount()
+        );
+        if (generatedImages == null || generatedImages.size() < request.getGenerateCount()) {
+            throw new BusinessException("AI 未返回足够的纹样图片");
+        }
+        List<String> imageUrls = new ArrayList<>();
+        for (byte[] image : generatedImages.subList(0, request.getGenerateCount())) {
+            imageUrls.add(ossFileService.upload(image, "PATTERN", ".png"));
+        }
         List<Pattern> patterns = buildPatterns(
                 userId,
                 request,
@@ -379,9 +376,7 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         }
     }
 
-    /**
-     * 生成 Mock 提示词。
-     */
+    /** 组装发送给 AI 服务的提示词。 */
     private String buildPromptText(GeneratePatternRequest request,
                                    String elementsText) {
         StringBuilder prompt = new StringBuilder();
@@ -413,37 +408,7 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         return prompt.toString();
     }
 
-    /**
-     * 根据用户选项调整 Mock 图片顺序。
-     */
-    private List<String> selectMockImages(GeneratePatternRequest request) {
-        String ossDomain = ossFileService.getOssDomain();
-        Set<String> orderedImages = new LinkedHashSet<>();
-
-        if (containsElement(request.getElements(), "醒狮")) {
-            orderedImages.add(ossDomain + "demo/pattern/lion-dance-pattern-01.jpg");
-        }
-        if ("new_chinese".equals(request.getStyle())
-                || "lingnan_window".equals(request.getStyle())) {
-            orderedImages.add(ossDomain + "demo/pattern/lingnan-window-pattern-01.jpg");
-        }
-        if (containsElement(request.getElements(), "团花")
-                || containsElement(request.getElements(), "莲花")) {
-            orderedImages.add(ossDomain + "demo/pattern/round-flower-pattern-01.jpg");
-        }
-
-        for (String path : MOCK_IMAGE_PATHS) {
-            orderedImages.add(ossDomain + path);
-        }
-        List<String> result = new ArrayList<>(orderedImages);
-        return new ArrayList<>(
-                result.subList(0, request.getGenerateCount())
-        );
-    }
-
-    /**
-     * 构建前端显示的纹样标题。
-     */
+    /** 构建前端显示的纹样标题。 */
     private String buildPatternTitle(GeneratePatternRequest request, int index) {
         String suffix = request.getGenerateCount() > 1
                 ? "广绣纹样 " + index
@@ -550,42 +515,28 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     /**
      * 判断元素中是否包含指定关键词。
      */
-    private boolean containsElement(List<String> elements,
-                                    String keyword) {
-        if (elements == null) {
-            return false;
-        }
-
-        for (String element : elements) {
-            if (element != null && element.contains(keyword)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean hasText(String value) {
         return value != null && !value.trim().isEmpty();
     }
 
     private String getStyleDisplayName(String style) {
         if ("classic".equals(style)) {
-            return "广绣经典";
+            return "经典广绣";
         }
         if ("new_chinese".equals(style)) {
             return "新中式";
         }
-        if ("embroidery".equals(style)) {
-            return "刺绣纹样";
-        }
         if ("lingnan_window".equals(style)) {
             return "岭南花窗";
+        }
+        if ("embroidery".equals(style)) {
+            return "刺绣纹样";
         }
         return style;
     }
 
     private String getColorDisplayName(String colorTheme) {
-        if ("red_gold".equals(colorTheme) || "rich_color".equals(colorTheme)) {
+        if ("red_gold".equals(colorTheme)) {
             return "富贵华彩";
         }
         if ("chinese_elegant".equals(colorTheme)) {

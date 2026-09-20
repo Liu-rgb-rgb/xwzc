@@ -4,6 +4,7 @@ import com.xiuwen.common.constant.HttpStatus;
 import com.xiuwen.common.core.domain.Result;
 import com.xiuwen.common.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.validation.ConstraintViolationException;
 
@@ -78,6 +80,21 @@ public class GlobalExceptionHandler {
         int code = org.springframework.http.HttpStatus.METHOD_NOT_ALLOWED.value();
         return ResponseEntity.status(code)
                 .body(Result.fail(code, "请求方式不支持：" + ex.getMethod()));
+    }
+
+    /** 处理路径 ID、枚举等参数类型错误，避免向页面返回笼统的系统异常 */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Result<Void>> handleMethodArgumentTypeMismatchException(
+            MethodArgumentTypeMismatchException ex) {
+        return badRequest("参数格式不正确：" + ex.getName());
+    }
+
+    /** 处理外键、唯一索引等数据约束错误 */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Result<Void>> handleDataIntegrityViolationException(
+            DataIntegrityViolationException ex) {
+        log.warn("数据约束校验失败", ex);
+        return badRequest("关联数据不存在、已被占用或填写内容重复，请检查后重试");
     }
 
     /** 处理未捕获的系统异常 */

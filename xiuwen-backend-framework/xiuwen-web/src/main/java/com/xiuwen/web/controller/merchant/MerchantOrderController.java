@@ -11,6 +11,8 @@ import com.xiuwen.order.service.OrderService;
 import com.xiuwen.order.vo.OrderStatusCountVO;
 import com.xiuwen.order.vo.OrderVO;
 import com.xiuwen.system.entity.User;
+import com.xiuwen.system.entity.MessageNotice;
+import com.xiuwen.system.service.MessageNoticeService;
 import com.xiuwen.system.service.UserService;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,10 +32,13 @@ public class MerchantOrderController {
 
     private final OrderService orderService;
     private final UserService userService;
+    private final MessageNoticeService messageNoticeService;
 
-    public MerchantOrderController(OrderService orderService, UserService userService) {
+    public MerchantOrderController(OrderService orderService, UserService userService,
+                                   MessageNoticeService messageNoticeService) {
         this.orderService = orderService;
         this.userService = userService;
+        this.messageNoticeService = messageNoticeService;
     }
 
     /**
@@ -83,7 +88,7 @@ public class MerchantOrderController {
         if (detail.getUserId() != null) {
             User user = userService.getById(detail.getUserId());
             if (user != null) {
-                vo.setUserNickname(user.getNickname());
+                vo.setUserNickname(userDisplayName(user));
             }
         }
 
@@ -97,6 +102,17 @@ public class MerchantOrderController {
     public Result<OrderVO> updateStatus(@PathVariable Long orderId,
                                         @Valid @RequestBody OrderStatusUpdateDTO dto) {
         Orders order = orderService.updateOrderStatus(orderId, dto.getStatus());
+        if ("DELIVERED".equals(order.getStatus())) {
+            MessageNotice notice = new MessageNotice();
+            notice.setUserId(order.getUserId());
+            notice.setTitle("订单已发货");
+            notice.setContent("您的订单 " + order.getOrderNo() + " 已经发货，请注意查收。");
+            notice.setNoticeType("ORDER");
+            notice.setIsRead(0);
+            notice.setRelatedType("ORDER");
+            notice.setRelatedId(order.getId());
+            messageNoticeService.save(notice);
+        }
         return Result.success(OrderVO.from(order));
     }
 
@@ -134,6 +150,12 @@ public class MerchantOrderController {
         }
 
         return userService.listByIds(userIds).stream()
-                .collect(Collectors.toMap(User::getId, u -> u.getNickname() != null ? u.getNickname() : ""));
+                .collect(Collectors.toMap(User::getId, this::userDisplayName));
+    }
+
+    private String userDisplayName(User user) {
+        String nickname = user.getNickname() == null || user.getNickname().isBlank()
+                ? "未命名用户" : user.getNickname();
+        return nickname + " / " + user.getUsername();
     }
 }

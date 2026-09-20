@@ -26,4 +26,7 @@ public interface CourseMapper extends BaseMapper<Course> {
                                  @Param("status") String status);
 
     Course selectByIdWithCategory(@Param("id") Long id);
+
+    /** 商家端课程详情（含草稿、已隐藏课程） */
+    Course selectAdminByIdWithCategory(@Param("id") Long id);
 }

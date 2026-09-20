@@ -15,7 +15,8 @@ public interface OrderService extends IService<Orders> {
 
     /** 创建订单 */
     Orders createOrder(Long userId, Long addressId, Long[] cartItemIds,
-                       Long customDesignId, Integer quantity, String remark);
+                       Long customDesignId, Integer quantity, String remark,
+                       String receiverName, String receiverPhone, String receiverAddress);
 
     /** 模拟支付 */
     Orders mockPay(Long orderId, Long userId);

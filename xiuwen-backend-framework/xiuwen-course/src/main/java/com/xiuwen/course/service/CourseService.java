@@ -14,6 +14,8 @@ public interface CourseService extends IService<Course> {
 
     Course getByIdWithCategory(Long id);
 
+    Course getAdminByIdWithCategory(Long id);
+
     /** 商家端课程分页 */
     Page<Course> adminPage(Page<Course> page, Long categoryId, String keyword,
                            String difficulty, String status);

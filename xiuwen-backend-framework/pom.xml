@@ -28,7 +28,7 @@
         <spring.boot.version>2.7.18</spring.boot.version>
         <mybatis.plus.version>3.5.5</mybatis.plus.version>
         <mysql.version>8.0.33</mysql.version>
-        <lombok.version>1.18.30</lombok.version>
+        <lombok.version>1.18.38</lombok.version>
         <jjwt.version>0.13.0</jjwt.version>
         <commons.lang3.version>3.12.0</commons.lang3.version>
         <redisson.version>3.20.1</redisson.version>
@@ -121,6 +121,13 @@
                 <source>${java.version}</source>
                 <target>${java.version}</target>
                 <encoding>UTF-8</encoding>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>org.projectlombok</groupId>
+                        <artifactId>lombok</artifactId>
+                        <version>${lombok.version}</version>
+                    </path>
+                </annotationProcessorPaths>
             </configuration>
          </plugin>
         </plugins>

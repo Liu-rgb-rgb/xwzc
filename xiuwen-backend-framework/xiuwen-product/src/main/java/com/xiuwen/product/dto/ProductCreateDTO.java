@@ -3,6 +3,7 @@ package com.xiuwen.product.dto;
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -27,6 +28,10 @@ public class ProductCreateDTO {
 
     @NotNull(message = "库存不能为空")
     private Integer stock;
+
+    /** 商品状态：ON_SALE上架 OFF_SALE下架 SOLD_OUT售罄 DRAFT草稿 */
+    @Pattern(regexp = "ON_SALE|OFF_SALE|SOLD_OUT|DRAFT", message = "商品状态不正确")
+    private String status;
 
     private String coverImage;
 

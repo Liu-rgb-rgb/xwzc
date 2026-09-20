@@ -12,7 +12,12 @@ import java.util.Map;
  * custom_design 表服务接口。
  */
 public interface CustomDesignService extends IService<CustomDesign> {
-    CustomDesign createDesignDetail(Long userId, @NotNull(message = "商品id不能为空") Long productId, @NotNull(message = "纹样id不能为空") Long patternId, String designConfig, String remark);
+    CustomDesign createDesignDetail(Long userId,
+                                    @NotNull(message = "商品id不能为空") Long productId,
+                                    @NotNull(message = "纹样id不能为空") Long patternId,
+                                    String designConfig,
+                                    String previewImageUrl,
+                                    String remark);
 
     IPage<CustomDesign> pageMyDesign(Long userId, int page, int pageSize, String status);
 

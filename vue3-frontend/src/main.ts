@@ -13,7 +13,7 @@ import WorkspacePage from './pages/client/WorkspacePage.vue';
 import ProfilePage from './pages/profile/index.vue';
 import AdminLayout from './pages/merchant/AdminLayout.vue';
 import AdminModule from './pages/merchant/AdminModule.vue';
-import { isClient, isLoggedIn, isMerchant } from './auth';
+import { isClient, isLoggedIn, isMerchant, isRealClient } from './auth';
 import './styles.css';
 
 const protectedRoute = (path: string, title: string, mode: string) => ({
@@ -28,12 +28,15 @@ const adminModules = [
   ['product-categories', '商品分类'],
   ['custom-designs', '定制设计'],
   ['patterns', '纹样管理'],
+  ['pattern-generations', '生成记录'],
   ['prompt-templates', '提示词模板'],
+  ['course-categories', '课程分类'],
   ['courses', '课程管理'],
   ['resources', '资源管理'],
   ['users', '用户管理'],
   ['home', '首页配置'],
-  ['shop', '店铺配置']
+  ['shop', '店铺配置'],
+  ['messages', '消息管理']
 ];
 
 const router = createRouter({
@@ -47,6 +50,7 @@ const router = createRouter({
     { path: '/products', component: Products },
     { path: '/products/:productId', component: DetailPage, meta: { kind: 'product' } },
     { path: '/patterns', component: Patterns },
+    { path: '/patterns/:patternId', component: DetailPage, meta: { kind: 'pattern' } },
     { path: '/my/patterns', redirect: '/patterns' },
     { path: '/my-patterns', redirect: '/patterns' },
     { path: '/courses', component: Courses },
@@ -61,7 +65,7 @@ const router = createRouter({
     // 商品列表中的“立即定制”需要直接打开客户端定制页。
     // 该页面支持未登录浏览，避免商家会话被客户端角色守卫错误重定向到后台。
     { path: '/customize', component: WorkspacePage, meta: { title: '文创商品定制', mode: 'customize' } },
-    { path: '/cart', component: WorkspacePage, meta: { title: '购物车', mode: 'cart' } },
+    { path: '/cart', component: WorkspacePage, meta: { requiresAuth: true, requiresClient: true, requiresRealClient: true, title: '购物车', mode: 'cart' } },
     protectedRoute('/orders', '我的订单', 'orders'),
     {
       path: '/orders/:orderId',
@@ -73,7 +77,7 @@ const router = createRouter({
       component: WorkspacePage,
       meta: { title: '创作资源', mode: 'resources' }
     },
-    { path: '/profile', component: ProfilePage, meta: { title: '个人中心' } },
+    { path: '/profile', component: ProfilePage, meta: { requiresAuth: true, requiresClient: true, requiresRealClient: true, title: '个人中心' } },
     {
       path: '/merchant',
       component: AdminLayout,
@@ -97,6 +101,8 @@ router.beforeEach((to) => {
   if (to.meta.requiresMerchant && !isMerchant.value)
     return { path: '/merchant/login', query: { redirect: to.fullPath } };
   if (to.meta.requiresAuth && !isLoggedIn.value)
+    return { path: '/login', query: { redirect: to.fullPath } };
+  if (to.meta.requiresRealClient && !isRealClient.value)
     return { path: '/login', query: { redirect: to.fullPath } };
   if (to.meta.requiresClient && !isClient.value)
     return { path: '/merchant', replace: true };
