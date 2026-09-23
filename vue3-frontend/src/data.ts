@@ -23,7 +23,9 @@ export const patterns = [
   '云起丹霞',
   '金蕊宝相'
 ].map((title, i) => ({
-  id: i + 1,
+  // 演示纹样使用 demo- 前缀 id，避免与后端真实纹样的数字 id 冲突，
+  // 否则详情页按 id 查后端会取到另一个纹样。
+  id: `demo-${i + 1}`,
   title,
   ...patternLabels[i % 5],
   meta: `${patternLabels[i % 5].style} · ${patternLabels[i % 5].elements.join(' / ')}`,

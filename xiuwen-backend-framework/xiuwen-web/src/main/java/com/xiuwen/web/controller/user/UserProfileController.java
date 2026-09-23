@@ -16,6 +16,7 @@ import com.xiuwen.system.service.FileResourceService;
 import com.xiuwen.system.service.UserAddressService;
 import com.xiuwen.system.service.UserService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,15 +38,18 @@ public class UserProfileController {
     private final UserAddressService userAddressService;
     private final FileResourceService fileResourceService;
     private final OssFileService ossFileService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     public UserProfileController(UserService userService,
                                  UserAddressService userAddressService,
                                  FileResourceService fileResourceService,
-                                 OssFileService ossFileService) {
+                                 OssFileService ossFileService,
+                                 BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.userAddressService = userAddressService;
         this.fileResourceService = fileResourceService;
         this.ossFileService = ossFileService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /** [2.1] 查看个人资料 */
@@ -115,7 +119,17 @@ public class UserProfileController {
             throw new BusinessException("用户不存在");
         }
 
-        if (!Md5Utils.matches(request.getOldPassword(), user.getPasswordHash())) {
+        // 兼容过渡期：旧密码可能是 MD5（32 位）或已升级的 BCrypt（60 位）
+        String dbPassword = user.getPasswordHash();
+        boolean oldPasswordMatched;
+        if (dbPassword != null && dbPassword.length() == 32) {
+            oldPasswordMatched = Md5Utils.matches(request.getOldPassword(), dbPassword);
+        } else if (dbPassword != null && dbPassword.length() == 60) {
+            oldPasswordMatched = passwordEncoder.matches(request.getOldPassword(), dbPassword);
+        } else {
+            oldPasswordMatched = false;
+        }
+        if (!oldPasswordMatched) {
             throw new BusinessException("原密码错误");
         }
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
@@ -124,7 +138,7 @@ public class UserProfileController {
 
         User update = new User();
         update.setId(userId);
-        update.setPasswordHash(Md5Utils.md5(request.getNewPassword()));
+        update.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         userService.updateById(update);
         return Result.success();
     }

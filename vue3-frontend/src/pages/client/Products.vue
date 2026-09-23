@@ -3,12 +3,17 @@ import { computed, onMounted, ref } from 'vue';
 import ProductCard from '../../components/ProductCard.vue';
 import { products as demoProducts } from '../../data';
 import { api, listFrom } from '../../api';
-const cat = ref('全部商品');
-const products = ref(demoProducts);
+type CategoryChoice = { id: number | string; name: string };
+const categoryNames = ['帆布袋', '明信片', '丝巾', '杯垫', '摆件', '笔记本', '钥匙扣', '冰箱贴'];
+const cat = ref<number | string>('all');
+const products = ref<any[]>([]);
 const keyword = ref('');
 const sort = ref('综合排序');
 const priceRange = ref('全部价格');
-const categories = ['全部商品', '帆布袋', '明信片', '丝巾', '杯垫', '摆件', '笔记本', '钥匙扣', '冰箱贴'];
+const categories = ref<CategoryChoice[]>([
+  { id: 'all', name: '全部商品' },
+  ...categoryNames.map((name) => ({ id: name, name }))
+]);
 
 function categoryOf(product: any) {
   return product.categoryName || product.category?.name || product.category || '';
@@ -22,7 +27,10 @@ const visibleProducts = computed(() => {
   const query = keyword.value.trim().toLowerCase();
   const result = products.value.filter((product: any) => {
     const price = Number(product.price || 0);
-    const matchesCategory = cat.value === '全部商品' || categoryOf(product) === cat.value;
+    const selected = categories.value.find((item) => String(item.id) === String(cat.value));
+    const matchesCategory = cat.value === 'all'
+      || (typeof selected?.id === 'number' && Number(product.categoryId) === selected.id)
+      || categoryOf(product) === selected?.name;
     const text = `${product.title || product.name || ''} ${product.desc || product.description || ''}`.toLowerCase();
     const matchesKeyword = !query || text.includes(query);
     const matchesPrice = priceRange.value === '全部价格'
@@ -36,16 +44,26 @@ const visibleProducts = computed(() => {
 });
 onMounted(async () => {
   try {
-    const list = listFrom(await api.products.list({ page: 1, pageSize: 12 }));
-    if (list.length)
-      products.value = list.map((p: any, i: number) => ({
-        ...demoProducts[i % demoProducts.length],
-        ...p,
-        image:
-          p.coverImage || p.mockupImage || p.imageUrl || demoProducts[i % demoProducts.length].image
-      }));
+    const list = listFrom(await api.products.categories());
+    if (list.length) {
+      categories.value = [
+        { id: 'all', name: '全部商品' },
+        ...list.map((item: any) => ({ id: Number(item.id), name: String(item.name) }))
+      ];
+    }
   } catch {
-    /* 后端未启动时保留完整演示数据 */
+    /* 后端未启动时保留预设分类 */
+  }
+  try {
+    const list = listFrom(await api.products.list({ page: 1, pageSize: 50 }));
+    products.value = list.map((p: any, i: number) => ({
+      ...p,
+      title: p.name,
+      desc: p.subtitle || p.description,
+      image: p.coverImage || p.mockupImage || p.imageUrl || demoProducts[i % demoProducts.length].image
+    }));
+  } catch {
+    products.value = [];
   }
 });
 </script>
@@ -61,11 +79,11 @@ onMounted(async () => {
       <h3>商品分类</h3>
       <button
         v-for="x in categories"
-        :key="x"
-        :class="{ on: cat === x }"
-        @click="cat = x"
+        :key="x.id"
+        :class="{ on: String(cat) === String(x.id) }"
+        @click="cat = x.id"
       >
-        {{ x }}
+        {{ x.name }}
       </button>
     </aside>
     <section class="catalog">

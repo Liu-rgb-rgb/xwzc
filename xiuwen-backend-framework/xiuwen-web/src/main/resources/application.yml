@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8081
 
 spring:
   application:
@@ -71,7 +71,9 @@ xiuwen:
     provider: qwen
     # ===== 阿里云百炼 Qwen-Image =====
     # 百炼 API Key（在 bailian.console.aliyun.com 创建后填到 application-secret.yml）
-    qwen-api-key:
+    qwen-api-key: sk-ws-H.PMDDHHY.lcOe.MEQCIGnPhz2m0hQRJX5NCuDMG8qDRcJZEo1_lL7ZsZJa0SH2AiBuYIP3e5Q81tgX4xeNm9g99Ckad0LTZj48DtX0-eKauA
+    # 可选：按百炼工作空间/地域填写自定义接口地址，留空使用默认地址
+    qwen-base-url:
     # 模型名，默认 qwen-image-3.0（可不填）
     qwen-model: qwen-image-3.0
     # 是否让 Qwen 自动扩写提示词提升画质，默认 true（可不填）

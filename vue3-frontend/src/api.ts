@@ -77,8 +77,12 @@ export const api = {
   },
   patterns: {
     options: () => get('/api/patterns/options'),
+    list: (params: Query = {}) => get('/api/patterns/public', params),
+    // 提交 AI 生成任务(异步): 后端立即返回 { generationId, status }, 之后轮询 generationStatus
     generate: (data: Payload) => post('/api/patterns/generate', data),
     regenerate: (data: Payload) => post('/api/patterns/regenerate', data),
+    // 轮询生成任务状态: { status, progress, completedCount, totalCount, errorMessage, patterns }
+    generationStatus: (generationId: Id) => get(`/api/pattern-generations/${generationId}`),
     generations: (params: Query = {}) => get('/api/pattern-generations/my', params),
     mine: (params: Query = {}) => get('/api/patterns/my', params),
     detail: (patternId: Id) => get(`/api/patterns/${patternId}`),
@@ -101,11 +105,11 @@ export const api = {
     remove: (customDesignId: Id) => del(`/api/custom-designs/${customDesignId}`)
   },
   cart: {
-    items: () => get('/api/cart/items'),
-    add: (data: Payload) => post('/api/cart/items', data),
-    update: (cartItemId: Id, data: Payload) => put(`/api/cart/items/${cartItemId}`, data),
-    remove: (cartItemId: Id) => del(`/api/cart/items/${cartItemId}`),
-    clear: () => del('/api/cart/items')
+    items: () => get('/api/cart'),
+    add: (data: Payload) => post('/api/cart', data),
+    update: (cartItemId: Id, data: Payload) => put(`/api/cart/${cartItemId}`, data),
+    remove: (cartItemId: Id) => del(`/api/cart/${cartItemId}`),
+    clear: () => del('/api/cart')
   },
   orders: {
     create: (data: Payload) => post('/api/orders', data),
@@ -114,7 +118,8 @@ export const api = {
     statusCount: () => get('/api/orders/status-count'),
     detail: (orderId: Id) => get(`/api/orders/${orderId}`),
     cancel: (orderId: Id, data: Payload = {}) => put(`/api/orders/${orderId}/cancel`, data),
-    confirm: (orderId: Id) => put(`/api/orders/${orderId}/confirm`)
+    confirm: (orderId: Id) => put(`/api/orders/${orderId}/confirm`),
+    remove: (orderId: Id) => del(`/api/orders/${orderId}`)
   },
   courses: {
     categories: () => get('/api/courses/categories'),
@@ -136,7 +141,7 @@ export const api = {
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/status`, data),
       updateRemark: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/remark`, data)
     },
-    productCategories: listCreateUpdateDelete('/api/admin/product-categories'),
+    productCategories: listCreateUpdateDelete('/api/admin/products/categories'),
     products: {
       ...crud('/api/admin/products'),
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/products/${id}/status`, data)
@@ -171,11 +176,16 @@ export const api = {
       detail: (id: Id) => get(`/api/admin/users/${id}`),
       updateStatus: (id: Id, data: Payload) => put(`/api/admin/users/${id}/status`, data)
     },
-    homeBanners: listCreateUpdateDelete('/api/admin/home-banners'),
-    homeRecommends: listCreateUpdateDelete('/api/admin/home-recommends'),
+    homeBanners: listCreateUpdateDelete('/api/admin/home/banners'),
+    homeRecommends: listCreateUpdateDelete('/api/admin/home/recommend'),
     shop: {
-      detail: () => get('/api/admin/shop/info'),
-      update: (data: Payload) => put('/api/admin/shop/info', data)
+      detail: () => get('/api/admin/shop'),
+      update: (data: Payload) => put('/api/admin/shop', data)
+    },
+    messages: {
+      list: (params: Query = {}) => get('/api/admin/messages', params),
+      send: (data: Payload) => post('/api/admin/messages', data),
+      markRead: (messageId: Id) => put(`/api/admin/messages/${messageId}/read`)
     },
     sendMessage: (data: Payload) => post('/api/admin/messages', data),
     uploadFile: (data: FormData) => post('/api/admin/files/upload', data)

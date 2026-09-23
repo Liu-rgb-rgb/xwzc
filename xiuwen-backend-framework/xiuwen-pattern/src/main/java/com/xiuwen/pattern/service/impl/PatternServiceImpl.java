@@ -68,6 +68,9 @@ public class PatternServiceImpl extends ServiceImpl<PatternMapper,Pattern> imple
                 case "saved"://保存到我的纹样
                     wrapper.eq(Pattern::getIsSaved, 1);
                     break;
+                case "recent"://当前用户由 AI 生成的全部纹样
+                    wrapper.isNotNull(Pattern::getGenerationId);
+                    break;
                 case "all":
                 default:
                     wrapper.and(w -> w
@@ -351,4 +354,3 @@ public class PatternServiceImpl extends ServiceImpl<PatternMapper,Pattern> imple
 
 
 }
-

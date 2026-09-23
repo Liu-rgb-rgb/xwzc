@@ -10,17 +10,17 @@ package com.xiuwen.pattern.service;
  * @Version 1.0
  */
 /*
-ai纹样生成
+ai纹样生成(异步): 提交后立即返回 generationId, 后台线程池执行生图, 前端轮询状态
 */
 import com.xiuwen.pattern.dto.RegeneratePatternRequest;
-import com.xiuwen.pattern.vo.GeneratePatternResponse;
+import com.xiuwen.pattern.vo.GenerationSubmitVO;
 import com.xiuwen.pattern.dto.GeneratePatternRequest;
 public interface PatternGenerateService {
     /*当前登录用户ID
     * 用户提交的生成参数
-    * 生成结果*/
- GeneratePatternResponse generate(Long userId, GeneratePatternRequest request);
-    GeneratePatternResponse regenerate(
+    * 提交结果(含 generationId, 供轮询)*/
+    GenerationSubmitVO generate(Long userId, GeneratePatternRequest request);
+    GenerationSubmitVO regenerate(
             Long userId,
             RegeneratePatternRequest request
     );

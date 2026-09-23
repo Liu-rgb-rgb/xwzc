@@ -31,8 +31,11 @@ public class PatternGeneration implements Serializable {
     private String promptText;
     private Integer generateCount;
     private String status;
+    /** 生成进度 0-100, 按已完成图片数推进 */
+    private Integer progress;
     private String errorMessage;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private String description;
     private String referenceImageUrl;
 }

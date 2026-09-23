@@ -1,15 +1,21 @@
 package com.xiuwen.web.controller.user;
 
 import com.xiuwen.common.core.domain.Result;
+import com.xiuwen.common.core.domain.PageResult;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import cn.hutool.json.JSONUtil;
 
 import com.xiuwen.framework.security.LoginUserHolder;
 import com.xiuwen.pattern.dto.GeneratePatternRequest;
 
 import com.xiuwen.pattern.dto.PatternMyQueryDTO;
+import com.xiuwen.pattern.dto.PatternAdminQueryDTO;
+import com.xiuwen.pattern.entity.PatternAdminDetail;
 import com.xiuwen.pattern.service.PatternGenerateService;
 import com.xiuwen.pattern.service.PatternService;
-import com.xiuwen.pattern.vo.GeneratePatternResponse;
+import com.xiuwen.pattern.vo.GenerationSubmitVO;
 import com.xiuwen.pattern.vo.PatternMyVO;
+import com.xiuwen.pattern.vo.PatternAdminVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.catalina.security.SecurityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +25,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,8 +48,49 @@ public class PatternUserController {
         return Result.todo("AI生成选项");
     }
 
+    /** 客户端纹样浏览列表，展示所有正常状态的纹样（供定制页等公开浏览场景使用）。 */
+    @GetMapping("/public")
+    public Result<PageResult<PatternAdminVO>> publicPatterns(PatternAdminQueryDTO query) {
+        query.setUserId(null);
+        query.setStatus("NORMAL");
+        IPage<PatternAdminDetail> page = patternService.adminPatternList(query);
+        List<PatternAdminVO> list = new ArrayList<>();
+        for (PatternAdminDetail detail : page.getRecords()) {
+            PatternAdminVO vo = new PatternAdminVO();
+            vo.setId(detail.getId());
+            vo.setGenerationId(detail.getGenerationId());
+            vo.setUserId(detail.getUserId());
+            vo.setTitle(detail.getTitle());
+            vo.setImageUrl(detail.getImageUrl());
+            vo.setThumbnailUrl(detail.getThumbnailUrl());
+            vo.setKeyword(detail.getKeyword());
+            vo.setStyle(detail.getStyle());
+            try {
+                vo.setElements(JSONUtil.toList(detail.getElements(), String.class));
+            } catch (Exception ignored) {
+                vo.setElements(new ArrayList<>());
+            }
+            vo.setColorTheme(detail.getColorTheme());
+            vo.setUsageScene(detail.getUsageScene());
+            vo.setDescription(detail.getDescription());
+            vo.setIsSaved(detail.getIsSaved());
+            vo.setIsFavorite(detail.getIsFavorite());
+            vo.setIsRecommend(detail.getIsRecommend());
+            vo.setViewCount(detail.getViewCount());
+            vo.setLikeCount(detail.getLikeCount());
+            vo.setUseCount(detail.getUseCount());
+            vo.setStatus(detail.getStatus());
+            vo.setCreatedAt(detail.getCreatedAt());
+            vo.setUpdatedAt(detail.getUpdatedAt());
+            vo.setUserNickname(detail.getUserNickname());
+            list.add(vo);
+        }
+        return Result.success(PageResult.of(page.getTotal(), page.getCurrent(), page.getSize(), list));
+    }
+
+    /** 提交 AI 生成任务: 立即返回 generationId, 前端轮询 GET /api/pattern-generations/{id} 获取进度与结果 */
     @PostMapping("/generate")
-    public Result<GeneratePatternResponse> generate(
+    public Result<GenerationSubmitVO> generate(
             @Valid
             @RequestBody GeneratePatternRequest request) {
         Long userId = LoginUserHolder.getRequiredUserId();
@@ -51,8 +100,9 @@ public class PatternUserController {
     }
 
 
+    /** 基于历史记录重新生成: 同样走异步任务, 立即返回新的 generationId */
     @PostMapping("/regenerate")
-    public Result<GeneratePatternResponse> regenerate(
+    public Result<GenerationSubmitVO> regenerate(
             @Valid @RequestBody RegeneratePatternRequest request) {
         Long userId = LoginUserHolder.getRequiredUserId();
         return Result.success(

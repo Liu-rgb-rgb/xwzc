@@ -32,6 +32,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -226,19 +227,21 @@ public class AiImageService {
             for (int i = 0; i < count; i++) {
                 HttpEntity<Map<String, Object>> entity = new HttpEntity<>(body, headers);
                 ResponseEntity<Map> resp = getRestTemplate().postForEntity(url, entity, Map.class);
-                String imageUrl = extractQwenImageUrl(resp.getBody());
-                byte[] bytes = getRestTemplate().getForObject(imageUrl, byte[].class);
-                if (bytes == null || bytes.length == 0) {
-                    throw new BusinessException("下载 Qwen 生成图片失败");
-                }
-                bytesList.add(bytes);
+                Map<String, Object> respBody = resp.getBody();
+                String imageUrl = extractQwenImageUrl(respBody);
+                bytesList.add(downloadImageBytes(imageUrl));
             }
             return bytesList;
         } catch (BusinessException e) {
             throw e;
+        } catch (RestClientResponseException e) {
+            // 百炼或图片下载返回非 2xx:带出响应体,便于定位真实原因
+            String respBody = e.getResponseBodyAsString();
+            log.error("百炼相关请求失败: {}, respBody={}", e.getMessage(), respBody, e);
+            throw new BusinessException("百炼生图失败: " + (respBody == null || respBody.isEmpty() ? e.getMessage() : respBody));
         } catch (Exception e) {
             log.error("Qwen-Image 生成失败: {}", e.getMessage(), e);
-            throw new BusinessException("AI 图像生成失败，请稍后重试");
+            throw new BusinessException("AI 图像生成失败: " + e.getMessage());
         }
     }
 
@@ -267,6 +270,48 @@ public class AiImageService {
             }
         }
         throw new BusinessException("百炼响应中未找到图片");
+    }
+
+//    /** 直接 HTTP GET 下载百炼返回的图片(其 URL 已由百炼签名,无需再用我方 AK 二次签名)。 */
+//    private byte[] downloadImageBytes(String imageUrl) {
+//        byte[] bytes = getRestTemplate().getForObject(imageUrl, byte[].class);
+//        if (bytes == null || bytes.length == 0) {
+//            throw new BusinessException("下载 Qwen 生成图片失败, URL=" + imageUrl);
+//        }
+//        return bytes;
+//    }
+//    /** 直接 HTTP GET 下载百炼返回的图片(其 URL 已由百炼签名,无需再用我方 AK 二次签名)。 */
+//    private byte[] downloadImageBytes(String imageUrl) {
+//        // ✅ 这里一定要直接 new，不要用 getRestTemplate()！
+//        // 用 new RestTemplate() 可以绕过全局注册的 OSS 签名拦截器
+//        RestTemplate cleanRestTemplate = new RestTemplate();
+//
+//        byte[] bytes = cleanRestTemplate.getForObject(imageUrl, byte[].class);
+//        if (bytes == null || bytes.length == 0) {
+//            throw new BusinessException("下载 Qwen 生成图片失败, URL=" + imageUrl);
+//        }
+//        return bytes;
+//    }
+    /** 直接 HTTP GET 下载百炼返回的图片(彻底绕过 Spring 容器里所有的 RestTemplate 拦截器) */
+    private byte[] downloadImageBytes(String imageUrl) {
+        try {
+            java.net.URL url = new java.net.URL(imageUrl);
+            java.net.URLConnection conn = url.openConnection();
+            // 设置超时，防止死等
+            conn.setConnectTimeout(10000);
+            conn.setReadTimeout(60000);
+
+            try (java.io.InputStream in = conn.getInputStream()) {
+                byte[] bytes = in.readAllBytes();
+                if (bytes == null || bytes.length == 0) {
+                    throw new BusinessException("下载 Qwen 生成图片失败, URL=" + imageUrl);
+                }
+                return bytes;
+            }
+        } catch (Exception e) {
+            log.error("原生下载图片失败, URL: {}", imageUrl, e);
+            throw new BusinessException("下载百炼图片失败: " + e.getMessage());
+        }
     }
 
     private static boolean blank(String s) {

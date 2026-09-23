@@ -6,12 +6,15 @@ const modules = [
   ['/merchant/product-categories', '商品分类'],
   ['/merchant/custom-designs', '定制设计'],
   ['/merchant/patterns', '纹样管理'],
+  ['/merchant/pattern-generations', '生成记录'],
   ['/merchant/prompt-templates', '提示词模板'],
+  ['/merchant/course-categories', '课程分类'],
   ['/merchant/courses', '课程管理'],
   ['/merchant/resources', '资源管理'],
   ['/merchant/users', '用户管理'],
   ['/merchant/home', '首页配置'],
-  ['/merchant/shop', '店铺配置']
+  ['/merchant/shop', '店铺配置'],
+  ['/merchant/messages', '消息管理']
 ];
 </script>
 <template>

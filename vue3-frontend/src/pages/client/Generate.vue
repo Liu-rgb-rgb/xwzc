@@ -1,12 +1,22 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import SectionTitle from '../../components/SectionTitle.vue';
 import PatternCard from '../../components/PatternCard.vue';
 import { patterns as demoPatterns } from '../../data';
-import { api, listFrom } from '../../api';
+import { api } from '../../api';
+import { authState, isDemoAccount } from '../../auth';
 import { readUserData, writeUserData } from '../../userData';
-const style = ref('广绣经典'),
-  element = ref('牡丹'),
+import {
+  generationActive,
+  generationFinished,
+  generationSnapshot,
+  restoreActiveGeneration,
+  submitGenerationJob
+} from '../../generation';
+const router = useRouter();
+const styles = ref<string[]>(['广绣经典']),
+  elements = ref<string[]>(['牡丹']),
   palette = ref('国风雅韵'),
   scene = ref('文创商品'),
   count = ref(4),
@@ -21,35 +31,38 @@ const style = ref('广绣经典'),
 
 const paletteOptions = [
   { name: '国风雅韵', className: 'p1', value: 'chinese_elegant' },
-  { name: '富贵华彩', className: 'p2', value: 'rich_color' },
+  { name: '富贵华彩', className: 'p2', value: 'red_gold' },
   { name: '清润素韵', className: 'p3', value: 'soft_elegant' }
 ];
 const sceneValues: Record<string, string> = {
-  文创商品: 'product', 服饰刺绣: 'clothing', 家居软装: 'home', 礼品包装: 'package'
+  文创商品: 'product',
+  服饰刺绣: 'clothing',
+  家居软装: 'home',
+  礼品包装: 'package'
 };
-const resultToneClass = computed(() => ({
-  国风雅韵: 'tone-elegant', 富贵华彩: 'tone-rich', 清润素韵: 'tone-soft'
-}[palette.value] || 'tone-elegant'));
-const inspirationPatterns = computed(() => patterns.value.length ? patterns.value : demoPatterns);
-function useKeyword(value: string) { description.value = description.value ? `${description.value} ${value}` : value; }
-
-function createDemoResults() {
-  const condition = `${style.value}${element.value}${palette.value}${scene.value}${description.value}${Date.now()}`;
-  const seed = [...condition].reduce((sum, character) => sum + character.charCodeAt(0), 0);
-  const elementStart: Record<string, number> = { 牡丹: 0, 凤凰: 1, 花鸟: 2, 祥云: 3, 莲花: 2, 醒狮: 4 };
-  const start = (elementStart[element.value] ?? 0) + seed;
-  const ordered = Array.from({ length: Number(count.value) }, (_, index) => {
-    const source = demoPatterns[(start + index) % demoPatterns.length];
-    return {
-      ...source,
-      id: Date.now() + index,
-      title: `${element.value} · ${style.value} · ${palette.value} ${index + 1}`,
-      meta: `${scene.value}${description.value ? ` · ${description.value}` : ''}`,
-      image: index === 0 && referencePreview.value ? referencePreview.value : source.image
-    };
-  });
-  return ordered;
+const resultToneClass = computed(
+  () =>
+    ({
+      国风雅韵: 'tone-elegant',
+      富贵华彩: 'tone-rich',
+      清润素韵: 'tone-soft'
+    })[palette.value] || 'tone-elegant'
+);
+const inspirationPatterns = computed(() => (patterns.value.length ? patterns.value : demoPatterns));
+const offlineDemoToken = computed(() => authState.token === 'client-demo-token');
+function useKeyword(value: string) {
+  description.value = description.value ? `${description.value} ${value}` : value;
 }
+function toggleChoice(target: 'style' | 'element', value: string) {
+  const choices = target === 'style' ? styles : elements;
+  const wasSelected = choices.value.includes(value);
+  choices.value = wasSelected
+    ? choices.value.filter((item) => item !== value)
+    : [...choices.value, value];
+  if (!wasSelected) useKeyword(value);
+}
+const selectedStylesText = computed(() => styles.value.join('、'));
+const selectedElementsText = computed(() => elements.value.join('、'));
 
 function chooseReference(file?: File) {
   if (!file) return;
@@ -62,7 +75,34 @@ function chooseReference(file?: File) {
   referencePreview.value = URL.createObjectURL(file);
   notice.value = `已选择参考图：${file.name}`;
 }
+function removeReference() {
+  if (referencePreview.value) URL.revokeObjectURL(referencePreview.value);
+  referenceFile.value = null;
+  referencePreview.value = '';
+  if (fileInput.value) fileInput.value.value = '';
+  notice.value = '已移除参考图，将按文字描述生成';
+}
+/** 是否有生成任务正在进行(提交后由全局轮询驱动, 切页也不中断) */
+const generating = computed(() => !!generationActive.value);
+const progressText = computed(() => {
+  const snap = generationSnapshot.value;
+  if (!snap) return '正在提交生成任务…';
+  if (snap.status === 'FAILED') return snap.errorMessage || '生成失败';
+  return `已完成 ${snap.completedCount}/${snap.totalCount} 张（${snap.progress}%）`;
+});
+
+onMounted(() => restoreActiveGeneration());
+
 async function run() {
+  if (isDemoAccount.value) {
+    await router.push({ path: '/login', query: { redirect: '/generate' } });
+    return;
+  }
+  if (generating.value) return; // 任务进行中, 防止重复提交
+  if (!styles.value.length || !elements.value.length) {
+    notice.value = '请至少选择一种风格和一个元素';
+    return;
+  }
   loading.value = true;
   notice.value = '';
   try {
@@ -76,35 +116,51 @@ async function run() {
       } catch {}
     }
     const selectedPalette = paletteOptions.find((item) => item.name === palette.value);
-    const result: any = await api.patterns.generate({
-      keyword: element.value,
-      style: style.value,
-      elements: [element.value],
+    // 异步提交: 后端立即返回 generationId, 生图在后台线程进行
+    const submit: any = await api.patterns.generate({
+      keyword: selectedElementsText.value,
+      style: styles.value[0] || '广绣经典',
+      elements: [...elements.value],
       colorTheme: selectedPalette?.value || 'chinese_elegant',
       usageScene: sceneValues[scene.value] || 'product',
-      description: description.value,
+      description: [
+        styles.value.length > 1 ? `融合风格：${selectedStylesText.value}` : '',
+        description.value
+      ].filter(Boolean).join('；'),
       referenceImageUrl,
       generateCount: Number(count.value)
     });
-    const list = listFrom(result?.patterns ?? result);
-    if (list.length) {
-      patterns.value = list.map((p: any, i: number) => ({
-        ...demoPatterns[i % demoPatterns.length],
-        ...p,
-        image: p.imageUrl || p.thumbnailUrl || demoPatterns[i % demoPatterns.length].image
-      }));
-    } else {
-      patterns.value = createDemoResults();
-    }
-  } catch {
-    patterns.value = createDemoResults();
+    const generationId = submit?.generationId ?? submit?.id;
+    if (!generationId) throw new Error('提交生成任务失败：未返回任务 ID');
+    patterns.value = [];
+    submitGenerationJob({
+      id: Number(generationId),
+      totalCount: Number(count.value),
+      keyword: selectedElementsText.value,
+      submittedAt: Date.now()
+    });
+    notice.value = '生成任务已提交，AI 正在作画…';
+  } catch (reason: any) {
+    patterns.value = [];
+    notice.value = reason?.response?.data?.message || reason?.message || '提交生成任务失败，请稍后重试';
   } finally {
-    const history = readUserData<any[]>('recent_generations', []);
-    writeUserData('recent_generations', [...patterns.value.map((p) => ({ ...p, createdAt: Date.now() })), ...history].slice(0, 50));
-    notice.value = `已生成 ${patterns.value.length} 张纹样`;
     loading.value = false;
   }
 }
+
+// 任务结束(成功/失败)后自动更新页面, 无论当时用户在哪个页面都生效
+watch(generationFinished, (done) => {
+  if (!done) return;
+  if (done.ok) {
+    patterns.value = (done.snapshot.patterns || []).map((p: any) => ({
+      ...p,
+      image: p.imageUrl || p.thumbnailUrl || p.image || ''
+    }));
+    notice.value = `已生成 ${patterns.value.length} 张纹样`;
+  } else {
+    notice.value = done.snapshot.errorMessage || '纹样生成失败，请稍后重试';
+  }
+});
 
 function enhanceDetails() {
   enhanced.value = !enhanced.value;
@@ -118,19 +174,30 @@ function syncGeneratedPatterns() {
   }));
   const saved = readUserData<any[]>('saved_patterns', []);
   const merged = [...stamped, ...saved];
-  writeUserData('saved_patterns', merged.filter((item, index) =>
-    merged.findIndex((other) => String(other.id) === String(item.id)) === index
-  ));
+  writeUserData(
+    'saved_patterns',
+    merged.filter(
+      (item, index) => merged.findIndex((other) => String(other.id) === String(item.id)) === index
+    )
+  );
   const recent = readUserData<any[]>('recent_generations', []);
   const recentMerged = [...stamped, ...recent];
-  writeUserData('recent_generations', recentMerged.filter((item, index) =>
-    recentMerged.findIndex((other) => String(other.id) === String(item.id)) === index
-  ).slice(0, 50));
+  writeUserData(
+    'recent_generations',
+    recentMerged
+      .filter(
+        (item, index) =>
+          recentMerged.findIndex((other) => String(other.id) === String(item.id)) === index
+      )
+      .slice(0, 50)
+  );
 }
 
 async function savePatterns() {
   syncGeneratedPatterns();
-  await Promise.allSettled(patterns.value.map((pattern) => api.patterns.save(pattern.id)));
+  if (!offlineDemoToken.value) {
+    await Promise.allSettled(patterns.value.map((pattern) => api.patterns.save(pattern.id)));
+  }
   notice.value = '纹样已保存到“我的纹样”';
 }
 
@@ -139,7 +206,9 @@ async function favoritePatterns() {
   const ids = new Set(readUserData<string[]>('pattern_favorites', []));
   patterns.value.forEach((pattern) => ids.add(String(pattern.id)));
   writeUserData('pattern_favorites', [...ids]);
-  await Promise.allSettled(patterns.value.map((pattern) => api.patterns.favorite(pattern.id)));
+  if (!offlineDemoToken.value) {
+    await Promise.allSettled(patterns.value.map((pattern) => api.patterns.favorite(pattern.id)));
+  }
   notice.value = '本次生成的纹样已收藏';
 }
 </script>
@@ -151,22 +220,28 @@ async function favoritePatterns() {
   </div>
   <div class="studio">
     <aside class="control-panel">
-      <label>01 · 选择风格</label>
+      <label>01 · 选择风格 <small class="choice-hint">可多选</small></label>
       <div class="chips">
         <button
           v-for="x in ['广绣经典', '新中式', '岭南花窗', '刺绣纹样']"
-          :class="{ on: style === x }"
-          @click="style = x; useKeyword(x)"
+          :key="x"
+          type="button"
+          :class="{ on: styles.includes(x) }"
+          :aria-pressed="styles.includes(x)"
+          @click="toggleChoice('style', x)"
         >
           {{ x }}
         </button>
       </div>
-      <label>02 · 选择元素</label>
+      <label>02 · 选择元素 <small class="choice-hint">可多选</small></label>
       <div class="chips">
         <button
           v-for="x in ['牡丹', '凤凰', '花鸟', '祥云', '莲花', '醒狮']"
-          :class="{ on: element === x }"
-          @click="element = x; useKeyword(x)"
+          :key="x"
+          type="button"
+          :class="{ on: elements.includes(x) }"
+          :aria-pressed="elements.includes(x)"
+          @click="toggleChoice('element', x)"
         >
           {{ x }}
         </button>
@@ -178,7 +253,9 @@ async function favoritePatterns() {
           :key="option.name"
           :class="{ on: palette === option.name }"
           @click="palette = option.name"
-        ><i :class="option.className" />{{ option.name }}</button>
+        >
+          <i :class="option.className" />{{ option.name }}
+        </button>
       </div>
       <label>04 · 应用场景</label
       ><select v-model="scene">
@@ -190,7 +267,7 @@ async function favoritePatterns() {
       ><textarea
         v-model="description"
         rows="4"
-        :placeholder="`${element}主题纹样的补充描述`"
+        :placeholder="`${selectedElementsText || '所选元素'}主题纹样的补充描述`"
       /><label>06 · 参考图（可选）</label>
       <input
         ref="fileInput"
@@ -206,8 +283,20 @@ async function favoritePatterns() {
         @dragover.prevent
         @drop.prevent="chooseReference($event.dataTransfer?.files?.[0])"
       >
-        <img v-if="referencePreview" :src="referencePreview" alt="参考图预览" />
+        <img
+          v-if="referencePreview"
+          :src="referencePreview"
+          alt="参考图预览"
+        />
         <template v-else>⇧<b>点击或拖拽上传参考图</b><small>JPG / PNG，不超过 5MB</small></template>
+        <span
+          v-if="referencePreview"
+          class="upload-remove"
+          role="button"
+          aria-label="移除参考图"
+          title="移除参考图"
+          @click.stop="removeReference"
+        >×</span>
       </button>
       <label
         >生成数量 <b>{{ count }} 张</b></label
@@ -218,16 +307,46 @@ async function favoritePatterns() {
         v-model="count"
       /><button
         class="primary generate-btn"
+        type="button"
+        :disabled="loading || generating"
         @click="run"
       >
-        {{ loading ? '正在生成…' : '✦ 立即生成纹样' }}
+        {{ generating ? '✦ 生成中…' : '✦ 立即生成纹样' }}
       </button>
     </aside>
     <section class="results">
       <div class="result-head">
         <h2>生成结果</h2>
       </div>
-      <div v-if="patterns.length" class="result-grid" :class="[resultToneClass, { enhanced }]">
+      <div
+        v-if="generating"
+        class="gen-progress"
+      >
+        <span
+          class="gen-spinner"
+          aria-hidden="true"
+        ></span>
+        <b>AI 正在作画中，请稍候…</b>
+        <p class="gen-progress-text">{{ progressText }}</p>
+        <div
+          class="gen-bar"
+          role="progressbar"
+          :aria-valuenow="generationSnapshot?.progress ?? 0"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <i
+            v-if="generationSnapshot?.status !== 'FAILED'"
+            :style="{ width: (generationSnapshot?.progress || 0) + '%' }"
+          ></i>
+        </div>
+        <small>现在就可以去浏览其他页面，生成在后台继续，完成后结果会自动出现在这里和“我的纹样”。</small>
+      </div>
+      <div
+        v-else-if="patterns.length"
+        class="result-grid"
+        :class="[resultToneClass, { enhanced }]"
+      >
         <img
           class="featured"
           :src="patterns[0].image"
@@ -236,16 +355,41 @@ async function favoritePatterns() {
           :src="p.image"
         />
       </div>
-      <div v-else class="result-empty">
+      <div
+        v-else
+        class="result-empty"
+      >
         <span>✦</span>
         <b>暂未生成纹样</b>
         <p>选择左侧条件后，点击“立即生成纹样”</p>
       </div>
-      <div v-if="patterns.length" class="result-actions">
-        <button :disabled="loading" @click="run">↻ 重新生成</button><button :class="{ on: enhanced }" @click="enhanceDetails">✦ 细节增强</button
-        ><button class="jade" @click="savePatterns">⇩ 保存纹样</button><button @click="favoritePatterns">♡ 收藏纹样</button>
+      <div
+        v-if="patterns.length"
+        class="result-actions"
+      >
+        <button
+          :disabled="loading || generating"
+          @click="run"
+        >
+          ↻ 重新生成</button
+        ><button
+          :class="{ on: enhanced }"
+          @click="enhanceDetails"
+        >
+          ✦ 细节增强</button
+        ><button
+          class="jade"
+          @click="savePatterns"
+        >
+          ⇩ 保存纹样</button
+        ><button @click="favoritePatterns">♡ 收藏纹样</button>
       </div>
-      <p v-if="patterns.length && notice" class="form-notice result-notice">{{ notice }}</p>
+      <p
+        v-if="notice"
+        class="form-notice result-notice"
+      >
+        {{ notice }}
+      </p>
     </section>
   </div>
   <div class="content inspiration">

@@ -11,9 +11,13 @@ import com.xiuwen.pattern.entity.PatternGeneration;
 import com.xiuwen.pattern.service.PatternGenerateService;
 import com.xiuwen.pattern.service.PatternGenerationService;
 import com.xiuwen.pattern.service.PatternService;
-import com.xiuwen.pattern.vo.GeneratePatternResponse;
-import com.xiuwen.pattern.vo.PatternItemVO;
+import com.xiuwen.pattern.vo.GenerationSubmitVO;
+import com.xiuwen.framework.service.AiImageService;
 import com.xiuwen.framework.service.OssFileService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,28 +25,20 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Executor;
 
 /**
- * AI 纹样生成业务实现。
+ * AI 纹样生成业务实现(异步)。
  *
- * 第一版使用固定 Mock 图片，后续替换为真实 AI 调用。
+ * generate() 只负责校验参数、落 PROCESSING 记录并立即返回 generationId;
+ * 真正的 AI 生图 + OSS 上传丢进 aiGenerationExecutor 线程池后台执行,
+ * 每完成一张图更新一次进度, 前端通过状态接口轮询, 切换页面不影响任务继续。
  */
+@Slf4j
 @Service
 public class PatternGenerateServiceImpl implements PatternGenerateService {
-    /**
-     * 当前已经放入项目中的 Mock 纹样图片。
-     */
-    private static final List<String> MOCK_IMAGE_PATHS = Arrays.asList(
-            "demo/pattern/peony-phoenix-pattern-01.jpg",
-            "demo/pattern/peony-phoenix-pattern-02.jpg",
-            "demo/pattern/lingnan-window-pattern-01.jpg",
-            "demo/pattern/round-flower-pattern-01.jpg",
-            "demo/pattern/lion-dance-pattern-01.jpg"
-    );
 
     /**
      * 后端内部支持的纹样风格编码。
@@ -118,23 +114,36 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     private final PatternService patternService;
     private final ObjectMapper objectMapper;
     private final OssFileService ossFileService;
+    private final AiImageService aiImageService;
+    private final Executor aiGenerationExecutor;
+
+    /** 自身代理,用于让 @Transactional 在拆分的落库方法上生效(同类直接调用不走代理,事务会失效)。 */
+    @Lazy
+    @Autowired
+    private PatternGenerateServiceImpl self;
 
     public PatternGenerateServiceImpl(PatternGenerationService patternGenerationService,
                                       PatternService patternService,
                                       ObjectMapper objectMapper,
-                                      OssFileService ossFileService) {
+                                      OssFileService ossFileService,
+                                      AiImageService aiImageService,
+                                      @Qualifier("aiGenerationExecutor") Executor aiGenerationExecutor) {
         this.patternGenerationService = patternGenerationService;
         this.patternService = patternService;
         this.objectMapper = objectMapper;
         this.ossFileService = ossFileService;
+        this.aiImageService = aiImageService;
+        this.aiGenerationExecutor = aiGenerationExecutor;
     }
 
     /**
-     * 创建生成记录、生成 Mock 纹样并返回结果。
+     * 提交生成任务:校验参数、落 PROCESSING 记录后立即返回 generationId。
+     *
+     * AI 生图与 OSS 上传在线程池后台执行(见 executeGeneration),
+     * 不再占用 HTTP 请求线程, 前端凭 generationId 轮询进度。
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public GeneratePatternResponse generate(Long userId, GeneratePatternRequest request) {
+    public GenerationSubmitVO generate(Long userId, GeneratePatternRequest request) {
         if (userId == null) {
             throw new BusinessException("当前用户信息不存在");
         }
@@ -159,42 +168,60 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
                 promptText,
                 now
         );
+        generation.setProgress(0);
+        generation.setUpdatedAt(now);
 
-        boolean generationSaved = patternGenerationService.save(generation);
-        if (!generationSaved || generation.getId() == null) {
-            throw new BusinessException("生成任务保存失败");
-        }
+        // 第一步:独立事务先落 PROCESSING 记录,确保生成失败也能留痕
+        self.saveGenerationInitially(generation);
 
-        List<String> imageUrls = selectMockImages(request);
-        List<Pattern> patterns = buildPatterns(
-                userId,
-                request,
-                generation.getId(),
-                keyword,
-                elementsJson,
-                imageUrls,
-                now
+        // 第二步:丢进线程池后台执行, 立即返回
+        Long generationId = generation.getId();
+        aiGenerationExecutor.execute(
+                () -> executeGeneration(userId, request, generationId, keyword, elementsJson, promptText)
         );
 
-        boolean patternSaved = patternService.saveBatch(patterns);
-        if (!patternSaved) {
-            throw new BusinessException("纹样结果保存失败");
-        }
-
-        GeneratePatternResponse response = new GeneratePatternResponse();
-        response.setGenerationId(generation.getId());
-        response.setStatus("SUCCESS");
-        response.setPatterns(toPatternItems(patterns));
+        GenerationSubmitVO response = new GenerationSubmitVO();
+        response.setGenerationId(generationId);
+        response.setStatus(generation.getStatus());
         return response;
+    }
+
+    /**
+     * 后台线程执行:逐张调用 AI 生成并上传 OSS,每完成一张落库一张并推进进度。
+     * 全部完成置 SUCCESS, 中途异常置 FAILED 并记录原因(已完成的纹样保留)。
+     */
+    private void executeGeneration(Long userId,
+                                   GeneratePatternRequest request,
+                                   Long generationId,
+                                   String keyword,
+                                   String elementsJson,
+                                   String promptText) {
+        int count = request.getGenerateCount();
+        try {
+            for (int index = 1; index <= count; index++) {
+                List<byte[]> images = aiImageService.generateImages(promptText, 1);
+                if (images == null || images.isEmpty()) {
+                    throw new BusinessException("AI 未返回生成结果");
+                }
+                String imageUrl = ossFileService.uploadBytes(images.get(0), ".png", "PATTERN");
+                self.recordPatternCompleted(
+                        userId, request, generationId, keyword, elementsJson, imageUrl, index, count
+                );
+            }
+            self.markGenerationSuccess(generationId);
+            log.info("AI 生成任务 {} 完成, 共生成 {} 张纹样", generationId, count);
+        } catch (Exception e) {
+            log.error("AI 生成任务 {} 失败: {}", generationId, e.getMessage(), e);
+            self.markGenerationFailed(generationId, e.getMessage());
+        }
     }
 
     /**
      * 基于历史生成记录重新生成，并创建新的生成记录。
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public GeneratePatternResponse regenerate(Long userId,
-                                              RegeneratePatternRequest regenerateRequest) {
+    public GenerationSubmitVO regenerate(Long userId,
+                                         RegeneratePatternRequest regenerateRequest) {
         if (userId == null) {
             throw new BusinessException("当前用户信息不存在");
         }
@@ -258,7 +285,7 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
         generation.setReferenceImageUrl(request.getReferenceImageUrl());
         generation.setPromptText(promptText);
         generation.setGenerateCount(request.getGenerateCount());
-        generation.setStatus("SUCCESS");
+        generation.setStatus("PROCESSING");
         generation.setErrorMessage(null);
         generation.setDeleted(0);
         generation.setCreatedAt(now);
@@ -266,67 +293,39 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     }
 
     /**
-     * 创建本次生成的纹样记录。
+     * 创建单张已完成纹样的记录。
      */
-    private List<Pattern> buildPatterns(Long userId,
-                                        GeneratePatternRequest request,
-                                        Long generationId,
-                                        String keyword,
-                                        String elementsJson,
-                                        List<String> imageUrls,
-                                        LocalDateTime now) {
-        List<Pattern> patterns = new ArrayList<>();
-
-        for (int i = 0; i < imageUrls.size(); i++) {
-            String imageUrl = imageUrls.get(i);
-
-            Pattern pattern = new Pattern();
-            pattern.setGenerationId(generationId);
-            pattern.setUserId(userId);
-            pattern.setTitle(buildPatternTitle(request, i + 1));
-            pattern.setImageUrl(imageUrl);
-            pattern.setThumbnailUrl(imageUrl);
-            pattern.setKeyword(keyword);
-            pattern.setStyle(request.getStyle());
-            pattern.setElements(elementsJson);
-            pattern.setColorTheme(request.getColorTheme());
-            pattern.setUsageScene(request.getUsageScene());
-            pattern.setDescription(request.getDescription());
-            pattern.setIsSaved(0);
-            pattern.setIsFavorite(0);
-            pattern.setIsRecommend(0);
-            pattern.setViewCount(0);
-            pattern.setLikeCount(0);
-            pattern.setUseCount(0);
-            pattern.setStatus(PatternStatus.NORMAL);
-            pattern.setDeleted(0);
-            pattern.setCreatedAt(now);
-            pattern.setUpdatedAt(now);
-            patterns.add(pattern);
-        }
-
-        return patterns;
-    }
-
-    /**
-     * 转换成前端需要的生成结果。
-     */
-    private List<PatternItemVO> toPatternItems(List<Pattern> patterns) {
-        List<PatternItemVO> items = new ArrayList<>();
-
-        for (Pattern pattern : patterns) {
-            PatternItemVO item = new PatternItemVO();
-            item.setId(pattern.getId());
-            item.setTitle(pattern.getTitle());
-            item.setImageUrl(pattern.getImageUrl());
-            item.setThumbnailUrl(pattern.getThumbnailUrl());
-            item.setStyle(pattern.getStyle());
-            item.setIsFavorite(false);
-            item.setCreatedAt(pattern.getCreatedAt());
-            items.add(item);
-        }
-
-        return items;
+    private Pattern buildPattern(Long userId,
+                                 GeneratePatternRequest request,
+                                 Long generationId,
+                                 String keyword,
+                                 String elementsJson,
+                                 String imageUrl,
+                                 int index) {
+        LocalDateTime now = LocalDateTime.now();
+        Pattern pattern = new Pattern();
+        pattern.setGenerationId(generationId);
+        pattern.setUserId(userId);
+        pattern.setTitle(buildPatternTitle(request, index));
+        pattern.setImageUrl(imageUrl);
+        pattern.setThumbnailUrl(imageUrl);
+        pattern.setKeyword(keyword);
+        pattern.setStyle(request.getStyle());
+        pattern.setElements(elementsJson);
+        pattern.setColorTheme(request.getColorTheme());
+        pattern.setUsageScene(request.getUsageScene());
+        pattern.setDescription(request.getDescription());
+        pattern.setIsSaved(0);
+        pattern.setIsFavorite(0);
+        pattern.setIsRecommend(0);
+        pattern.setViewCount(0);
+        pattern.setLikeCount(0);
+        pattern.setUseCount(0);
+        pattern.setStatus(PatternStatus.NORMAL);
+        pattern.setDeleted(0);
+        pattern.setCreatedAt(now);
+        pattern.setUpdatedAt(now);
+        return pattern;
     }
 
     /**
@@ -414,31 +413,65 @@ public class PatternGenerateServiceImpl implements PatternGenerateService {
     }
 
     /**
-     * 根据用户选项调整 Mock 图片顺序。
+     * 独立事务：先落一条 PROCESSING 状态的生成记录，保证后续生成失败也能留下痕迹。
      */
-    private List<String> selectMockImages(GeneratePatternRequest request) {
-        String ossDomain = ossFileService.getOssDomain();
-        Set<String> orderedImages = new LinkedHashSet<>();
+    @Transactional(rollbackFor = Exception.class)
+    public void saveGenerationInitially(PatternGeneration generation) {
+        if (!patternGenerationService.save(generation) || generation.getId() == null) {
+            throw new BusinessException("生成任务保存失败");
+        }
+    }
 
-        if (containsElement(request.getElements(), "醒狮")) {
-            orderedImages.add(ossDomain + "demo/pattern/lion-dance-pattern-01.jpg");
+    /**
+     * 独立事务：某张图片生成完成后保存该纹样，并推进生成进度(已完成数/总数)。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void recordPatternCompleted(Long userId,
+                                       GeneratePatternRequest request,
+                                       Long generationId,
+                                       String keyword,
+                                       String elementsJson,
+                                       String imageUrl,
+                                       int index,
+                                       int total) {
+        Pattern pattern = buildPattern(userId, request, generationId, keyword, elementsJson, imageUrl, index);
+        if (!patternService.save(pattern)) {
+            throw new BusinessException("纹样结果保存失败");
         }
-        if ("new_chinese".equals(request.getStyle())
-                || "lingnan_window".equals(request.getStyle())) {
-            orderedImages.add(ossDomain + "demo/pattern/lingnan-window-pattern-01.jpg");
-        }
-        if (containsElement(request.getElements(), "团花")
-                || containsElement(request.getElements(), "莲花")) {
-            orderedImages.add(ossDomain + "demo/pattern/round-flower-pattern-01.jpg");
-        }
+        PatternGeneration update = new PatternGeneration();
+        update.setId(generationId);
+        update.setProgress(index * 100 / total);
+        update.setUpdatedAt(LocalDateTime.now());
+        patternGenerationService.updateById(update);
+    }
 
-        for (String path : MOCK_IMAGE_PATHS) {
-            orderedImages.add(ossDomain + path);
+    /**
+     * 独立事务：全部图片完成后把生成记录置为 SUCCESS。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void markGenerationSuccess(Long generationId) {
+        PatternGeneration update = new PatternGeneration();
+        update.setId(generationId);
+        update.setStatus("SUCCESS");
+        update.setProgress(100);
+        update.setUpdatedAt(LocalDateTime.now());
+        patternGenerationService.updateById(update);
+    }
+
+    /**
+     * 独立事务：生成失败时把记录置为 FAILED 并记录错误原因。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void markGenerationFailed(Long generationId, String errorMessage) {
+        PatternGeneration update = new PatternGeneration();
+        update.setId(generationId);
+        update.setStatus("FAILED");
+        if (errorMessage != null && errorMessage.length() > 500) {
+            errorMessage = errorMessage.substring(0, 500);
         }
-        List<String> result = new ArrayList<>(orderedImages);
-        return new ArrayList<>(
-                result.subList(0, request.getGenerateCount())
-        );
+        update.setErrorMessage(errorMessage);
+        update.setUpdatedAt(LocalDateTime.now());
+        patternGenerationService.updateById(update);
     }
 
     /**

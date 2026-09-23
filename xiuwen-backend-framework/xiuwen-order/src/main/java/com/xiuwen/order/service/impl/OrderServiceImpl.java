@@ -64,14 +64,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
     // =============== 创建订单 ===============
     @Override
     public Orders createOrder(Long userId, Long addressId, Long[] cartItemIds,
-                              Long customDesignId, Integer quantity, String remark) {
+                              Long customDesignId, Integer quantity, String remark,
+                              String receiverName, String receiverPhone, String receiverAddress) {
         Set<Long> productIds = resolveProductIds(cartItemIds, customDesignId);
         RLock lock = stockLockService.tryLockStock(productIds);
         if (lock == null) {
             throw new BusinessException("当前下单人数较多,请稍后再试");
         }
         try {
-            return self.doCreateOrderInTx(userId, addressId, cartItemIds, customDesignId, quantity, remark);
+            return self.doCreateOrderInTx(userId, addressId, cartItemIds, customDesignId, quantity,
+                    remark, receiverName, receiverPhone, receiverAddress);
         } finally {
             stockLockService.unlock(lock);
         }
@@ -79,12 +81,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
 
     @Transactional(rollbackFor = Exception.class)
     public Orders doCreateOrderInTx(Long userId, Long addressId, Long[] cartItemIds,
-                                    Long customDesignId, Integer quantity, String remark) {
-
-        // 收货地址（临时硬编码，等 UserAddressService 完成后替换）
-        String receiverName = "待填充";    // TODO: 从地址服务获取
-        String receiverPhone = "待填充";   // TODO
-        String receiverAddress = "待填充"; // TODO
+                                    Long customDesignId, Integer quantity, String remark,
+                                    String receiverName, String receiverPhone, String receiverAddress) {
 
         // 构建订单项
         List<OrderItem> orderItems = new ArrayList<>();
@@ -155,8 +153,9 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         order.setCustomDesignId(customDesignId);
         order.setTotalAmount(totalAmount);
         order.setPayAmount(totalAmount);
-        order.setStatus("WAIT_PAY");
-        order.setPayStatus("UNPAID");
+        order.setStatus("WAIT_DELIVERY");
+        order.setPayStatus("PAID");
+        order.setPaidAt(LocalDateTime.now());
         order.setReceiverName(receiverName);
         order.setReceiverPhone(receiverPhone);
         order.setReceiverAddress(receiverAddress);
@@ -222,13 +221,16 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         if (order == null || !order.getUserId().equals(userId)) {
             throw new BusinessException("订单不存在或无权操作");
         }
+        if ("WAIT_DELIVERY".equals(order.getStatus()) && "PAID".equals(order.getPayStatus())) {
+            return order;
+        }
         if (!"WAIT_PAY".equals(order.getStatus())) {
             throw new BusinessException("订单状态不允许支付");
         }
 
         order.setPayStatus("PAID");
         order.setPaidAt(LocalDateTime.now());
-        order.setStatus("WAIT_CONFIRM");
+        order.setStatus("WAIT_DELIVERY");
         updateById(order);
         return order;
     }
@@ -307,6 +309,7 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         }
 
         order.setStatus("CANCELLED");
+        order.setPayStatus("FAILED");
         order.setCancelledAt(LocalDateTime.now());
         updateById(order);
 
@@ -340,6 +343,19 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Orders> implement
         order.setCompletedAt(LocalDateTime.now());
         updateById(order);
         return order;
+    }
+
+    // =============== 删除订单 ===============
+    @Override
+    public void deleteOrder(Long userId, Long orderId) {
+        Orders order = getById(orderId);
+        if (order == null || !order.getUserId().equals(userId)) {
+            throw new BusinessException("订单不存在或无权操作");
+        }
+        if (!"CANCELLED".equals(order.getStatus()) && !"COMPLETED".equals(order.getStatus())) {
+            throw new BusinessException("仅已取消或已完成的订单可以删除");
+        }
+        removeById(orderId);
     }
 
     // =============== 订单状态数量 ===============

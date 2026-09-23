@@ -15,7 +15,8 @@ public interface OrderService extends IService<Orders> {
 
     /** 创建订单 */
     Orders createOrder(Long userId, Long addressId, Long[] cartItemIds,
-                       Long customDesignId, Integer quantity, String remark);
+                       Long customDesignId, Integer quantity, String remark,
+                       String receiverName, String receiverPhone, String receiverAddress);
 
     /** 模拟支付 */
     Orders mockPay(Long orderId, Long userId);
@@ -31,6 +32,9 @@ public interface OrderService extends IService<Orders> {
 
     /** 确认收货 */
     Orders confirmOrder(Long userId, Long orderId);
+
+    /** 删除订单（逻辑删除，仅已取消/已完成订单可删） */
+    void deleteOrder(Long userId, Long orderId);
 
     /** 我的订单各状态数量 */
     OrderStatusCountVO getOrderStatusCount(Long userId);
