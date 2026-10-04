@@ -1,0 +1,233 @@
+import axios from 'axios';
+import { logout } from './auth';
+
+export type Id = number | string;
+export type Query = Record<string, unknown>;
+export type ApiQuery = Query;
+export type Payload = Record<string, unknown>;
+
+const http = axios.create({ baseURL: '/', timeout: 12000 });
+http.interceptors.request.use((config) => {
+  const token = localStorage.getItem('xiuwen_token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+http.interceptors.response.use(
+  (response) => response.data?.data ?? response.data,
+  (error) => {
+    // 登录态过期：统一跳回登录页重新登录，避免各页面散落“Token 无效或已过期”提示
+    if (error?.response?.status === 401) {
+      const token = localStorage.getItem('xiuwen_token');
+      // 离线演示账号（client-demo-token）不请求后端，跳过
+      if (token && token !== 'client-demo-token') {
+        logout();
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `/login?redirect=${redirect}`;
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+const get = (url: string, params?: Query) => http.get(url, { params });
+const post = (url: string, data?: unknown) => http.post(url, data);
+const put = (url: string, data?: unknown) => http.put(url, data);
+const del = (url: string, params?: Query) => http.delete(url, { params });
+
+/** API V1.0：与《绣纹智创_完整API接口文档_V1.0》保持一致。 */
+export const api = {
+  auth: {
+    register: (data: Payload) => post('/api/auth/register', data),
+    login: (data: { username: string; password: string }) => post('/api/auth/login', data),
+    logout: () => post('/api/auth/logout'),
+    me: () => get('/api/auth/me'),
+    // 个人资料更新接口在文档中归属于 /api/user/profile，保留 auth 命名便于个人中心调用。
+    updateProfile: (data: Payload) => put('/api/user/profile', data)
+  },
+  user: {
+    profile: () => get('/api/user/profile'),
+    updateProfile: (data: Payload) => put('/api/user/profile', data),
+    uploadAvatar: (data: FormData) => post('/api/user/avatar', data),
+    updatePassword: (data: Payload) => put('/api/user/password', data),
+    addresses: () => get('/api/user/addresses'),
+    createAddress: (data: Payload) => post('/api/user/addresses', data),
+    updateAddress: (addressId: Id, data: Payload) => put(`/api/user/addresses/${addressId}`, data),
+    deleteAddress: (addressId: Id) => del(`/api/user/addresses/${addressId}`),
+    setDefaultAddress: (addressId: Id) => put(`/api/user/addresses/${addressId}/default`),
+    // 文档未单独提供统计接口，这里聚合已定义的纹样、收藏和订单接口。
+    getStats: async () => {
+      const [patternsResult, favoritesResult, ordersResult] = await Promise.allSettled([
+        get('/api/patterns/my', { page: 1, pageSize: 1 }),
+        get('/api/patterns/my', { page: 1, pageSize: 1, tab: 'favorite' }),
+        get('/api/orders/status-count')
+      ]);
+      const total = (result: any) => {
+        const value =
+          result?.total ??
+          result?.totalCount ??
+          result?.pagination?.total ??
+          listFrom(result).length;
+        return Number(value || 0);
+      };
+      const orderTotal = (result: any) => {
+        if (!result || typeof result !== 'object') return 0;
+        const values = Object.values(result).filter((value) => typeof value === 'number');
+        return values.reduce((sum, value) => sum + Number(value), 0);
+      };
+      return {
+        patterns: patternsResult.status === 'fulfilled' ? total(patternsResult.value) : 0,
+        favorites: favoritesResult.status === 'fulfilled' ? total(favoritesResult.value) : 0,
+        orders: ordersResult.status === 'fulfilled' ? orderTotal(ordersResult.value) : 0
+      };
+    }
+  },
+  messages: {
+    list: (params: Query = {}) => get('/api/messages', params),
+    unreadCount: () => get('/api/messages/unread-count'),
+    markRead: (messageId: Id) => put(`/api/messages/${messageId}/read`),
+    markAllRead: () => put('/api/messages/read-all'),
+    remove: (messageId: Id) => del(`/api/messages/${messageId}`)
+  },
+  home: {
+    detail: () => get('/api/home'),
+    banners: () => get('/api/home/banners'),
+    recommends: (params: Query = {}) => get('/api/home/recommends', params),
+    search: (params: Query) => get('/api/search', params),
+    shopInfo: () => get('/api/shop/info')
+  },
+  patterns: {
+    options: () => get('/api/patterns/options'),
+    list: (params: Query = {}) => get('/api/patterns/public', params),
+    // 提交 AI 生成任务(异步): 后端立即返回 { generationId, status }, 之后轮询 generationStatus
+    generate: (data: Payload) => post('/api/patterns/generate', data),
+    regenerate: (data: Payload) => post('/api/patterns/regenerate', data),
+    // 轮询生成任务状态: { status, progress, completedCount, totalCount, errorMessage, patterns }
+    generationStatus: (generationId: Id) => get(`/api/pattern-generations/${generationId}`),
+    generations: (params: Query = {}) => get('/api/pattern-generations/my', params),
+    mine: (params: Query = {}) => get('/api/patterns/my', params),
+    detail: (patternId: Id) => get(`/api/patterns/${patternId}`),
+    save: (patternId: Id) => post(`/api/patterns/${patternId}/save`),
+    favorite: (patternId: Id) => post(`/api/patterns/${patternId}/favorite`),
+    unfavorite: (patternId: Id) => del(`/api/patterns/${patternId}/favorite`),
+    remove: (patternId: Id) => del(`/api/patterns/${patternId}`),
+    download: (patternId: Id) => get(`/api/patterns/${patternId}/download`)
+  },
+  products: {
+    categories: () => get('/api/products/categories'),
+    list: (params: Query = {}) => get('/api/products', params),
+    detail: (productId: Id) => get(`/api/products/${productId}`),
+    recommends: (params: Query = {}) => get('/api/products/recommends', params)
+  },
+  customDesigns: {
+    create: (data: Payload) => post('/api/custom-designs', data),
+    mine: (params: Query = {}) => get('/api/custom-designs/my', params),
+    detail: (customDesignId: Id) => get(`/api/custom-designs/${customDesignId}`),
+    remove: (customDesignId: Id) => del(`/api/custom-designs/${customDesignId}`)
+  },
+  cart: {
+    items: () => get('/api/cart'),
+    add: (data: Payload) => post('/api/cart', data),
+    update: (cartItemId: Id, data: Payload) => put(`/api/cart/${cartItemId}`, data),
+    remove: (cartItemId: Id) => del(`/api/cart/${cartItemId}`),
+    clear: () => del('/api/cart')
+  },
+  orders: {
+    create: (data: Payload) => post('/api/orders', data),
+    mockPay: (orderId: Id) => post(`/api/orders/${orderId}/mock-pay`),
+    mine: (params: Query = {}) => get('/api/orders/my', params),
+    statusCount: () => get('/api/orders/status-count'),
+    detail: (orderId: Id) => get(`/api/orders/${orderId}`),
+    cancel: (orderId: Id, data: Payload = {}) => put(`/api/orders/${orderId}/cancel`, data),
+    confirm: (orderId: Id) => put(`/api/orders/${orderId}/confirm`),
+    remove: (orderId: Id) => del(`/api/orders/${orderId}`)
+  },
+  courses: {
+    categories: () => get('/api/courses/categories'),
+    list: (params: Query = {}) => get('/api/courses', params),
+    detail: (courseId: Id) => get(`/api/courses/${courseId}`),
+    study: (courseId: Id) => post(`/api/courses/${courseId}/study`)
+  },
+  resources: {
+    list: (params: Query = {}) => get('/api/resources', params),
+    detail: (resourceId: Id) => get(`/api/resources/${resourceId}`),
+    download: (resourceId: Id) => get(`/api/resources/${resourceId}/download`)
+  },
+  files: { upload: (data: FormData) => post('/api/files/upload', data) },
+  admin: {
+    dashboard: () => get('/api/admin/dashboard'),
+    orders: {
+      list: (params: Query = {}) => get('/api/admin/orders', params),
+      detail: (id: Id) => get(`/api/admin/orders/${id}`),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/status`, data),
+      updateRemark: (id: Id, data: Payload) => put(`/api/admin/orders/${id}/remark`, data)
+    },
+    productCategories: listCreateUpdateDelete('/api/admin/products/categories'),
+    products: {
+      ...crud('/api/admin/products'),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/products/${id}/status`, data)
+    },
+    customDesigns: {
+      list: (params: Query = {}) => get('/api/admin/custom-designs', params),
+      detail: (id: Id) => get(`/api/admin/custom-designs/${id}`),
+      download: (id: Id) => get(`/api/admin/custom-designs/${id}/download`)
+    },
+    patterns: {
+      list: (params: Query = {}) => get('/api/admin/patterns', params),
+      detail: (id: Id) => get(`/api/admin/patterns/${id}`),
+      recommend: (id: Id, data: Payload) => put(`/api/admin/patterns/${id}/recommend`, data),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/patterns/${id}/status`, data),
+      remove: (id: Id) => del(`/api/admin/patterns/${id}`)
+    },
+    patternGenerations: {
+      list: (params: Query = {}) => get('/api/admin/pattern-generations', params)
+    },
+    promptTemplates: listCreateUpdateDelete('/api/admin/prompt-templates'),
+    courseCategories: listCreateUpdateDelete('/api/admin/course-categories'),
+    courses: {
+      ...crud('/api/admin/courses'),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/courses/${id}/status`, data)
+    },
+    resources: {
+      ...crud('/api/admin/resources'),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/resources/${id}/status`, data)
+    },
+    users: {
+      list: (params: Query = {}) => get('/api/admin/users', params),
+      detail: (id: Id) => get(`/api/admin/users/${id}`),
+      updateStatus: (id: Id, data: Payload) => put(`/api/admin/users/${id}/status`, data)
+    },
+    homeBanners: listCreateUpdateDelete('/api/admin/home/banners'),
+    homeRecommends: listCreateUpdateDelete('/api/admin/home/recommend'),
+    shop: {
+      detail: () => get('/api/admin/shop'),
+      update: (data: Payload) => put('/api/admin/shop', data)
+    },
+    messages: {
+      list: (params: Query = {}) => get('/api/admin/messages', params),
+      send: (data: Payload) => post('/api/admin/messages', data),
+      markRead: (messageId: Id) => put(`/api/admin/messages/${messageId}/read`)
+    },
+    sendMessage: (data: Payload) => post('/api/admin/messages', data),
+    uploadFile: (data: FormData) => post('/api/admin/files/upload', data)
+  }
+};
+
+function crud(base: string) {
+  return {
+    list: (params: Query = {}) => get(base, params),
+    detail: (id: Id) => get(`${base}/${id}`),
+    create: (data: Payload) => post(base, data),
+    update: (id: Id, data: Payload) => put(`${base}/${id}`, data),
+    remove: (id: Id) => del(`${base}/${id}`)
+  };
+}
+
+function listCreateUpdateDelete(base: string) {
+  const { list, create, update, remove } = crud(base);
+  return { list, create, update, remove };
+}
+
+export function listFrom(result: any): any[] {
+  if (Array.isArray(result)) return result;
+  return result?.records ?? result?.list ?? result?.items ?? result?.content ?? [];
+}

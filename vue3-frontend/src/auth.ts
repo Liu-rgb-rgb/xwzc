@@ -1,0 +1,36 @@
+import { computed, reactive } from 'vue';
+
+type UserInfo = { id?: number; username?: string; nickname?: string; role?: string };
+
+const savedUser = localStorage.getItem('xiuwen_user');
+export const authState = reactive<{ token: string; user: UserInfo | null }>({
+  token: localStorage.getItem('xiuwen_token') || '',
+  user: savedUser ? JSON.parse(savedUser) : null
+});
+
+export const isLoggedIn = computed(() => Boolean(authState.token));
+export const isGuest = computed(() => !isLoggedIn.value);
+export const isMerchant = computed(() =>
+  ['ADMIN', 'MERCHANT_ADMIN'].includes(authState.user?.role || '')
+);
+export const isAdmin = isMerchant;
+export const isClient = computed(() => isLoggedIn.value && !isMerchant.value);
+export const isDemoAccount = computed(() =>
+  authState.token === 'client-demo-token' ||
+  authState.user?.username === 'client-demo'
+);
+export const isRealClient = computed(() => isClient.value && !isDemoAccount.value);
+
+export function setLogin(token: string, user: UserInfo) {
+  authState.token = token;
+  authState.user = user;
+  localStorage.setItem('xiuwen_token', token);
+  localStorage.setItem('xiuwen_user', JSON.stringify(user));
+}
+
+export function logout() {
+  authState.token = '';
+  authState.user = null;
+  localStorage.removeItem('xiuwen_token');
+  localStorage.removeItem('xiuwen_user');
+}

@@ -1,0 +1,67 @@
+export const patternImages = [
+  '/demo/pattern/peony-phoenix-pattern-01.jpg',
+  '/demo/pattern/peony-phoenix-pattern-02.jpg',
+  '/demo/pattern/round-flower-pattern-01.jpg',
+  '/demo/pattern/lingnan-window-pattern-01.jpg',
+  '/demo/pattern/lion-dance-pattern-01.jpg'
+];
+// 标签按实际图片维护，复用同一图片的记录共享分类。
+const patternLabels = [
+  { style: '广绣经典', elements: ['牡丹', '凤凰', '祥云'] },
+  { style: '广绣经典', elements: ['牡丹', '凤凰', '祥云'] },
+  { style: '传统团纹', elements: ['牡丹', '莲花', '团花'] },
+  { style: '建筑纹样', elements: ['花窗', '几何纹', '花枝'] },
+  { style: '广绣经典', elements: ['醒狮', '牡丹', '祥云'] }
+];
+export const patterns = [
+  '牡丹呈祥',
+  '凤舞花朝',
+  '如意团花',
+  '岭南花窗',
+  '醒狮纳福',
+  '锦簇花枝',
+  '云起丹霞',
+  '金蕊宝相'
+].map((title, i) => ({
+  // 演示纹样使用 demo- 前缀 id，避免与后端真实纹样的数字 id 冲突，
+  // 否则详情页按 id 查后端会取到另一个纹样。
+  id: `demo-${i + 1}`,
+  title,
+  ...patternLabels[i % 5],
+  meta: `${patternLabels[i % 5].style} · ${patternLabels[i % 5].elements.join(' / ')}`,
+  image: patternImages[i % 5]
+}));
+export const products = [
+  ['广绣牡丹帆布袋', 68, 'peony-canvas-bag-cover.jpg', '帆布袋'],
+  ['凤凰瑞彩帆布袋', 88, 'phoenix-tote-cover.jpg', '帆布袋'],
+  ['岭南真丝长巾', 198, 'lingnan-silk-scarf-cover.jpg', '丝巾'],
+  ['木棉花影笔记本', 39, 'lingnan-notebook-cover.jpg', '笔记本'],
+  ['醒狮如意抱枕', 168, 'lion-pillow-cover.jpg', '摆件'],
+  ['牡丹团花杯垫', 49, 'round-coaster-set-cover.jpg', '杯垫'],
+  ['广绣明信片礼盒', 28, 'postcard-gift-cover.jpg', '明信片'],
+  ['木棉流光丝巾', 158, 'kapok-long-scarf-cover.jpg', '丝巾']
+].map(([title, price, file, category], i) => ({
+  id: i + 1,
+  title,
+  price,
+  category,
+  image: '/demo/product/' + file,
+  desc: '传统广绣纹样的现代生活表达'
+}));
+export const courses = ['广绣历史与文化', '经典纹样解析', '针法基础入门', '创作实践与应用'].map(
+  (title, i) => ({
+    id: i + 1,
+    title,
+    desc: [
+      '从岭南丝路读懂千年广绣',
+      '读懂牡丹凤凰纹样寓意',
+      '从穿针引线到基础铺针',
+      '完成自己的广绣作品'
+    ][i],
+    lessons: [18, 32, 46, 26][i],
+    image:
+      i < 2
+        ? patternImages[i]
+        : '/demo/product/' + ['round-coaster-set-cover.jpg', 'peony-canvas-bag-cover.jpg'][i - 2]
+  })
+);
