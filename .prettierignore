@@ -1,0 +1,7 @@
+**/node_modules/
+**/target/
+**/.pnpm-store/
+**/package-lock.json
+**/pnpm-lock.yaml
+**/public/demo/
+**/static/uploads/demo/
